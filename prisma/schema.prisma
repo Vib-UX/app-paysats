@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String    @id @default(cuid())
+  privyUserId           String    @unique
+  email                 String?
+  displayName           String?
+  walletAddress         String?
+  onboardingCompletedAt DateTime?
+  idrxUserId            Int?
+  idrxApiKeyEnc         String?
+  idrxApiSecretEnc      String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  mintSnapshots MintRequestSnapshot[]
+}
+
+/// Optional local snapshot after mint / for quicker empty states; list view still uses IDRX history API.
+model MintRequestSnapshot {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reference       String?
+  merchantOrderId String?
+  toBeMinted      String?
+  paymentAmount   String?
+  paymentUrl      String?
+  networkChainId  String?
+  createdAt       DateTime @default(now())
+}
