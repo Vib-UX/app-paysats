@@ -18,7 +18,7 @@ Aplikasi produk Arka: autentikasi Privy (Google + dompet embedded), onboarding I
    cp .env.example .env
    ```
 
-   Isi `NEXT_PUBLIC_PRIVY_APP_ID`, `PRIVY_APP_SECRET`, `ENCRYPTION_KEY` (64 karakter hex), `IDRX_ORG_API_KEY`, `IDRX_ORG_API_SECRET`, dan `IDRX_API_BASE_URL` (sandbox atau produksi).
+   Isi `NEXT_PUBLIC_PRIVY_APP_ID`, `PRIVY_APP_SECRET`, `ENCRYPTION_KEY` (64 karakter hex), `IDRX_ORG_API_KEY`, `IDRX_ORG_API_SECRET`, dan `IDRX_API_BASE_URL` (sandbox atau produksi). Opsional: `NEXT_PUBLIC_BTC_ERC20_ADDRESS` (mis. cbBTC di Base) untuk tab saldo BTC di Beranda.
 
 2. **Install & database**
 

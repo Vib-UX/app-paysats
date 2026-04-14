@@ -39,7 +39,7 @@ export default function HomePage() {
         return;
       }
       setRouting(false);
-      router.replace("/mint");
+      router.replace("/home");
     })();
     return () => {
       cancelled = true;

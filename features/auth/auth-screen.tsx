@@ -12,7 +12,16 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type ReactNode,
 } from "react";
+
+function FeaturePill({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-arka-border bg-arka-surface px-3 py-1 text-xs font-medium text-arka-text">
+      {children}
+    </span>
+  );
+}
 
 export function AuthScreen() {
   const { ready, authenticated, getAccessToken } = usePrivy();
@@ -41,12 +50,12 @@ export function AuthScreen() {
         await fetchWithPrivy(getAccessTokenRef.current, "/api/user/me");
         if (cancelled) return;
         setMeChecked(true);
-        router.replace("/mint");
+        router.replace("/home");
       } catch (e) {
         console.error("Post-login setup failed:", e);
         if (cancelled) return;
         setMeChecked(true);
-        router.replace("/mint");
+        router.replace("/home");
       }
     })();
     return () => {
@@ -85,40 +94,75 @@ export function AuthScreen() {
       : null;
 
   return (
-    <div className="flex min-h-[70vh] flex-col justify-center px-6 py-10">
-      <div className="mx-auto w-full max-w-md space-y-6">
+    <div className="flex min-h-[80vh] flex-col justify-between px-6 py-10">
+      <div className="mx-auto w-full max-w-md flex-1 space-y-8">
+        <div className="flex flex-col items-center text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-arka-accent text-xl font-bold text-white shadow-sm">
+            A
+          </div>
+          <p className="mt-4 text-lg font-bold tracking-tight text-arka-text">
+            ARKA
+          </p>
+        </div>
+
+        <div className="rounded-[var(--radius-card)] border border-dashed border-arka-border bg-arka-surface-muted/40 px-6 py-10 text-center">
+          <p className="text-xs text-arka-text-muted">Ilustrasi produk</p>
+          <p className="mt-2 text-sm text-arka-text-muted">
+            Tabungan bertahap ke Bitcoin lewat IDRX di Base.
+          </p>
+        </div>
+
         <div className="text-center">
-          <p className="text-xs font-medium uppercase tracking-wider text-arka-accent">
-            Arka
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold text-arka-text">
-            Masuk dengan Google
+          <h1 className="text-2xl font-semibold leading-snug text-arka-text">
+            Simpan lewat tabungan ke{" "}
+            <span className="text-arka-accent">BTC</span>
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-arka-text-muted">
-            Aplikasi tabungan Bitcoin yang tenang dan terstruktur. Arka membuat
-            dompet aman untuk kamu secara otomatis setelah masuk.
+          <p className="mt-3 text-sm leading-relaxed text-arka-text-muted">
+            Atur tujuan tabungan dan alokasi aset. Deposit IDR lewat mint IDRX ke
+            dompet Privy kamu — mulai dari nominal kecil sesuai kebijakan mitra.
           </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <FeaturePill>Tabungan</FeaturePill>
+            <FeaturePill>Auto DCA</FeaturePill>
+            <FeaturePill>IDRX · Base</FeaturePill>
+          </div>
         </div>
 
         <Card className="space-y-4">
           <Button
-            variant="primary"
+            variant="secondary"
             disabled={oauthStatus === "loading"}
-            className="gap-2"
+            className="gap-2 border-arka-border"
             onClick={() => initOAuth({ provider: "google" })}
           >
-            {oauthStatus === "loading" ? "Menghubungkan…" : "Lanjutkan dengan Google"}
+            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-[#4285F4]">
+              G
+            </span>
+            {oauthStatus === "loading"
+              ? "Menghubungkan…"
+              : "Lanjutkan dengan Google"}
           </Button>
           <p className="text-center text-xs leading-relaxed text-arka-text-muted">
-            Dengan melanjutkan, kamu menyetujui pembuatan dompet terenkripsi
-            (embedded wallet) yang dikelola Privy untuk transaksi IDRX dan
-            tabungan ke depannya.
+            Investasi aset kripto mengandung risiko pasar.
           </p>
           {err ? (
             <p className="text-center text-sm text-arka-danger">{err}</p>
           ) : null}
         </Card>
       </div>
+
+      <p className="mx-auto mt-8 max-w-md text-center text-[11px] leading-relaxed text-arka-text-muted">
+        Dengan melanjutkan, kamu menyetujui{" "}
+        <a
+          href="https://www.privy.io/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-arka-accent hover:underline"
+        >
+          kebijakan penyedia dompet (Privy)
+        </a>{" "}
+        dan pembuatan dompet embedded untuk transaksi di aplikasi ini.
+      </p>
     </div>
   );
 }

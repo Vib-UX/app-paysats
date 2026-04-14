@@ -1,15 +1,15 @@
 "use client";
 
 import { usePostLoginSync } from "@/hooks/use-post-login-sync";
-import { IdrxBalancePill } from "@/features/layout/idrx-balance";
 import { usePrivy } from "@privy-io/react-auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
 
 const nav = [
-  { href: "/mint", label: "Mint" },
-  { href: "/activity", label: "Aktivitas" },
+  { href: "/home", label: "Beranda" },
+  { href: "/savings", label: "Tabungan" },
+  { href: "/mint", label: "Deposit" },
   { href: "/profile", label: "Profil" },
 ];
 
@@ -39,14 +39,13 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto flex min-h-full max-w-md flex-1 flex-col">
       <header className="sticky top-0 z-10 border-b border-arka-border bg-arka-bg/95 px-4 py-3 backdrop-blur">
-        <div className="flex items-center gap-2">
-          <Link href="/mint" className="shrink-0 text-sm font-semibold text-arka-text">
+        <div className="flex items-center justify-center">
+          <Link
+            href="/home"
+            className="text-center text-sm font-semibold tracking-tight text-arka-text"
+          >
             Arka
           </Link>
-          <div className="min-w-0 flex flex-1 justify-center px-1">
-            <IdrxBalancePill />
-          </div>
-          <span className="shrink-0 text-xs text-arka-text-muted">Produk</span>
         </div>
       </header>
       <main className="flex-1">{children}</main>
@@ -58,7 +57,7 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`min-w-[4.5rem] rounded-lg px-2 py-2 text-center text-xs font-medium ${
+                className={`min-w-[3.25rem] rounded-lg px-1.5 py-2 text-center text-[11px] font-medium leading-tight sm:min-w-[4rem] sm:text-xs ${
                   active
                     ? "text-arka-accent"
                     : "text-arka-text-muted hover:text-arka-text"

@@ -23,7 +23,7 @@ export function OnboardingPlaceholder() {
           href="/mint"
           className="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-arka-accent px-4 text-sm font-medium text-white transition hover:bg-arka-accent-muted"
         >
-          Ke Mint
+          Ke Deposit
         </Link>
       </Card>
     </Screen>

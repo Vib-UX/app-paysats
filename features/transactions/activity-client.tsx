@@ -46,8 +46,8 @@ export function ActivityClient() {
   return (
     <Screen
       title="Aktivitas"
-      subtitle="Status pembayaran & mint dari API transaksi IDRX (paymentStatus,
-          userMintStatus). Saldo token di header dibaca on-chain."
+      subtitle="Riwayat deposit & mint IDRX: status pembayaran dan mint dari API
+          mitra. Saldo IDRX/BTC di dompet dibaca on-chain dari Beranda."
     >
       {error ? (
         <p className="mb-4 text-sm text-arka-danger" role="alert">
