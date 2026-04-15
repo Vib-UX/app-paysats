@@ -8,7 +8,7 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 
 const nav = [
   { href: "/home", label: "Beranda" },
-  { href: "/savings", label: "Tabungan" },
+  { href: "/dca", label: "DCA" },
   { href: "/mint", label: "Deposit" },
   { href: "/profile", label: "Profil" },
 ];

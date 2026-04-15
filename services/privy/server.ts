@@ -34,24 +34,35 @@ export function getEmbeddedEthereumAddress(user: User): string | undefined {
   return undefined;
 }
 
+/** Smart wallet address from Privy user. */
+export function getSmartWalletAddress(user: User): string | undefined {
+  if (user.smartWallet?.address && isAddress(user.smartWallet.address)) {
+    return user.smartWallet.address;
+  }
+  for (const a of user.linkedAccounts ?? []) {
+    if (a.type === "smart_wallet" && "address" in a && a.address) {
+      if (isAddress(a.address)) return a.address;
+    }
+  }
+  return undefined;
+}
+
 /**
- * Alamat EVM untuk saldo on-chain — tidak hanya embedded Privy (Base Account, dll).
+ * Primary on-chain address — smart wallet first, then embedded/linked wallets.
  */
 export function getPreferredEthereumAddress(user: User): string | undefined {
+  const smart = getSmartWalletAddress(user);
+  if (smart) return smart;
   const emb = getEmbeddedEthereumAddress(user);
   if (emb) return emb;
   if (user.wallet?.address && user.wallet.chainType === "ethereum") {
     return user.wallet.address;
   }
-  if (user.smartWallet?.address) return user.smartWallet.address;
   for (const a of user.linkedAccounts ?? []) {
     if (a.type === "wallet" && "address" in a && a.address) {
       if (a.chainType === "ethereum" || isAddress(a.address)) {
         return a.address;
       }
-    }
-    if (a.type === "smart_wallet" && "address" in a && a.address) {
-      return a.address;
     }
   }
   return undefined;

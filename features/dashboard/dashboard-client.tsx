@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { fetchWithPrivy } from "@/lib/api";
 import { defaultChainId } from "@/lib/chains";
+import { IDRX_DECIMALS, INTERVAL_PRESETS } from "@/lib/contracts/arka-dca";
+import { useDcaOrder } from "@/hooks/use-dca-contract";
 import { resolveWalletDisplayAddress } from "@/lib/privy-destination-wallet";
 import { TransactionList } from "@/features/transactions/transaction-list";
 import type { MintTransaction } from "@/types/transaction";
@@ -29,6 +31,86 @@ function shortenAddr(a: string) {
   return `${a.slice(0, 6)}…${a.slice(-4)}`;
 }
 
+function DcaDashboardCard() {
+  const { order, loading } = useDcaOrder();
+
+  if (loading) {
+    return (
+      <section className="mt-6">
+        <Card className="flex items-start gap-3 border-arka-border/80 bg-arka-surface-muted/40">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-arka-border bg-arka-surface text-xs font-semibold text-arka-text-muted"
+            aria-hidden
+          >
+            DCA
+          </div>
+          <div className="flex-1">
+            <div className="h-4 w-24 animate-pulse rounded bg-arka-border/60" />
+            <div className="mt-2 h-3 w-40 animate-pulse rounded bg-arka-border/40" />
+          </div>
+        </Card>
+      </section>
+    );
+  }
+
+  if (order) {
+    const perSwapIdr = Number(order.amountPerSwap) / 10 ** IDRX_DECIMALS;
+    const intervalMatch = INTERVAL_PRESETS.find(
+      (p) => p.seconds === Number(order.interval),
+    );
+    const freqLabel = intervalMatch?.label ?? `${Number(order.interval)}s`;
+    const remaining =
+      order.totalSwaps === BigInt(0)
+        ? "tanpa batas"
+        : `${order.executedSwaps}/${order.totalSwaps}`;
+
+    return (
+      <section className="mt-6">
+        <Link href="/dca">
+          <Card className="flex items-start gap-3 border-green-300/40 bg-green-50/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-100 text-xs font-semibold text-green-700">
+              DCA
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
+                <p className="text-sm font-medium text-arka-text">DCA Aktif</p>
+              </div>
+              <p className="mt-1 text-xs text-arka-text-muted">
+                Rp {perSwapIdr.toLocaleString("id-ID")} · {freqLabel} ·{" "}
+                {remaining}
+              </p>
+            </div>
+          </Card>
+        </Link>
+      </section>
+    );
+  }
+
+  return (
+    <section className="mt-6">
+      <Link href="/dca">
+        <Card className="flex items-start gap-3 border-arka-border/80 bg-arka-surface-muted/40 transition hover:border-arka-accent/30">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-arka-border bg-arka-surface text-xs font-semibold text-arka-text-muted"
+            aria-hidden
+          >
+            DCA
+          </div>
+          <div>
+            <p className="text-sm font-medium text-arka-text">
+              DCA otomatis IDRX → cbBTC
+            </p>
+            <p className="mt-1 text-xs text-arka-text-muted">
+              Jadwalkan pembelian Bitcoin otomatis dari saldo IDRX kamu.
+            </p>
+          </div>
+        </Card>
+      </Link>
+    </section>
+  );
+}
+
 export function DashboardClient() {
   const { getAccessToken, ready, authenticated, user } = usePrivy();
   const { wallets } = useWallets();
@@ -41,7 +123,7 @@ export function DashboardClient() {
   >("idle");
   const [idrxErrorHint, setIdrxErrorHint] = useState<string | null>(null);
   const [btcFormatted, setBtcFormatted] = useState<string | null>(null);
-  const [btcSymbol, setBtcSymbol] = useState<string>("BTC");
+  const [btcSymbol, setBtcSymbol] = useState<string>("sats");
   const [btcConfigured, setBtcConfigured] = useState<boolean | null>(null);
   const [btcState, setBtcState] = useState<"idle" | "loading" | "ready" | "error">(
     "idle",
@@ -164,6 +246,7 @@ export function DashboardClient() {
         );
         const btcJ = (await btcRes.json().catch(() => ({}))) as {
           configured?: boolean;
+          balanceRaw?: string | null;
           balanceFormatted?: string | number | null;
           symbol?: string;
           error?: string;
@@ -173,21 +256,22 @@ export function DashboardClient() {
           setBtcConfigured(false);
           setBtcFormatted(null);
           setBtcState("ready");
-        } else if (btcRes.ok && btcJ.balanceFormatted != null && !btcJ.error) {
+        } else if (btcRes.ok && !btcJ.error && (btcJ.balanceRaw != null || btcJ.balanceFormatted != null)) {
           setBtcConfigured(true);
-          if (typeof btcJ.symbol === "string" && btcJ.symbol) {
-            setBtcSymbol(btcJ.symbol);
+          setBtcSymbol("sats");
+
+          const sats = btcJ.balanceRaw != null ? Number(btcJ.balanceRaw) : null;
+          if (sats != null && Number.isFinite(sats)) {
+            setBtcFormatted(
+              sats.toLocaleString("id-ID", { maximumFractionDigits: 0 }),
+            );
+          } else {
+            const n = Number(btcJ.balanceFormatted);
+            const fallbackSats = Number.isFinite(n) ? Math.round(n * 1e8) : 0;
+            setBtcFormatted(
+              fallbackSats.toLocaleString("id-ID", { maximumFractionDigits: 0 }),
+            );
           }
-          const raw = btcJ.balanceFormatted;
-          const n = typeof raw === "number" ? raw : Number(raw);
-          setBtcFormatted(
-            Number.isFinite(n)
-              ? n.toLocaleString("id-ID", {
-                  maximumFractionDigits: 8,
-                  minimumFractionDigits: 0,
-                })
-              : String(raw),
-          );
           setBtcState("ready");
         } else {
           setBtcConfigured(true);
@@ -288,7 +372,7 @@ export function DashboardClient() {
 
   const balanceUnit = tab === "IDRX" ? "IDRX" : btcSymbol;
   const balanceTitle =
-    tab === "IDRX" ? "Saldo IDRX" : `Saldo ${btcSymbol} (on-chain)`;
+    tab === "IDRX" ? "Saldo IDRX" : "Saldo cbBTC (sats)";
 
   return (
     <div className="px-4 pb-28 pt-4">
@@ -320,7 +404,7 @@ export function DashboardClient() {
                 : "text-white/90 hover:bg-white/10"
             }`}
           >
-            BTC
+            cbBTC
           </button>
         </div>
         <p className="mt-4 font-mono text-3xl font-semibold tabular-nums tracking-tight">
@@ -336,12 +420,12 @@ export function DashboardClient() {
           <p className="mt-2 text-xs text-white/80">
             Set{" "}
             <code className="rounded bg-black/20 px-1">NEXT_PUBLIC_BTC_ERC20_ADDRESS</code>{" "}
-            ke cbBTC Base (satu alamat,42 karakter).
+            ke cbBTC Base (satu alamat, 42 karakter).
           </p>
         ) : null}
         {tab === "BTC" && btcState === "error" ? (
           <p className="mt-2 text-xs text-white/85">
-            Gagal membaca saldo BTC — periksa RPC dan alamat kontrak.
+            Gagal membaca saldo cbBTC — periksa RPC dan alamat kontrak.
           </p>
         ) : null}
         {resolvedAddress ? (
@@ -419,22 +503,7 @@ export function DashboardClient() {
         </div>
       </section>
 
-      <section className="mt-6">
-        <Card className="flex items-start gap-3 border-arka-border/80 bg-arka-surface-muted/40">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-arka-border bg-arka-surface text-xs font-semibold text-arka-text-muted"
-            aria-hidden
-          >
-            DCA
-          </div>
-          <div>
-            <p className="text-sm font-medium text-arka-text">DCA mendatang</p>
-            <p className="mt-1 text-xs text-arka-text-muted">
-              Penjadwalan otomatis belum aktif — pantau pembaruan produk.
-            </p>
-          </div>
-        </Card>
-      </section>
+      <DcaDashboardCard />
 
       <section className="mt-8">
         <div className="mb-3 flex items-center justify-between">

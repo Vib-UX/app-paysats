@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { displayNameFromPrivy, emailFromPrivy } from "@/lib/user-display";
 import {
-  getEmbeddedEthereumAddress,
+  getPreferredEthereumAddress,
   getPrivyUserFromRequest,
 } from "@/services/privy/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isAddress } from "viem";
 
 type Body = { walletAddress?: string };
 
@@ -22,23 +23,23 @@ export async function POST(request: NextRequest) {
     /* optional body */
   }
 
-  const serverWallet = getEmbeddedEthereumAddress(privyUser);
+  const serverWallet = getPreferredEthereumAddress(privyUser);
   const email = emailFromPrivy(privyUser);
   const displayName = displayNameFromPrivy(privyUser);
 
   let walletAddress = serverWallet ?? null;
-  if (body.walletAddress) {
+
+  if (body.walletAddress && isAddress(body.walletAddress)) {
     const clientAddr = body.walletAddress.toLowerCase();
+
     const linked = privyUser.linkedAccounts
-      .filter((a) => a.type === "wallet")
+      .filter((a) => a.type === "wallet" || a.type === "smart_wallet")
       .map((a) => ("address" in a ? a.address.toLowerCase() : ""));
-    if (
-      serverWallet &&
-      clientAddr === serverWallet.toLowerCase()
-    ) {
-      walletAddress = serverWallet;
-    } else if (linked.includes(clientAddr)) {
+
+    if (linked.includes(clientAddr)) {
       walletAddress = body.walletAddress;
+    } else if (serverWallet && clientAddr === serverWallet.toLowerCase()) {
+      walletAddress = serverWallet;
     }
   }
 

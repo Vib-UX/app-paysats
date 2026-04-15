@@ -1,19 +1,16 @@
 /**
- * Future: recurring IDR funding and automated DCA into cbBTC on Base.
- * Implementations will orchestrate treasury, IDRX, and on-chain swaps — not used in v1.
+ * DCA service — on-chain order management via ArkaDCA contract.
+ *
+ * Order creation and cancellation happen client-side through Privy embedded
+ * smart wallets (ERC-4337). Chainlink Automation handles execution.
+ *
+ * This module re-exports contract types for server-side code that needs them.
  */
-export type DcaScheduleDraft = {
-  userId: string;
-  amountIdr: string;
-  cadence: "weekly" | "monthly";
-};
-
-export async function scheduleDeposit(draft: DcaScheduleDraft): Promise<never> {
-  void draft;
-  throw new Error("DCA is not implemented yet");
-}
-
-export async function listSchedules(userId: string): Promise<DcaScheduleDraft[]> {
-  void userId;
-  return [];
-}
+export type { DcaOrder } from "@/lib/contracts/arka-dca";
+export {
+  ARKA_DCA_ADDRESS,
+  IDRX_TOKEN_ADDRESS,
+  arkaDcaAbi,
+  IDRX_DECIMALS,
+  INTERVAL_PRESETS,
+} from "@/lib/contracts/arka-dca";

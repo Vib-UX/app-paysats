@@ -2,7 +2,7 @@ import { decryptSecret } from "@/lib/crypto";
 import { prisma } from "@/lib/prisma";
 import { idrxMintRequest } from "@/services/idrx/client";
 import {
-  getEmbeddedEthereumAddress,
+  getPreferredEthereumAddress,
   getPrivyUserFromRequest,
 } from "@/services/privy/server";
 import { assertEvmAddress } from "@/services/wallet";
@@ -56,10 +56,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const embedded = getEmbeddedEthereumAddress(privyUser);
+  const preferred = getPreferredEthereumAddress(privyUser);
   const dest =
     body.destinationWalletAddress?.trim() ||
-    embedded ||
+    preferred ||
     row.walletAddress ||
     "";
   if (!dest) {
@@ -73,13 +73,6 @@ export async function POST(request: NextRequest) {
     assertEvmAddress(dest);
   } catch {
     return NextResponse.json({ error: "Alamat dompet tidak valid" }, { status: 400 });
-  }
-
-  if (embedded && dest.toLowerCase() !== embedded.toLowerCase()) {
-    return NextResponse.json(
-      { error: "Gunakan dompet Arka (Privy) yang terhubung ke akun Anda" },
-      { status: 400 },
-    );
   }
 
   const apiKey = decryptSecret(row.idrxApiKeyEnc);

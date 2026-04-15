@@ -8,7 +8,7 @@ import { fetchWithPrivy } from "@/lib/api";
 import { CHAIN_OPTIONS, defaultChainId } from "@/lib/chains";
 import {
   ethereumAddressFromPrivyUser,
-  pickEthereumDestinationWallet,
+  resolveWalletDisplayAddress,
 } from "@/lib/privy-destination-wallet";
 import {
   useActiveWallet,
@@ -17,7 +17,6 @@ import {
 } from "@privy-io/react-auth";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { isAddress } from "viem";
 
 const EXPIRY_PRESETS: { label: string; sec: number }[] = [
   { label: "1 jam", sec: 3600 },
@@ -31,26 +30,6 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
   const { getAccessToken, ready, authenticated, user } = usePrivy();
   const { wallets } = useWallets();
   const { wallet: activeWallet } = useActiveWallet();
-  const connected = useMemo(
-    () => pickEthereumDestinationWallet(wallets),
-    [wallets],
-  );
-  const fromUser = useMemo(
-    () => ethereumAddressFromPrivyUser(user),
-    [user],
-  );
-  const fromActive = useMemo(() => {
-    if (!activeWallet) return undefined;
-    const w = activeWallet as {
-      type?: string;
-      chainType?: string;
-      address?: string;
-    };
-    if (!w.address || !isAddress(w.address)) return undefined;
-    if (w.type === "ethereum" || w.chainType === "ethereum") return w.address;
-    if (w.type === "solana" || w.chainType === "solana") return undefined;
-    return w.address;
-  }, [activeWallet]);
 
   const [meWallet, setMeWallet] = useState<string | null>(null);
   const [idrxGate, setIdrxGate] = useState<IdrxGate>("loading");
@@ -124,13 +103,16 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
     };
   }, [ready, authenticated, getAccessToken]);
 
-  const dest =
-    connected?.address ??
-    fromActive ??
-    fromUser ??
-    meWallet ??
-    walletAddress ??
-    "";
+  const dest = useMemo(
+    () =>
+      resolveWalletDisplayAddress({
+        wallets,
+        user,
+        activeWallet,
+        dbWallet: meWallet ?? walletAddress,
+      }) ?? "",
+    [wallets, user, activeWallet, meWallet, walletAddress],
+  );
 
   const [amount, setAmount] = useState("");
   const [chainId, setChainId] = useState(defaultChainId());

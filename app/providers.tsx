@@ -1,6 +1,8 @@
 "use client";
 
 import { PrivyProvider } from "@privy-io/react-auth";
+import { SmartWalletsProvider } from "@privy-io/react-auth/smart-wallets";
+import { base } from "viem/chains";
 import type { ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -13,19 +15,21 @@ export function Providers({ children }: { children: ReactNode }) {
     <PrivyProvider
       appId={appId}
       config={{
-        loginMethods: ["google"],
+        loginMethods: ["google", "email"],
         appearance: {
           theme: "light",
           accentColor: "#b45309",
         },
+        defaultChain: base,
+        supportedChains: [base],
         embeddedWallets: {
           ethereum: {
-            createOnLogin: "users-without-wallets",
+            createOnLogin: "all-users",
           },
         },
       }}
     >
-      {children}
+      <SmartWalletsProvider>{children}</SmartWalletsProvider>
     </PrivyProvider>
   );
 }

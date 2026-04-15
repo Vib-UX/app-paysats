@@ -1,6 +1,10 @@
 import { encryptSecret } from "@/lib/crypto";
 import { prisma } from "@/lib/prisma";
-import { displayNameFromPrivy, emailFromPrivy } from "@/lib/user-display";
+import {
+  displayNameFromPrivy,
+  emailFromPrivy,
+  fullNameForIdrxOnboarding,
+} from "@/lib/user-display";
 import { idrxOnboardingMultipart } from "@/services/idrx/client";
 import { placeholderIdPngBlob } from "@/services/idrx/placeholder-id-image";
 import { getPrivyUserFromRequest } from "@/services/privy/server";
@@ -49,7 +53,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const fullname = "";
+  const fullname = fullNameForIdrxOnboarding(privyUser);
   const address = "";
   const idNumber = "";
   const idFile = placeholderIdPngBlob();
@@ -114,5 +118,7 @@ export async function POST(request: NextRequest) {
     idrxUserId: idrxRes.data.id,
     fullname: idrxRes.data.fullname,
     createdAt: idrxRes.data.createdAt,
+    /** Kredensial per-user disimpan terenkripsi di DB; tidak dikembalikan ke klien. */
+    credentialsStored: true,
   });
 }
