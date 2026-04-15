@@ -1,20 +1,26 @@
 import { createPublicClient, http } from "viem";
 import { base } from "viem/chains";
 
-let _client: ReturnType<typeof createPublicClient> | null = null;
+function makeClient() {
+  const rpc = process.env.NEXT_PUBLIC_BASE_RPC_URL;
+  return createPublicClient({
+    chain: base,
+    transport: http(rpc || undefined),
+    batch: { multicall: true },
+  });
+}
+
+type BaseClient = ReturnType<typeof makeClient>;
+
+let _client: BaseClient | undefined;
 
 /**
  * Singleton viem PublicClient for Base.
  * Reuses the same HTTP transport so viem can batch/deduplicate requests.
  */
-export function getBasePublicClient() {
+export function getBasePublicClient(): BaseClient {
   if (!_client) {
-    const rpc = process.env.NEXT_PUBLIC_BASE_RPC_URL;
-    _client = createPublicClient({
-      chain: base,
-      transport: http(rpc || undefined),
-      batch: { multicall: true },
-    });
+    _client = makeClient();
   }
   return _client;
 }
