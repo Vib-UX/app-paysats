@@ -6,6 +6,7 @@ import { Input, Label } from "@/components/ui/input";
 import { Screen } from "@/components/ui/screen";
 import { fetchWithPrivy } from "@/lib/api";
 import { CHAIN_OPTIONS, defaultChainId } from "@/lib/chains";
+import { useT } from "@/lib/i18n";
 import {
   ethereumAddressFromPrivyUser,
   resolveWalletDisplayAddress,
@@ -18,10 +19,10 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-const EXPIRY_PRESETS: { label: string; sec: number }[] = [
-  { label: "1 jam", sec: 3600 },
-  { label: "6 jam", sec: 3600 * 6 },
-  { label: "24 jam", sec: 86400 },
+const EXPIRY_PRESETS: { labelKey: "expiry.1h" | "expiry.6h" | "expiry.24h"; sec: number }[] = [
+  { labelKey: "expiry.1h", sec: 3600 },
+  { labelKey: "expiry.6h", sec: 3600 * 6 },
+  { labelKey: "expiry.24h", sec: 86400 },
 ];
 
 type IdrxGate = "loading" | "linking_idrx" | "ready" | "error";
@@ -30,6 +31,7 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
   const { getAccessToken, ready, authenticated, user } = usePrivy();
   const { wallets } = useWallets();
   const { wallet: activeWallet } = useActiveWallet();
+  const t = useT();
 
   const [meWallet, setMeWallet] = useState<string | null>(null);
   const [idrxGate, setIdrxGate] = useState<IdrxGate>("loading");
@@ -78,7 +80,7 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
       const pj = (await post.json().catch(() => ({}))) as { error?: string };
       if (cancelled) return;
       if (!post.ok) {
-        setGateError(pj.error || "Gagal menghubungkan IDRX");
+        setGateError(pj.error || t("general.failedLoad"));
         setIdrxGate("error");
         return;
       }
@@ -86,7 +88,7 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
       const second = await getStatus();
       if (cancelled) return;
       if (!second.res.ok) {
-        setGateError("Status IDRX tidak konsisten setelah onboarding");
+        setGateError(t("mint.errorDefault"));
         setIdrxGate("error");
         return;
       }
@@ -94,14 +96,14 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
       if (second.j.completed) {
         setIdrxGate("ready");
       } else {
-        setGateError("Onboarding IDRX belum aktif. Coba muat ulang.");
+        setGateError(t("mint.errorDefault"));
         setIdrxGate("error");
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [ready, authenticated, getAccessToken]);
+  }, [ready, authenticated, getAccessToken, t]);
 
   const dest = useMemo(
     () =>
@@ -130,7 +132,7 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
     setError(null);
     const raw = amount.replace(/\./g, "").replace(/,/g, "").trim();
     if (!raw || !dest) {
-      setError(!dest ? "Dompet belum tersedia" : "Masukkan nominal");
+      setError(!dest ? t("mint.errorNoWallet") : t("mint.errorNoAmount"));
       return;
     }
     setLoading(true);
@@ -148,7 +150,7 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
     setLoading(false);
     const j = await res.json().catch(() => ({}));
     if (!res.ok) {
-      setError(j.error || "Permintaan gagal");
+      setError(j.error || t("mint.errorGeneric"));
       return;
     }
     setResult({
@@ -157,24 +159,24 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
       reference: j.reference,
       merchantOrderId: j.merchantOrderId,
     });
-  }, [amount, chainId, dest, expiry, getAccessToken]);
+  }, [amount, chainId, dest, expiry, getAccessToken, t]);
 
   if (idrxGate === "loading" || idrxGate === "linking_idrx") {
     return (
       <Screen
-        title="Mint IDRX"
+        title={t("mint.title")}
         subtitle={
           idrxGate === "linking_idrx"
-            ? "Menghubungkan akun IDRX (email Privy)…"
-            : "Memeriksa status IDRX…"
+            ? t("mint.linkingIdrx")
+            : t("mint.checkingIdrx")
         }
       >
         <div className="flex min-h-[30vh] flex-col items-center justify-center gap-3">
           <div className="h-8 w-8 animate-pulse rounded-full bg-arka-border" />
           <p className="text-sm text-arka-text-muted">
             {idrxGate === "linking_idrx"
-              ? "Satu saat lagi…"
-              : "Menyiapkan mint…"}
+              ? t("mint.linkingWait")
+              : t("mint.preparing")}
           </p>
         </div>
       </Screen>
@@ -184,13 +186,12 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
   if (idrxGate === "error") {
     return (
       <Screen
-        title="Mint IDRX"
-        subtitle="Tidak bisa menyiapkan IDRX. Coba lagi."
+        title={t("mint.title")}
+        subtitle={t("mint.errorTitle")}
       >
         <Card className="space-y-3 p-4">
           <p className="text-sm text-arka-danger" role="alert">
-            {gateError ||
-              "Gagal memeriksa atau menghubungkan onboarding. Periksa jaringan lalu muat ulang halaman."}
+            {gateError || t("mint.errorDefault")}
           </p>
         </Card>
       </Screen>
@@ -199,34 +200,32 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
 
   return (
     <Screen
-      title="Mint IDRX"
-      subtitle="Tukar rupiah menjadi IDRX ke dompet Arka kamu. Setelah permintaan
-          dibuat, kamu akan diarahkan ke halaman pembayaran mitra."
+      title={t("mint.title")}
+      subtitle={t("mint.subtitle")}
     >
       <div className="space-y-4">
         <Card className="space-y-3">
           <div>
-            <Label>Dompet tujuan (Arka)</Label>
+            <Label>{t("mint.destLabel")}</Label>
             <p className="mt-1 break-all font-mono text-xs text-arka-text-muted">
-              {dest || "Menunggu dompet…"}
+              {dest || t("mint.destWaiting")}
             </p>
           </div>
           <div>
-            <Label htmlFor="amt">Nominal IDRX (IDR)</Label>
+            <Label htmlFor="amt">{t("mint.amountLabel")}</Label>
             <Input
               id="amt"
               inputMode="numeric"
-              placeholder="Min. Rp 20.000"
+              placeholder={t("mint.amountPlaceholder")}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
             <p className="mt-1 text-xs text-arka-text-muted">
-              Minimum Rp 20.000 sesuai ketentuan IDRX. Nominal bayar bisa sedikit
-              berbeda setelah biaya.
+              {t("mint.amountHint")}
             </p>
           </div>
           <div>
-            <Label htmlFor="chain">Jaringan</Label>
+            <Label htmlFor="chain">{t("mint.networkLabel")}</Label>
             <select
               id="chain"
               className="min-h-11 w-full rounded-[var(--radius-control)] border border-arka-border bg-arka-surface px-3 text-base"
@@ -240,11 +239,11 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
               ))}
             </select>
             <p className="mt-1 text-xs text-arka-text-muted">
-              Base dipilih sebagai default untuk ekspansi produk ke depan.
+              {t("mint.networkHint")}
             </p>
           </div>
           <div>
-            <Label>Batas waktu pembayaran</Label>
+            <Label>{t("mint.expiryLabel")}</Label>
             <div className="mt-2 flex flex-wrap gap-2">
               {EXPIRY_PRESETS.map((p) => (
                 <button
@@ -257,7 +256,7 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
                       : "bg-arka-surface-muted text-arka-text"
                   }`}
                 >
-                  {p.label}
+                  {t(p.labelKey)}
                 </button>
               ))}
             </div>
@@ -273,21 +272,21 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
         {result ? (
           <Card className="space-y-3 border-arka-accent/30 bg-amber-50/40">
             <p className="text-sm font-medium text-arka-text">
-              Permintaan dibuat. Lanjutkan pembayaran untuk menyelesaikan mint.
+              {t("mint.resultTitle")}
             </p>
             <dl className="space-y-1 text-sm">
               <div className="flex justify-between gap-2">
-                <dt className="text-arka-text-muted">Total bayar</dt>
+                <dt className="text-arka-text-muted">{t("mint.resultTotalPay")}</dt>
                 <dd className="font-medium">Rp {result.amount}</dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="text-arka-text-muted">Referensi</dt>
+                <dt className="text-arka-text-muted">{t("mint.resultReference")}</dt>
                 <dd className="max-w-[55%] truncate font-mono text-xs">
                   {result.reference}
                 </dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="text-arka-text-muted">Order</dt>
+                <dt className="text-arka-text-muted">{t("mint.resultOrder")}</dt>
                 <dd className="font-mono text-xs">{result.merchantOrderId}</dd>
               </div>
             </dl>
@@ -297,22 +296,34 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
               rel="noreferrer"
               className="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-arka-accent px-4 text-sm font-medium text-white transition hover:bg-arka-accent-muted active:scale-[0.99]"
             >
-              Lanjut ke pembayaran
+              {t("mint.resultPayBtn")}
             </a>
+
+            {/* Processing delay notice */}
+            <div className="flex items-start gap-2.5 rounded-lg border border-amber-200/60 bg-amber-50/60 px-3 py-2.5">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0 text-arka-warning">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <p className="text-xs leading-relaxed text-arka-text-muted">
+                {t("mint.processingNotice")}
+              </p>
+            </div>
+
             <p className="text-xs text-arka-text-muted">
-              Pantau status di{" "}
+              {t("mint.resultTrackPrefix")}{" "}
               <Link
                 href={`/activity?merchantOrderId=${encodeURIComponent(result.merchantOrderId)}`}
                 className="font-medium text-arka-accent underline"
               >
-                Aktivitas
+                {t("mint.resultActivityLink")}
               </Link>{" "}
-              setelah membayar — verifikasi dari API transaksi IDRX.
+              {t("mint.resultTrackSuffix")}
             </p>
           </Card>
         ) : (
           <Button onClick={submit} disabled={loading}>
-            {loading ? "Memproses…" : "Buat permintaan mint"}
+            {loading ? t("mint.submitting") : t("mint.submit")}
           </Button>
         )}
       </div>

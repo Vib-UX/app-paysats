@@ -2,6 +2,7 @@
 
 import { Screen } from "@/components/ui/screen";
 import { fetchWithPrivy } from "@/lib/api";
+import { useT } from "@/lib/i18n";
 import type { MintTransaction } from "@/types/transaction";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSearchParams } from "next/navigation";
@@ -12,6 +13,7 @@ export function ActivityClient() {
   const { getAccessToken, ready, authenticated } = usePrivy();
   const searchParams = useSearchParams();
   const merchantOrderId = searchParams.get("merchantOrderId")?.trim() ?? "";
+  const t = useT();
   const [items, setItems] = useState<MintTransaction[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,12 +27,12 @@ export function ActivityClient() {
     );
     const j = await res.json().catch(() => ({}));
     if (!res.ok) {
-      setError(j.error || "Gagal memuat");
+      setError(j.error || t("activity.failedLoad"));
       setItems([]);
       return;
     }
     setItems(j.transactions ?? []);
-  }, [getAccessToken, merchantOrderId]);
+  }, [getAccessToken, merchantOrderId, t]);
 
   useEffect(() => {
     if (!ready || !authenticated) return;
@@ -45,9 +47,8 @@ export function ActivityClient() {
 
   return (
     <Screen
-      title="Aktivitas"
-      subtitle="Riwayat deposit & mint IDRX: status pembayaran dan mint dari API
-          mitra. Saldo IDRX/BTC di dompet dibaca on-chain dari Beranda."
+      title={t("activity.title")}
+      subtitle={t("activity.subtitle")}
     >
       {error ? (
         <p className="mb-4 text-sm text-arka-danger" role="alert">
@@ -71,7 +72,7 @@ export function ActivityClient() {
         onClick={() => load()}
         className="mt-6 w-full text-center text-sm font-medium text-arka-accent"
       >
-        Muat ulang
+        {t("activity.reload")}
       </button>
     </Screen>
   );

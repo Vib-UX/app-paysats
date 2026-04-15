@@ -6,6 +6,7 @@ import { fetchWithPrivy } from "@/lib/api";
 import { defaultChainId } from "@/lib/chains";
 import { IDRX_DECIMALS, INTERVAL_PRESETS } from "@/lib/contracts/arka-dca";
 import { useDcaOrder } from "@/hooks/use-dca-contract";
+import { useLocale, useT } from "@/lib/i18n";
 import { resolveWalletDisplayAddress } from "@/lib/privy-destination-wallet";
 import { TransactionList } from "@/features/transactions/transaction-list";
 import type { MintTransaction } from "@/types/transaction";
@@ -33,6 +34,8 @@ function shortenAddr(a: string) {
 
 function DcaDashboardCard() {
   const { order, loading } = useDcaOrder();
+  const t = useT();
+  const { locale } = useLocale();
 
   if (loading) {
     return (
@@ -58,10 +61,17 @@ function DcaDashboardCard() {
     const intervalMatch = INTERVAL_PRESETS.find(
       (p) => p.seconds === Number(order.interval),
     );
-    const freqLabel = intervalMatch?.label ?? `${Number(order.interval)}s`;
+    const intervalKeys: Record<number, string> = {
+      86_400: "dca.interval.daily",
+      604_800: "dca.interval.weekly",
+      2_592_000: "dca.interval.monthly",
+    };
+    const freqLabel = intervalMatch
+      ? t(intervalKeys[intervalMatch.seconds] as Parameters<typeof t>[0])
+      : `${Number(order.interval)}s`;
     const remaining =
       order.totalSwaps === BigInt(0)
-        ? "tanpa batas"
+        ? t("dashboard.unlimitedSwaps")
         : `${order.executedSwaps}/${order.totalSwaps}`;
 
     return (
@@ -74,10 +84,10 @@ function DcaDashboardCard() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
-                <p className="text-sm font-medium text-arka-text">DCA Aktif</p>
+                <p className="text-sm font-medium text-arka-text">{t("dashboard.dcaActive")}</p>
               </div>
               <p className="mt-1 text-xs text-arka-text-muted">
-                Rp {perSwapIdr.toLocaleString("id-ID")} · {freqLabel} ·{" "}
+                Rp {perSwapIdr.toLocaleString(locale === "id" ? "id-ID" : "en-US")} · {freqLabel} ·{" "}
                 {remaining}
               </p>
             </div>
@@ -99,10 +109,10 @@ function DcaDashboardCard() {
           </div>
           <div>
             <p className="text-sm font-medium text-arka-text">
-              DCA otomatis IDRX → cbBTC
+              {t("dashboard.dcaAutoTitle")}
             </p>
             <p className="mt-1 text-xs text-arka-text-muted">
-              Jadwalkan pembelian Bitcoin otomatis dari saldo IDRX kamu.
+              {t("dashboard.dcaAutoDesc")}
             </p>
           </div>
         </Card>
@@ -115,6 +125,10 @@ export function DashboardClient() {
   const { getAccessToken, ready, authenticated, user } = usePrivy();
   const { wallets } = useWallets();
   const { wallet: activeWallet } = useActiveWallet();
+  const t = useT();
+  const { locale } = useLocale();
+  const localeStr = locale === "id" ? "id-ID" : "en-US";
+
   const [tab, setTab] = useState<BalanceTab>("IDRX");
   const [dbWallet, setDbWallet] = useState<string | null>(null);
   const [idrxFormatted, setIdrxFormatted] = useState<string | null>(null);
@@ -137,7 +151,6 @@ export function DashboardClient() {
     getAccessTokenRef.current = getAccessToken;
   }, [getAccessToken]);
 
-  /** Hindari setState dari fetch lawas saat `loadBalances` dipanggil ulang. */
   const balanceFetchGen = useRef(0);
 
   useEffect(() => {
@@ -196,10 +209,6 @@ export function DashboardClient() {
     const q = qs.toString();
     const tokenFn = getAccessTokenRef.current;
 
-    /**
-     * Jangan `Promise.all` pada kedua fetch: kalau `/api/wallet/btc-balance`
-     * lambat atau hang (RPC on-chain), saldo IDRX tidak pernah diproses meski 200 OK.
-     */
     const runIdrx = async () => {
       try {
         const idrxRes = await fetchWithPrivy(
@@ -216,7 +225,7 @@ export function DashboardClient() {
           const n = typeof raw === "number" ? raw : Number(raw);
           setIdrxFormatted(
             Number.isFinite(n)
-              ? n.toLocaleString("id-ID", { maximumFractionDigits: 6 })
+              ? n.toLocaleString(localeStr, { maximumFractionDigits: 6 })
               : String(raw),
           );
           setIdrxState("ready");
@@ -224,14 +233,14 @@ export function DashboardClient() {
           setIdrxFormatted(null);
           setIdrxState("error");
           setIdrxErrorHint(
-            idrxJ.error ?? (idrxRes.ok ? null : "Gagal memuat saldo"),
+            idrxJ.error ?? (idrxRes.ok ? null : t("dashboard.failedLoadBalance")),
           );
         }
       } catch {
         if (gen !== balanceFetchGen.current) return;
         setIdrxFormatted(null);
         setIdrxState("error");
-        setIdrxErrorHint("Gagal memuat saldo");
+        setIdrxErrorHint(t("dashboard.failedLoadBalance"));
       }
     };
 
@@ -263,13 +272,13 @@ export function DashboardClient() {
           const sats = btcJ.balanceRaw != null ? Number(btcJ.balanceRaw) : null;
           if (sats != null && Number.isFinite(sats)) {
             setBtcFormatted(
-              sats.toLocaleString("id-ID", { maximumFractionDigits: 0 }),
+              sats.toLocaleString(localeStr, { maximumFractionDigits: 0 }),
             );
           } else {
             const n = Number(btcJ.balanceFormatted);
             const fallbackSats = Number.isFinite(n) ? Math.round(n * 1e8) : 0;
             setBtcFormatted(
-              fallbackSats.toLocaleString("id-ID", { maximumFractionDigits: 0 }),
+              fallbackSats.toLocaleString(localeStr, { maximumFractionDigits: 0 }),
             );
           }
           setBtcState("ready");
@@ -287,7 +296,7 @@ export function DashboardClient() {
     };
 
     await Promise.allSettled([runIdrx(), runBtc()]);
-  }, [resolvedAddress]);
+  }, [resolvedAddress, localeStr, t]);
 
   useEffect(() => {
     if (!ready || !authenticated) return;
@@ -310,12 +319,12 @@ export function DashboardClient() {
     );
     const j = await res.json().catch(() => ({}));
     if (!res.ok) {
-      setTxError(j.error || "Gagal memuat");
+      setTxError(j.error || t("general.failedLoad"));
       setTxItems([]);
       return;
     }
     setTxItems(j.transactions ?? []);
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!ready || !authenticated) return;
@@ -354,16 +363,16 @@ export function DashboardClient() {
   const balanceLabel =
     tab === "IDRX"
       ? waitingWallet
-        ? "Memuat dompet…"
+        ? t("dashboard.loadingWallet")
         : idrxLoading
-          ? "Memuat…"
+          ? t("dashboard.loading")
           : idrxState === "ready" && idrxFormatted != null
             ? idrxFormatted
             : "—"
       : waitingWallet
-        ? "Memuat dompet…"
+        ? t("dashboard.loadingWallet")
         : btcLoading
-          ? "Memuat…"
+          ? t("dashboard.loading")
           : btcConfigured === false
             ? "—"
             : btcState === "ready" && btcFormatted != null
@@ -372,10 +381,17 @@ export function DashboardClient() {
 
   const balanceUnit = tab === "IDRX" ? "IDRX" : btcSymbol;
   const balanceTitle =
-    tab === "IDRX" ? "Saldo IDRX" : "Saldo cbBTC (sats)";
+    tab === "IDRX" ? t("dashboard.balanceIdrx") : t("dashboard.balanceBtc");
+
+  const isNewUser =
+    idrxState === "ready" &&
+    (idrxFormatted === "0" || idrxFormatted === null) &&
+    btcState === "ready" &&
+    (btcFormatted === "0" || btcFormatted === null || btcConfigured === false);
 
   return (
     <div className="px-4 pb-28 pt-4">
+      {/* Balance card */}
       <section className="relative overflow-hidden rounded-[var(--radius-card)] bg-gradient-to-br from-arka-accent via-arka-accent to-arka-accent-muted p-5 text-white shadow-md">
         <div className="absolute right-3 top-3 text-2xl font-semibold opacity-20">
           {tab === "IDRX" ? "Rp" : "₿"}
@@ -418,14 +434,12 @@ export function DashboardClient() {
         ) : null}
         {tab === "BTC" && btcConfigured === false ? (
           <p className="mt-2 text-xs text-white/80">
-            Set{" "}
-            <code className="rounded bg-black/20 px-1">NEXT_PUBLIC_BTC_ERC20_ADDRESS</code>{" "}
-            ke cbBTC Base (satu alamat, 42 karakter).
+            {t("dashboard.setBtcEnv")}
           </p>
         ) : null}
         {tab === "BTC" && btcState === "error" ? (
           <p className="mt-2 text-xs text-white/85">
-            Gagal membaca saldo cbBTC — periksa RPC dan alamat kontrak.
+            {t("dashboard.failedLoadBtc")}
           </p>
         ) : null}
         {resolvedAddress ? (
@@ -436,7 +450,7 @@ export function DashboardClient() {
               onClick={copyAddress}
               className="rounded-md bg-white/15 px-2 py-1 text-[11px] font-medium hover:bg-white/25"
             >
-              {copied ? "Disalin" : "Salin"}
+              {copied ? t("dashboard.copied") : t("dashboard.copy")}
             </button>
             {explorerUrl ? (
               <a
@@ -451,70 +465,87 @@ export function DashboardClient() {
           </div>
         ) : (
           <p className="mt-4 text-xs text-white/80">
-            Dompet Privy belum terdeteksi. Buka Profil atau tunggu sinkronisasi.
+            {t("dashboard.walletNotDetected")}
           </p>
         )}
       </section>
 
+      {/* Start investing hero (shown when balances are zero) */}
+      {isNewUser && (
+        <section className="mt-5">
+          <Card className="relative overflow-hidden border-arka-accent/20 bg-gradient-to-br from-amber-50/80 to-orange-50/60">
+            <div className="absolute -right-4 -top-4 text-6xl opacity-10">🚀</div>
+            <h2 className="text-lg font-bold text-arka-text">
+              {t("dashboard.startInvesting")}
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-arka-text-muted">
+              {t("dashboard.startInvestingDesc")}
+            </p>
+            <Link href="/mint" className="mt-4 block">
+              <Button type="button" variant="primary" className="w-full">
+                {t("dashboard.loadIdrBtn")}
+              </Button>
+            </Link>
+          </Card>
+        </section>
+      )}
+
+      {/* Deposit IDR → IDRX CTA */}
       <section className="mt-5">
         <Card className="flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-arka-text">
-              Deposit IDR → IDRX
-            </p>
-            <p className="mt-1 text-xs text-arka-text-muted">
-              Virtual account & mint lewat alur deposit yang sama seperti
-              sebelumnya.
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-arka-accent/10 text-sm">💱</span>
+              <p className="text-sm font-medium text-arka-text">
+                {t("dashboard.depositIdr")}
+              </p>
+            </div>
+            <p className="mt-1.5 text-xs text-arka-text-muted">
+              {t("dashboard.depositDesc")}
             </p>
           </div>
           <Link href="/mint" className="shrink-0">
             <Button type="button" variant="primary" className="w-auto min-w-[7rem]">
-              Deposit
+              {t("dashboard.depositBtn")}
             </Button>
           </Link>
         </Card>
       </section>
 
-      <section className="mt-6">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-arka-text-muted">
-            Tabungan kamu
-          </h2>
-          <Link
-            href="/savings"
-            className="text-xs font-medium text-arka-accent hover:underline"
-          >
-            Lihat semua
+      {/* Load IDR card (for new users, a prominent alternate CTA) */}
+      {isNewUser && (
+        <section className="mt-4">
+          <Link href="/mint">
+            <Card className="flex items-start gap-3 border-arka-accent/20 bg-amber-50/40 transition hover:border-arka-accent/40">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-arka-accent/10 text-lg">
+                🏦
+              </div>
+              <div>
+                <p className="text-sm font-medium text-arka-text">
+                  {t("dashboard.loadIdr")}
+                </p>
+                <p className="mt-1 text-xs text-arka-text-muted">
+                  {t("dashboard.loadIdrDesc")}
+                </p>
+              </div>
+            </Card>
           </Link>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Card className="border-dashed bg-arka-surface-muted/50">
-            <p className="text-sm font-medium text-arka-text">Contoh: dana darurat</p>
-            <p className="mt-2 text-xs text-arka-text-muted">
-              Nanti kamu bisa bagi alokasi BTC per tujuan tabungan.
-            </p>
-          </Card>
-          <Card className="border-dashed bg-arka-surface-muted/50">
-            <p className="text-sm font-medium text-arka-text">Contoh: liburan</p>
-            <p className="mt-2 text-xs text-arka-text-muted">
-              Data tabungan sungguhan menyusul di versi berikutnya.
-            </p>
-          </Card>
-        </div>
-      </section>
+        </section>
+      )}
 
       <DcaDashboardCard />
 
+      {/* Activity */}
       <section className="mt-8">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-arka-text-muted">
-            Aktivitas deposit
+            {t("dashboard.recentActivity")}
           </h2>
           <Link
             href="/activity"
             className="text-xs font-medium text-arka-accent hover:underline"
           >
-            Lihat semua
+            {t("dashboard.viewAll")}
           </Link>
         </div>
         {txError ? (

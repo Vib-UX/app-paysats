@@ -8,6 +8,7 @@ import {
   IDRX_DECIMALS,
 } from "@/lib/contracts/arka-dca";
 import { useDcaOrder } from "@/hooks/use-dca-contract";
+import { useLocale, useT } from "@/lib/i18n";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -38,6 +39,9 @@ function useSmartAddr() {
 function SmartWalletBalanceCard() {
   const { ready, authenticated } = usePrivy();
   const smartAddr = useSmartAddr();
+  const t = useT();
+  const { locale } = useLocale();
+  const localeStr = locale === "id" ? "id-ID" : "en-US";
   const [balance, setBalance] = useState<bigint | null>(null);
   const [loading, setLoading] = useState(false);
   const hasFetched = useRef(false);
@@ -62,7 +66,7 @@ function SmartWalletBalanceCard() {
 
   const fmtBal =
     balance != null
-      ? (Number(balance) / 10 ** IDRX_DECIMALS).toLocaleString("id-ID", {
+      ? (Number(balance) / 10 ** IDRX_DECIMALS).toLocaleString(localeStr, {
           maximumFractionDigits: 2,
         })
       : "…";
@@ -70,15 +74,15 @@ function SmartWalletBalanceCard() {
   return (
     <Card className="mb-4 space-y-1.5 border-arka-border/60 bg-arka-surface-muted/40">
       <div className="flex items-center justify-between text-xs">
-        <span className="text-arka-text-muted">Smart wallet</span>
+        <span className="text-arka-text-muted">{t("dca.smartWallet")}</span>
         <span className="font-mono text-[11px] text-arka-text-muted">
           {smartAddr.slice(0, 6)}…{smartAddr.slice(-4)}
         </span>
       </div>
       <div className="flex items-baseline justify-between">
-        <span className="text-sm font-medium text-arka-text">Saldo IDRX</span>
+        <span className="text-sm font-medium text-arka-text">{t("dca.smartBalance")}</span>
         <span className="font-mono text-sm font-semibold tabular-nums">
-          {loading ? "Memuat…" : `${fmtBal} IDRX`}
+          {loading ? t("dca.smartLoading") : `${fmtBal} IDRX`}
         </span>
       </div>
     </Card>
@@ -87,10 +91,11 @@ function SmartWalletBalanceCard() {
 
 export function DcaClient() {
   const { order, loading, error, refetch } = useDcaOrder();
+  const t = useT();
 
   if (loading) {
     return (
-      <Screen title="DCA otomatis" subtitle="Memeriksa order aktif…">
+      <Screen title={t("dca.title")} subtitle={t("dca.checkingOrder")}>
         <div className="flex min-h-[20vh] items-center justify-center">
           <div className="h-8 w-8 animate-pulse rounded-full bg-arka-border" />
         </div>
@@ -101,8 +106,8 @@ export function DcaClient() {
   if (error) {
     return (
       <Screen
-        title="DCA otomatis"
-        subtitle="Tidak bisa membaca status DCA dari kontrak."
+        title={t("dca.title")}
+        subtitle={t("dca.cannotRead")}
       >
         <SmartWalletBalanceCard />
         <p className="text-sm text-arka-danger" role="alert">
@@ -115,8 +120,8 @@ export function DcaClient() {
   if (order) {
     return (
       <Screen
-        title="DCA otomatis"
-        subtitle="Chainlink Automation mengeksekusi swap IDRX → cbBTC sesuai jadwal."
+        title={t("dca.title")}
+        subtitle={t("dca.subtitleActive")}
       >
         <SmartWalletBalanceCard />
         <DcaActiveOrder order={order} onCancelled={refetch} />
@@ -126,8 +131,8 @@ export function DcaClient() {
 
   return (
     <Screen
-      title="DCA otomatis"
-      subtitle="Jadwalkan pembelian cbBTC otomatis dari saldo IDRX kamu. Setelah order dibuat, Chainlink Automation mengeksekusi tanpa perlu aksi tambahan."
+      title={t("dca.title")}
+      subtitle={t("dca.subtitleNew")}
     >
       <SmartWalletBalanceCard />
       <DcaForm onCreated={refetch} />

@@ -1,22 +1,39 @@
 "use client";
 
 import { usePostLoginSync } from "@/hooks/use-post-login-sync";
+import { useLocale, useT } from "@/lib/i18n";
 import { usePrivy } from "@privy-io/react-auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
 
-const nav = [
-  { href: "/home", label: "Beranda" },
-  { href: "/dca", label: "DCA" },
-  { href: "/mint", label: "Deposit" },
-  { href: "/profile", label: "Profil" },
-];
+function LangToggle() {
+  const { locale, setLocale } = useLocale();
+  return (
+    <div className="inline-flex rounded-full border border-arka-border bg-arka-surface p-0.5 text-[10px] font-semibold">
+      <button
+        type="button"
+        onClick={() => setLocale("en")}
+        className={`rounded-full px-2 py-0.5 transition ${locale === "en" ? "bg-arka-accent text-white" : "text-arka-text-muted hover:text-arka-text"}`}
+      >
+        EN
+      </button>
+      <button
+        type="button"
+        onClick={() => setLocale("id")}
+        className={`rounded-full px-2 py-0.5 transition ${locale === "id" ? "bg-arka-accent text-white" : "text-arka-text-muted hover:text-arka-text"}`}
+      >
+        ID
+      </button>
+    </div>
+  );
+}
 
 export function ProductShell({ children }: { children: React.ReactNode }) {
   const { ready, authenticated } = usePrivy();
   const pathname = usePathname();
   const sync = usePostLoginSync();
+  const t = useT();
 
   const syncRef = useRef(sync);
   useLayoutEffect(() => {
@@ -36,16 +53,24 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
     );
   }
 
+  const nav = [
+    { href: "/home", label: t("nav.home") },
+    { href: "/dca", label: t("nav.dca") },
+    { href: "/mint", label: t("nav.deposit") },
+    { href: "/profile", label: t("nav.profile") },
+  ];
+
   return (
     <div className="mx-auto flex min-h-full max-w-md flex-1 flex-col">
       <header className="sticky top-0 z-10 border-b border-arka-border bg-arka-bg/95 px-4 py-3 backdrop-blur">
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-between">
           <Link
             href="/home"
-            className="text-center text-sm font-semibold tracking-tight text-arka-text"
+            className="text-sm font-semibold tracking-tight text-arka-text"
           >
             Arka
           </Link>
+          <LangToggle />
         </div>
       </header>
       <main className="flex-1">{children}</main>

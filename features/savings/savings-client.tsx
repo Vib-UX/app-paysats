@@ -2,17 +2,18 @@
 
 import { Card } from "@/components/ui/card";
 import { Screen } from "@/components/ui/screen";
+import { useT } from "@/lib/i18n";
 
 export function SavingsClient() {
+  const t = useT();
   return (
     <Screen
-      title="Tabungan"
-      subtitle="Kelola tujuan tabungan dan alokasi BTC kamu. Data sungguhan akan terhubung ke dompet Privy di rilis berikutnya."
+      title={t("savings.title")}
+      subtitle={t("savings.subtitle")}
     >
       <Card className="border-dashed">
         <p className="text-sm leading-relaxed text-arka-text-muted">
-          Belum ada tabungan yang disimpan. Mulai dari Beranda dengan deposit
-          IDRX, lalu atur alokasi per tujuan ketika fitur ini siap.
+          {t("savings.empty")}
         </p>
       </Card>
     </Screen>

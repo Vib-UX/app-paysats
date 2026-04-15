@@ -1,6 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { useLocale, useT } from "@/lib/i18n";
 import type { MintTransaction } from "@/types/transaction";
 import { MintStatusBadge, PaymentStatusBadge } from "./status-badge";
 
@@ -10,12 +11,15 @@ function shortenAddr(a: string) {
 }
 
 export function TransactionList({ items }: { items: MintTransaction[] }) {
+  const t = useT();
+  const { locale } = useLocale();
+  const localeStr = locale === "id" ? "id-ID" : "en-US";
+
   if (items.length === 0) {
     return (
       <Card className="text-center">
         <p className="text-sm text-arka-text-muted">
-          Belum ada transaksi mint. Setelah kamu membuat permintaan, statusnya
-          muncul di sini.
+          {t("tx.empty")}
         </p>
       </Card>
     );
@@ -40,24 +44,24 @@ export function TransactionList({ items }: { items: MintTransaction[] }) {
             ) : null}
             <dl className="grid grid-cols-1 gap-2 text-sm">
               <div className="flex justify-between gap-2">
-                <dt className="text-arka-text-muted">Jumlah IDRX</dt>
+                <dt className="text-arka-text-muted">{t("tx.amountIdrx")}</dt>
                 <dd className="font-medium">Rp {tx.toBeMinted}</dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="text-arka-text-muted">Bayar (IDR)</dt>
+                <dt className="text-arka-text-muted">{t("tx.payIdr")}</dt>
                 <dd className="font-medium">
-                  Rp {tx.paymentAmount.toLocaleString("id-ID")}
+                  Rp {tx.paymentAmount.toLocaleString(localeStr)}
                 </dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt className="text-arka-text-muted">Dompet tujuan</dt>
+                <dt className="text-arka-text-muted">{t("tx.destWallet")}</dt>
                 <dd className="font-mono text-xs">
                   {shortenAddr(tx.destinationWalletAddress)}
                 </dd>
               </div>
               {tx.reference ? (
                 <div className="flex justify-between gap-2">
-                  <dt className="text-arka-text-muted">Referensi</dt>
+                  <dt className="text-arka-text-muted">{t("tx.reference")}</dt>
                   <dd className="max-w-[55%] truncate font-mono text-xs">
                     {tx.reference}
                   </dd>
@@ -65,19 +69,19 @@ export function TransactionList({ items }: { items: MintTransaction[] }) {
               ) : null}
               {tx.merchantOrderId ? (
                 <div className="flex justify-between gap-2">
-                  <dt className="text-arka-text-muted">Merchant order</dt>
+                  <dt className="text-arka-text-muted">{t("tx.merchantOrder")}</dt>
                   <dd className="font-mono text-xs">{tx.merchantOrderId}</dd>
                 </div>
               ) : null}
               <div className="flex justify-between gap-2">
-                <dt className="text-arka-text-muted">Dibuat</dt>
+                <dt className="text-arka-text-muted">{t("tx.createdAt")}</dt>
                 <dd className="text-xs text-arka-text-muted">
-                  {new Date(tx.createdAt).toLocaleString("id-ID")}
+                  {new Date(tx.createdAt).toLocaleString(localeStr)}
                 </dd>
               </div>
               {tx.txHash ? (
                 <div className="flex justify-between gap-2">
-                  <dt className="text-arka-text-muted">Tx hash</dt>
+                  <dt className="text-arka-text-muted">{t("tx.txHash")}</dt>
                   <dd className="max-w-[60%] truncate font-mono text-xs">
                     {tx.txHash}
                   </dd>
