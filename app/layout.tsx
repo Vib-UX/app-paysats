@@ -10,9 +10,13 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Arka — Tabungan Bitcoin",
+  title: "Arka — BTC Pockets",
   description:
-    "Produk Arka: onboarding IDRX, mint stabil, dan persiapan tabungan Bitcoin.",
+    "Save into BTC Pockets. Arka x IDRX allows direct IDR deposits and auto DCA into Bitcoin.",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/apple-icon.svg",
+  },
 };
 
 export default function RootLayout({
