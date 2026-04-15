@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -9,6 +9,14 @@ const dmSans = DM_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#b45309",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
   title: "Arka — BTC Pockets",
   description:
@@ -16,6 +24,14 @@ export const metadata: Metadata = {
   icons: {
     icon: "/icon.svg",
     apple: "/apple-icon.svg",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Arka",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
   },
 };
 

@@ -35,14 +35,14 @@ const id = {
   "dashboard.copied": "Disalin",
   "dashboard.depositIdr": "Deposit IDR → IDRX",
   "dashboard.depositDesc":
-    "Tukar rupiah ke IDRX lewat virtual account. Mulai investasi pertamamu.",
+    "Tukar rupiah ke IDRX dan mulai investasi pertamamu.",
   "dashboard.depositBtn": "Deposit",
   "dashboard.startInvesting": "Mulai Investasi",
   "dashboard.startInvestingDesc":
     "Deposit IDR ke dompet Arka kamu, lalu atur DCA otomatis ke Bitcoin. Mulai dari nominal kecil.",
   "dashboard.loadIdr": "Top-up IDR ke IDRX",
   "dashboard.loadIdrDesc":
-    "Tukar rupiah ke IDRX lewat virtual account dan mulai berinvestasi.",
+    "Tukar rupiah ke IDRX dan mulai berinvestasi.",
   "dashboard.loadIdrBtn": "Top-up Sekarang",
   "dashboard.savings": "Tabungan kamu",
   "dashboard.viewAll": "Lihat semua",
@@ -262,14 +262,14 @@ const en: Record<keyof typeof id, string> = {
   "dashboard.copied": "Copied",
   "dashboard.depositIdr": "Deposit IDR → IDRX",
   "dashboard.depositDesc":
-    "Convert rupiah to IDRX via virtual account. Start your first investment.",
+    "Convert rupiah to IDRX and start your first investment.",
   "dashboard.depositBtn": "Deposit",
   "dashboard.startInvesting": "Start Investing",
   "dashboard.startInvestingDesc":
     "Deposit IDR to your Arka wallet, then set up auto DCA into Bitcoin. Start small.",
   "dashboard.loadIdr": "Top-up IDR to IDRX",
   "dashboard.loadIdrDesc":
-    "Convert rupiah to IDRX via virtual account and start investing.",
+    "Convert rupiah to IDRX and start investing.",
   "dashboard.loadIdrBtn": "Top-up Now",
   "dashboard.savings": "Your Savings",
   "dashboard.viewAll": "View all",
