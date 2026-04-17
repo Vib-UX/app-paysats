@@ -383,12 +383,6 @@ export function DashboardClient() {
   const balanceTitle =
     tab === "IDRX" ? t("dashboard.balanceIdrx") : t("dashboard.balanceBtc");
 
-  const isNewUser =
-    idrxState === "ready" &&
-    (idrxFormatted === "0" || idrxFormatted === null) &&
-    btcState === "ready" &&
-    (btcFormatted === "0" || btcFormatted === null || btcConfigured === false);
-
   return (
     <div className="px-4 pb-28 pt-4">
       {/* Balance card */}
@@ -470,26 +464,6 @@ export function DashboardClient() {
         )}
       </section>
 
-      {/* Start investing hero (shown when balances are zero) */}
-      {isNewUser && (
-        <section className="mt-5">
-          <Card className="relative overflow-hidden border-arka-accent/20 bg-gradient-to-br from-amber-50/80 to-orange-50/60">
-            <div className="absolute -right-4 -top-4 text-6xl opacity-10">🚀</div>
-            <h2 className="text-lg font-bold text-arka-text">
-              {t("dashboard.startInvesting")}
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-arka-text-muted">
-              {t("dashboard.startInvestingDesc")}
-            </p>
-            <Link href="/mint" className="mt-4 block">
-              <Button type="button" variant="primary" className="w-full">
-                {t("dashboard.loadIdrBtn")}
-              </Button>
-            </Link>
-          </Card>
-        </section>
-      )}
-
       {/* Deposit IDR → IDRX CTA */}
       <section className="mt-5">
         <Card className="flex flex-wrap items-center justify-between gap-3">
@@ -512,28 +486,29 @@ export function DashboardClient() {
         </Card>
       </section>
 
-      {/* Load IDR card (for new users, a prominent alternate CTA) */}
-      {isNewUser && (
-        <section className="mt-4">
-          <Link href="/mint">
-            <Card className="flex items-start gap-3 border-arka-accent/20 bg-amber-50/40 transition hover:border-arka-accent/40">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-arka-accent/10 text-lg">
-                🏦
-              </div>
-              <div>
-                <p className="text-sm font-medium text-arka-text">
-                  {t("dashboard.loadIdr")}
-                </p>
-                <p className="mt-1 text-xs text-arka-text-muted">
-                  {t("dashboard.loadIdrDesc")}
-                </p>
-              </div>
-            </Card>
-          </Link>
-        </section>
-      )}
-
       <DcaDashboardCard />
+
+      {/* Simulator teaser */}
+      <section className="mt-4">
+        <Link href="/savings">
+          <Card className="flex items-start gap-3 border-arka-border/80 bg-gradient-to-r from-arka-surface to-amber-50/30 transition hover:border-arka-accent/30">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-lg">
+              📊
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-arka-text">
+                {t("dashboard.simTitle")}
+              </p>
+              <p className="mt-1 text-xs text-arka-text-muted">
+                {t("dashboard.simDesc")}
+              </p>
+            </div>
+            <span className="shrink-0 self-center rounded-full bg-arka-accent/10 px-3 py-1 text-xs font-medium text-arka-accent">
+              {t("dashboard.simBtn")}
+            </span>
+          </Card>
+        </Link>
+      </section>
 
       {/* Activity */}
       <section className="mt-8">

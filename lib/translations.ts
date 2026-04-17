@@ -201,12 +201,39 @@ const id = {
   "profile.loadError": "Gagal memuat profil",
   "profile.retry": "Coba lagi",
 
-  // Savings
-  "savings.title": "Tabungan",
+  // Savings / Simulator
+  "savings.title": "Tabungan & Simulasi",
   "savings.subtitle":
-    "Kelola tujuan tabungan dan alokasi BTC kamu. Data sungguhan akan terhubung ke dompet Privy di rilis berikutnya.",
-  "savings.empty":
-    "Belum ada tabungan yang disimpan. Mulai dari Beranda dengan deposit IDRX, lalu atur alokasi per tujuan ketika fitur ini siap.",
+    "Lihat perbandingan historis DCA ke BTC, Emas, IHSG, dan Deposito. Juga proyeksi tabungan berdasarkan jadwal DCA kamu.",
+  "savings.projectedTitle": "Proyeksi Tabunganmu",
+  "savings.projectedDesc":
+    "Berdasarkan jadwal DCA aktif kamu, begini hasil historis jika dijalankan selama 5 tahun terakhir.",
+  "savings.invested": "Total investasi",
+  "savings.currentValue": "Nilai saat ini",
+  "savings.returnLabel": "Return",
+  "savings.perFreq": "per",
+  "savings.daily": "hari",
+  "savings.weekly": "minggu",
+  "savings.monthly": "bulan",
+  "savings.noDca": "Belum ada DCA aktif. Buat jadwal DCA untuk melihat proyeksi tabunganmu.",
+  "savings.noDcaBtn": "Buat DCA",
+  "savings.simulatorTitle": "Simulasi DCA",
+  "savings.simulatorDesc":
+    "Bandingkan hasil investasi rutin ke berbagai aset — atur nominal, frekuensi, dan periode waktu.",
+  "savings.loadingData": "Memuat data simulasi…",
+  "savings.btc": "Bitcoin",
+  "savings.gold": "Emas",
+  "savings.ihsg": "IHSG",
+  "savings.deposito": "Deposito",
+  "savings.vsInvested": "vs modal",
+  "savings.modeDca": "DCA Aktif",
+  "savings.modeCalculator": "Kalkulator",
+  "savings.years": "tahun",
+
+  // Dashboard simulator teaser
+  "dashboard.simTitle": "BTC vs Emas vs Saham",
+  "dashboard.simDesc": "Lihat perbandingan historis DCA dan proyeksi tabunganmu.",
+  "dashboard.simBtn": "Simulasi",
 
   // Onboarding
   "onboarding.title": "IDRX",
@@ -427,12 +454,39 @@ const en: Record<keyof typeof id, string> = {
   "profile.loadError": "Failed to load profile",
   "profile.retry": "Try again",
 
-  // Savings
-  "savings.title": "Savings",
+  // Savings / Simulator
+  "savings.title": "Savings & Simulator",
   "savings.subtitle":
-    "Manage your savings goals and BTC allocation. Real data will connect to your Privy wallet in a future release.",
-  "savings.empty":
-    "No savings yet. Start from Home by depositing IDRX, then set allocations per goal when this feature is ready.",
+    "Compare historical DCA into BTC, Gold, IHSG, and Time Deposits. Plus projected savings based on your DCA schedule.",
+  "savings.projectedTitle": "Your Projected Savings",
+  "savings.projectedDesc":
+    "Based on your active DCA schedule, here's how it would have performed historically over the last 5 years.",
+  "savings.invested": "Total invested",
+  "savings.currentValue": "Current value",
+  "savings.returnLabel": "Return",
+  "savings.perFreq": "per",
+  "savings.daily": "day",
+  "savings.weekly": "week",
+  "savings.monthly": "month",
+  "savings.noDca": "No active DCA yet. Create a DCA schedule to see your projected savings.",
+  "savings.noDcaBtn": "Create DCA",
+  "savings.simulatorTitle": "DCA Simulator",
+  "savings.simulatorDesc":
+    "Compare regular savings into different assets — adjust amount, frequency, and time period.",
+  "savings.loadingData": "Loading simulation data…",
+  "savings.btc": "Bitcoin",
+  "savings.gold": "Gold",
+  "savings.ihsg": "IHSG",
+  "savings.deposito": "Time Deposit",
+  "savings.vsInvested": "vs invested",
+  "savings.modeDca": "Current DCA",
+  "savings.modeCalculator": "Calculator",
+  "savings.years": "years",
+
+  // Dashboard simulator teaser
+  "dashboard.simTitle": "BTC vs Gold vs Stocks",
+  "dashboard.simDesc": "Compare historical DCA results and see your projected savings.",
+  "dashboard.simBtn": "Simulate",
 
   // Onboarding
   "onboarding.title": "IDRX",

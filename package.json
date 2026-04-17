@@ -12,6 +12,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@predator_757/bitflation-idr-dca": "^1.0.0",
     "@prisma/client": "^5.22.0",
     "@privy-io/react-auth": "^3.21.2",
     "@privy-io/server-auth": "^1.32.5",
@@ -20,6 +21,7 @@
     "permissionless": "^0.2.57",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "recharts": "^3.8.1",
     "viem": "^2.47.4"
   },
   "devDependencies": {
