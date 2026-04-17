@@ -7,10 +7,12 @@ import {
   MORPHO_BLUE_ADDRESS,
   USDC_ADDRESS,
   USDC_DECIMALS,
+  accrueInterestView,
   borrowSharesToAssets,
   deriveCreditHealth,
   maxSafeBorrow,
   morphoBlueAbi,
+  morphoIrmAbi,
   morphoOracleAbi,
   type CreditHealth,
   type CreditPosition,
@@ -108,6 +110,7 @@ export type CreditPositionData = {
   maxBorrow: bigint;
   cbBtcBalance: bigint;
   usdcBalance: bigint;
+  borrowApyPercent: number;
 };
 
 export function useCreditPosition() {
@@ -189,9 +192,41 @@ export function useCreditPosition() {
 
       const oraclePrice = priceResult;
 
+      // Fetch the IRM borrow rate and accrue interest client-side
+      // so the debt reflects real-time interest, not just last on-chain update.
+      let accruedTotalBorrowAssets = marketState.totalBorrowAssets;
+      let borrowApyPercent = 0;
+      try {
+        const mktTuple = {
+          totalSupplyAssets: marketState.totalSupplyAssets,
+          totalSupplyShares: marketState.totalSupplyShares,
+          totalBorrowAssets: marketState.totalBorrowAssets,
+          totalBorrowShares: marketState.totalBorrowShares,
+          lastUpdate: marketState.lastUpdate,
+          fee: marketState.fee,
+        };
+        const borrowRate = await pc.readContract({
+          address: CBBTC_USDC_MARKET_PARAMS.irm,
+          abi: morphoIrmAbi,
+          functionName: "borrowRateView",
+          args: [CBBTC_USDC_MARKET_PARAMS, mktTuple],
+        });
+        const rateWad = BigInt(borrowRate);
+        accruedTotalBorrowAssets = accrueInterestView(
+          marketState.totalBorrowAssets,
+          marketState.lastUpdate,
+          rateWad,
+        );
+        const SECONDS_PER_YEAR = 365.25 * 24 * 3600;
+        borrowApyPercent =
+          (Number(rateWad) / 1e18) * SECONDS_PER_YEAR * 100;
+      } catch {
+        // Fall back to stale on-chain value if IRM call fails
+      }
+
       const borrowedAssets = borrowSharesToAssets(
         position.borrowShares,
-        marketState.totalBorrowAssets,
+        accruedTotalBorrowAssets,
         marketState.totalBorrowShares,
       );
 
@@ -212,6 +247,7 @@ export function useCreditPosition() {
         maxBorrow: maxBorrowVal,
         cbBtcBalance: cbBtcBal,
         usdcBalance: usdcBal,
+        borrowApyPercent,
       });
     } catch (e) {
       if (g !== gen.current) return;
@@ -240,29 +276,58 @@ export type OpenCreditParams = {
   borrowAmount: bigint;
 };
 
+const MAX_UINT256 = BigInt(
+  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+);
+
+function humaniseError(e: unknown, fallback: string): string {
+  if (!(e instanceof Error)) return fallback;
+  const msg = e.message;
+  if (msg.includes("insufficient") && msg.toLowerCase().includes("balance"))
+    return "Saldo tidak cukup untuk transaksi ini.";
+  if (msg.includes("transfer reverted"))
+    return "Transfer token gagal — coba lagi nanti.";
+  if (msg.includes("UserOperation reverted"))
+    return "Transaksi gagal saat simulasi — coba lagi nanti.";
+  if (msg.includes("User rejected") || msg.includes("denied"))
+    return "Transaksi dibatalkan.";
+  if (msg.length > 120) return `${fallback} (${msg.slice(0, 80)}…)`;
+  return msg;
+}
+
 export function useOpenCreditLine() {
   const smartWalletSend = useSmartWalletSendCalls();
   const smartAddr = useSmartWalletAddress();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [txHash, setTxHash] = useState<string | null>(null);
+  const [lockTxHash, setLockTxHash] = useState<string | null>(null);
+  const [borrowTxHash, setBorrowTxHash] = useState<string | null>(null);
 
   const open = useCallback(
     async (params: OpenCreditParams) => {
       setError(null);
-      setTxHash(null);
+      setLockTxHash(null);
+      setBorrowTxHash(null);
       setBusy(true);
 
       try {
         if (!smartAddr) throw new Error("Smart wallet belum tersedia");
 
         const pc = getBasePublicClient();
-        const balance = await pc.readContract({
-          address: CBBTC_ADDRESS,
-          abi: erc20Abi,
-          functionName: "balanceOf",
-          args: [smartAddr],
-        });
+        const [balance, currentAllowance] = await Promise.all([
+          pc.readContract({
+            address: CBBTC_ADDRESS,
+            abi: erc20Abi,
+            functionName: "balanceOf",
+            args: [smartAddr],
+          }),
+          pc.readContract({
+            address: CBBTC_ADDRESS,
+            abi: erc20Abi,
+            functionName: "allowance",
+            args: [smartAddr, MORPHO_BLUE_ADDRESS],
+          }),
+        ]);
 
         if (balance < params.collateralAmount) {
           const needed =
@@ -272,11 +337,18 @@ export function useOpenCreditLine() {
           );
         }
 
-        const approveData = encodeFunctionData({
-          abi: erc20Abi,
-          functionName: "approve",
-          args: [MORPHO_BLUE_ADDRESS, params.collateralAmount],
-        });
+        const needsApproval = currentAllowance < params.collateralAmount;
+
+        if (needsApproval) {
+          const approveData = encodeFunctionData({
+            abi: erc20Abi,
+            functionName: "approve",
+            args: [MORPHO_BLUE_ADDRESS, MAX_UINT256],
+          });
+          await smartWalletSend([
+            { to: CBBTC_ADDRESS, data: approveData, value: BigInt(0) },
+          ]);
+        }
 
         const supplyCollateralData = encodeFunctionData({
           abi: morphoBlueAbi,
@@ -288,6 +360,15 @@ export function useOpenCreditLine() {
             "0x",
           ],
         });
+
+        const lockHash = await smartWalletSend([
+          {
+            to: MORPHO_BLUE_ADDRESS,
+            data: supplyCollateralData,
+            value: BigInt(0),
+          },
+        ]);
+        setLockTxHash(lockHash);
 
         const borrowData = encodeFunctionData({
           abi: morphoBlueAbi,
@@ -302,21 +383,13 @@ export function useOpenCreditLine() {
         });
 
         const hash = await smartWalletSend([
-          { to: CBBTC_ADDRESS, data: approveData, value: BigInt(0) },
-          {
-            to: MORPHO_BLUE_ADDRESS,
-            data: supplyCollateralData,
-            value: BigInt(0),
-          },
           { to: MORPHO_BLUE_ADDRESS, data: borrowData, value: BigInt(0) },
         ]);
 
-        setTxHash(hash);
-        return hash;
+        setBorrowTxHash(hash);
+        return { lockTxHash: lockHash, borrowTxHash: hash };
       } catch (e) {
-        const msg =
-          e instanceof Error ? e.message : "Gagal membuka kredit";
-        setError(msg);
+        setError(humaniseError(e, "Gagal membuka kredit"));
         return null;
       } finally {
         setBusy(false);
@@ -325,7 +398,7 @@ export function useOpenCreditLine() {
     [smartWalletSend, smartAddr],
   );
 
-  return { open, busy, error, txHash };
+  return { open, busy, error, lockTxHash, borrowTxHash };
 }
 
 // ---------------------------------------------------------------------------
@@ -351,19 +424,38 @@ export function useRepayCreditLine() {
       try {
         if (!smartAddr) throw new Error("Smart wallet belum tersedia");
 
+        const pc = getBasePublicClient();
+        const [currentAllowance, usdcBal] = await Promise.all([
+          pc.readContract({
+            address: USDC_ADDRESS,
+            abi: erc20Abi,
+            functionName: "allowance",
+            args: [smartAddr, MORPHO_BLUE_ADDRESS],
+          }),
+          pc.readContract({
+            address: USDC_ADDRESS,
+            abi: erc20Abi,
+            functionName: "balanceOf",
+            args: [smartAddr],
+          }),
+        ]);
+
         const isFullRepay = opts?.fullRepayShares != null;
 
-        const approveAmount = isFullRepay
-          ? BigInt(
-              "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-            )
-          : repayAmount;
+        if (!isFullRepay && usdcBal < repayAmount) {
+          throw new Error("Saldo USDC tidak cukup.");
+        }
 
-        const approveData = encodeFunctionData({
-          abi: erc20Abi,
-          functionName: "approve",
-          args: [MORPHO_BLUE_ADDRESS, approveAmount],
-        });
+        if (currentAllowance < (isFullRepay ? MAX_UINT256 : repayAmount)) {
+          const approveData = encodeFunctionData({
+            abi: erc20Abi,
+            functionName: "approve",
+            args: [MORPHO_BLUE_ADDRESS, MAX_UINT256],
+          });
+          await smartWalletSend([
+            { to: USDC_ADDRESS, data: approveData, value: BigInt(0) },
+          ]);
+        }
 
         const repayData = encodeFunctionData({
           abi: morphoBlueAbi,
@@ -380,16 +472,13 @@ export function useRepayCreditLine() {
         });
 
         const hash = await smartWalletSend([
-          { to: USDC_ADDRESS, data: approveData, value: BigInt(0) },
           { to: MORPHO_BLUE_ADDRESS, data: repayData, value: BigInt(0) },
         ]);
 
         setTxHash(hash);
         return hash;
       } catch (e) {
-        const msg =
-          e instanceof Error ? e.message : "Gagal membayar pinjaman";
-        setError(msg);
+        setError(humaniseError(e, "Gagal membayar pinjaman"));
         return null;
       } finally {
         setBusy(false);
@@ -434,9 +523,7 @@ export function useWithdrawCollateral() {
         setTxHash(hash);
         return hash;
       } catch (e) {
-        const msg =
-          e instanceof Error ? e.message : "Gagal menarik jaminan";
-        setError(msg);
+        setError(humaniseError(e, "Gagal menarik jaminan"));
         return null;
       } finally {
         setBusy(false);
@@ -449,12 +536,124 @@ export function useWithdrawCollateral() {
 }
 
 // ---------------------------------------------------------------------------
+// Credit loan persistence (DB-backed history)
+// ---------------------------------------------------------------------------
+
+export type CreditLoanRecord = {
+  id: string;
+  walletAddress: string;
+  collateralRaw: string;
+  borrowRaw: string;
+  lockTxHash: string;
+  borrowTxHash: string;
+  settleTxHash: string | null;
+  status: "active" | "fulfilled";
+  openedAt: string;
+  settledAt: string | null;
+};
+
+export function useCreditLoans() {
+  const { getAccessToken } = usePrivy();
+  const [loans, setLoans] = useState<CreditLoanRecord[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = await getAccessToken();
+      const res = await fetch("/api/credit/loan", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setLoans(json.loans ?? []);
+      }
+    } catch {
+      // silent
+    } finally {
+      setLoading(false);
+    }
+  }, [getAccessToken]);
+
+  useEffect(() => {
+    void refetch();
+  }, [refetch]);
+
+  return { loans, loading, refetch };
+}
+
+export function useCreateCreditLoan() {
+  const { getAccessToken } = usePrivy();
+
+  return useCallback(
+    async (params: {
+      walletAddress: string;
+      collateralRaw: string;
+      borrowRaw: string;
+      lockTxHash: string;
+      borrowTxHash: string;
+    }) => {
+      try {
+        const token = await getAccessToken();
+        const res = await fetch("/api/credit/loan", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(params),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          return json.loan as CreditLoanRecord;
+        }
+      } catch {
+        // silent
+      }
+      return null;
+    },
+    [getAccessToken],
+  );
+}
+
+export function useSettleCreditLoan() {
+  const { getAccessToken } = usePrivy();
+
+  return useCallback(
+    async (loanId: string, settleTxHash: string) => {
+      try {
+        const token = await getAccessToken();
+        const res = await fetch("/api/credit/loan", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ loanId, settleTxHash }),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          return json.loan as CreditLoanRecord;
+        }
+      } catch {
+        // silent
+      }
+      return null;
+    },
+    [getAccessToken],
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Formatting helpers
 // ---------------------------------------------------------------------------
 
 export function formatUsdc(amount: bigint, locale: string = "id-ID"): string {
   const n = Number(amount) / 10 ** USDC_DECIMALS;
-  return n.toLocaleString(locale, { maximumFractionDigits: 2 });
+  return n.toLocaleString(locale, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 6,
+  });
 }
 
 export function formatCbBtc(amount: bigint, locale: string = "id-ID"): string {

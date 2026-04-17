@@ -386,7 +386,10 @@ export function DashboardClient() {
         if (gen !== balanceFetchGen.current) return;
         const n = Number(formatUnits(rawBalance, USDC_DECIMALS));
         setUsdcFormatted(
-          n.toLocaleString(localeStr, { maximumFractionDigits: 2 }),
+          n.toLocaleString(localeStr, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 6,
+          }),
         );
         setUsdcState("ready");
       } catch {
