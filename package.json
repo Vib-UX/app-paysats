@@ -12,6 +12,8 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@morpho-org/blue-sdk": "^5.23.0",
+    "@morpho-org/morpho-ts": "^2.5.1",
     "@predator_757/bitflation-idr-dca": "^1.0.0",
     "@prisma/client": "^5.22.0",
     "@privy-io/react-auth": "^3.21.2",

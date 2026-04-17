@@ -4,8 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { fetchWithPrivy } from "@/lib/api";
 import { defaultChainId } from "@/lib/chains";
-import { IDRX_DECIMALS, INTERVAL_PRESETS } from "@/lib/contracts/arka-dca";
+import { IDRX_DECIMALS, INTERVAL_PRESETS, erc20Abi } from "@/lib/contracts/arka-dca";
+import { USDC_ADDRESS, USDC_DECIMALS } from "@/lib/contracts/morpho-credit";
+import { getBasePublicClient } from "@/lib/base-client";
 import { useDcaOrder } from "@/hooks/use-dca-contract";
+import { useCreditPosition, formatUsdc, formatCbBtc } from "@/hooks/use-credit-line";
 import { useLocale, useT } from "@/lib/i18n";
 import { resolveWalletDisplayAddress } from "@/lib/privy-destination-wallet";
 import { TransactionList } from "@/features/transactions/transaction-list";
@@ -16,6 +19,7 @@ import {
   useWallets,
 } from "@privy-io/react-auth";
 import Link from "next/link";
+import { formatUnits } from "viem";
 import {
   useCallback,
   useEffect,
@@ -25,7 +29,7 @@ import {
   useState,
 } from "react";
 
-type BalanceTab = "IDRX" | "BTC";
+type BalanceTab = "IDRX" | "BTC" | "USDC";
 
 function shortenAddr(a: string) {
   if (a.length < 12) return a;
@@ -121,6 +125,74 @@ function DcaDashboardCard() {
   );
 }
 
+const ZONE_DOT: Record<string, string> = {
+  safe: "bg-green-500",
+  warning: "bg-yellow-500",
+  danger: "bg-red-500",
+};
+
+function CreditDashboardCard() {
+  const { data, loading } = useCreditPosition();
+  const t = useT();
+  const { locale } = useLocale();
+  const localeStr = locale === "id" ? "id-ID" : "en-US";
+
+  if (loading || !data) return null;
+
+  const hasPosition =
+    data.position.collateral > BigInt(0) || data.position.borrowShares > BigInt(0);
+  const hasBtc = data.cbBtcBalance > BigInt(0);
+
+  if (!hasPosition && !hasBtc) return null;
+
+  if (hasPosition) {
+    const dot = ZONE_DOT[data.health.zone] ?? "bg-gray-400";
+    return (
+      <section className="mt-4">
+        <Link href="/credit">
+          <Card className="flex items-start gap-3 border-arka-accent/30 bg-gradient-to-r from-arka-surface to-amber-50/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-arka-accent/10 text-sm font-bold text-arka-accent">
+              $
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className={`inline-block h-2 w-2 rounded-full ${dot}`} />
+                <p className="text-sm font-medium text-arka-text">
+                  {t("credit.dashboardActiveLabel")}
+                </p>
+              </div>
+              <p className="mt-1 text-xs text-arka-text-muted">
+                {formatCbBtc(data.position.collateral, localeStr)} BTC · $
+                {formatUsdc(data.borrowedAssets, localeStr)} USDC
+              </p>
+            </div>
+          </Card>
+        </Link>
+      </section>
+    );
+  }
+
+  return (
+    <section className="mt-4">
+      <Link href="/credit">
+        <Card className="flex items-start gap-3 border-arka-border/80 bg-arka-surface-muted/40 transition hover:border-arka-accent/30">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-arka-border bg-arka-surface text-sm font-bold text-arka-text-muted">
+            $
+          </div>
+          <div>
+            <p className="text-sm font-medium text-arka-text">
+              {t("credit.dashboardTeaser")}
+            </p>
+            <p className="mt-1 text-xs text-arka-text-muted">
+              {t("credit.dashboardTeaserDesc")}
+            </p>
+          </div>
+        </Card>
+      </Link>
+    </section>
+  );
+}
+
 export function DashboardClient() {
   const { getAccessToken, ready, authenticated, user } = usePrivy();
   const { wallets } = useWallets();
@@ -140,6 +212,10 @@ export function DashboardClient() {
   const [btcSymbol, setBtcSymbol] = useState<string>("sats");
   const [btcConfigured, setBtcConfigured] = useState<boolean | null>(null);
   const [btcState, setBtcState] = useState<"idle" | "loading" | "ready" | "error">(
+    "idle",
+  );
+  const [usdcFormatted, setUsdcFormatted] = useState<string | null>(null);
+  const [usdcState, setUsdcState] = useState<"idle" | "loading" | "ready" | "error">(
     "idle",
   );
   const [txItems, setTxItems] = useState<MintTransaction[] | null>(null);
@@ -193,6 +269,8 @@ export function DashboardClient() {
       setBtcState("idle");
       setBtcFormatted(null);
       setBtcConfigured(null);
+      setUsdcState("idle");
+      setUsdcFormatted(null);
       return;
     }
     const gen = ++balanceFetchGen.current;
@@ -205,6 +283,7 @@ export function DashboardClient() {
     setIdrxState("loading");
     setIdrxErrorHint(null);
     setBtcState("loading");
+    setUsdcState("loading");
 
     const q = qs.toString();
     const tokenFn = getAccessTokenRef.current;
@@ -295,7 +374,29 @@ export function DashboardClient() {
       }
     };
 
-    await Promise.allSettled([runIdrx(), runBtc()]);
+    const runUsdc = async () => {
+      try {
+        const pc = getBasePublicClient();
+        const rawBalance = await pc.readContract({
+          address: USDC_ADDRESS,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [resolvedAddress as `0x${string}`],
+        });
+        if (gen !== balanceFetchGen.current) return;
+        const n = Number(formatUnits(rawBalance, USDC_DECIMALS));
+        setUsdcFormatted(
+          n.toLocaleString(localeStr, { maximumFractionDigits: 2 }),
+        );
+        setUsdcState("ready");
+      } catch {
+        if (gen !== balanceFetchGen.current) return;
+        setUsdcFormatted(null);
+        setUsdcState("error");
+      }
+    };
+
+    await Promise.allSettled([runIdrx(), runBtc(), runUsdc()]);
   }, [resolvedAddress, localeStr, t]);
 
   useEffect(() => {
@@ -359,6 +460,9 @@ export function DashboardClient() {
   const btcLoading =
     btcState === "loading" ||
     (btcState === "idle" && Boolean(resolvedAddress));
+  const usdcLoading =
+    usdcState === "loading" ||
+    (usdcState === "idle" && Boolean(resolvedAddress));
 
   const balanceLabel =
     tab === "IDRX"
@@ -369,26 +473,39 @@ export function DashboardClient() {
           : idrxState === "ready" && idrxFormatted != null
             ? idrxFormatted
             : "—"
-      : waitingWallet
-        ? t("dashboard.loadingWallet")
-        : btcLoading
-          ? t("dashboard.loading")
-          : btcConfigured === false
-            ? "—"
-            : btcState === "ready" && btcFormatted != null
-              ? btcFormatted
+      : tab === "BTC"
+        ? waitingWallet
+          ? t("dashboard.loadingWallet")
+          : btcLoading
+            ? t("dashboard.loading")
+            : btcConfigured === false
+              ? "—"
+              : btcState === "ready" && btcFormatted != null
+                ? btcFormatted
+                : "—"
+        : waitingWallet
+          ? t("dashboard.loadingWallet")
+          : usdcLoading
+            ? t("dashboard.loading")
+            : usdcState === "ready" && usdcFormatted != null
+              ? usdcFormatted
               : "—";
 
-  const balanceUnit = tab === "IDRX" ? "IDRX" : btcSymbol;
+  const balanceUnit =
+    tab === "IDRX" ? "IDRX" : tab === "BTC" ? btcSymbol : "USDC";
   const balanceTitle =
-    tab === "IDRX" ? t("dashboard.balanceIdrx") : t("dashboard.balanceBtc");
+    tab === "IDRX"
+      ? t("dashboard.balanceIdrx")
+      : tab === "BTC"
+        ? t("dashboard.balanceBtc")
+        : t("dashboard.balanceUsdc");
 
   return (
     <div className="px-4 pb-28 pt-4">
       {/* Balance card */}
       <section className="relative overflow-hidden rounded-[var(--radius-card)] bg-gradient-to-br from-arka-accent via-arka-accent to-arka-accent-muted p-5 text-white shadow-md">
         <div className="absolute right-3 top-3 text-2xl font-semibold opacity-20">
-          {tab === "IDRX" ? "Rp" : "₿"}
+          {tab === "IDRX" ? "Rp" : tab === "BTC" ? "₿" : "$"}
         </div>
         <p className="text-xs font-medium uppercase tracking-wide text-white/80">
           {balanceTitle}
@@ -416,6 +533,17 @@ export function DashboardClient() {
           >
             cbBTC
           </button>
+          <button
+            type="button"
+            onClick={() => setTab("USDC")}
+            className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+              tab === "USDC"
+                ? "bg-white text-arka-accent shadow-sm"
+                : "text-white/90 hover:bg-white/10"
+            }`}
+          >
+            USDC
+          </button>
         </div>
         <p className="mt-4 font-mono text-3xl font-semibold tabular-nums tracking-tight">
           {balanceLabel}
@@ -434,6 +562,11 @@ export function DashboardClient() {
         {tab === "BTC" && btcState === "error" ? (
           <p className="mt-2 text-xs text-white/85">
             {t("dashboard.failedLoadBtc")}
+          </p>
+        ) : null}
+        {tab === "USDC" && usdcState === "error" ? (
+          <p className="mt-2 text-xs text-white/85">
+            {t("dashboard.failedLoadUsdc")}
           </p>
         ) : null}
         {resolvedAddress ? (
@@ -487,6 +620,8 @@ export function DashboardClient() {
       </section>
 
       <DcaDashboardCard />
+
+      <CreditDashboardCard />
 
       {/* Simulator teaser */}
       <section className="mt-4">
