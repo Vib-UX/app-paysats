@@ -63,9 +63,9 @@ const id = {
   "dca.checkingOrder": "Memeriksa order aktif…",
   "dca.cannotRead": "Tidak bisa membaca status DCA dari kontrak.",
   "dca.subtitleActive":
-    "Chainlink Automation mengeksekusi swap IDRX → cbBTC sesuai jadwal.",
+    "Swap IDRX → cbBTC dieksekusi otomatis sesuai jadwal.",
   "dca.subtitleNew":
-    "Jadwalkan pembelian cbBTC otomatis dari saldo IDRX kamu. Setelah order dibuat, Chainlink Automation mengeksekusi tanpa perlu aksi tambahan.",
+    "Jadwalkan pembelian cbBTC otomatis dari saldo IDRX kamu. Setelah order dibuat, swap dieksekusi otomatis tanpa perlu aksi tambahan.",
   "dca.active": "DCA Aktif",
   "dca.perSwap": "Per swap",
   "dca.frequency": "Frekuensi",
@@ -83,7 +83,7 @@ const id = {
   "dca.cancelBtn": "Batalkan DCA",
   "dca.swapHistory": "Riwayat swap",
   "dca.noSwapsYet":
-    "Belum ada swap yang dieksekusi. Chainlink Automation akan menjalankan swap pertama sesuai jadwal.",
+    "Belum ada swap yang dieksekusi. Swap pertama akan berjalan otomatis sesuai jadwal.",
   "dca.totalIdrx": "Total IDRX",
   "dca.totalBtc": "Total cbBTC",
 
@@ -97,12 +97,12 @@ const id = {
   "dca.form.swapsHint":
     "Kosongkan atau isi 0 untuk DCA tanpa batas (bisa dibatalkan kapan saja).",
   "dca.form.info":
-    "Satu konfirmasi: approve IDRX + buat order DCA dalam satu transaksi. Setelah selesai, Chainlink Automation mengeksekusi swap otomatis.",
+    "Satu konfirmasi: approve IDRX + buat order DCA dalam satu transaksi. Setelah selesai, swap dieksekusi otomatis.",
   "dca.form.submit": "Mulai DCA",
   "dca.form.submitting": "Mengirim transaksi…",
   "dca.form.success": "Order DCA berhasil dibuat!",
   "dca.form.successHint":
-    "Chainlink Automation akan mengeksekusi swap secara otomatis sesuai jadwal. Tidak perlu aksi tambahan.",
+    "Swap akan dieksekusi secara otomatis sesuai jadwal. Tidak perlu aksi tambahan.",
   "dca.form.viewBasescan": "Lihat di Basescan",
   "dca.form.errorAmount": "Masukkan nominal per swap (min. Rp 1)",
   "dca.form.errorSwaps": "Jumlah swap harus angka bulat (0 = tanpa batas)",
@@ -290,9 +290,9 @@ const en: Record<keyof typeof id, string> = {
   "dca.checkingOrder": "Checking active order…",
   "dca.cannotRead": "Cannot read DCA status from contract.",
   "dca.subtitleActive":
-    "Chainlink Automation executes IDRX → cbBTC swaps on schedule.",
+    "IDRX → cbBTC swaps are executed automatically on schedule.",
   "dca.subtitleNew":
-    "Schedule automatic cbBTC purchases from your IDRX balance. Once created, Chainlink Automation executes without any action needed.",
+    "Schedule automatic cbBTC purchases from your IDRX balance. Once created, swaps execute automatically without any action needed.",
   "dca.active": "DCA Active",
   "dca.perSwap": "Per swap",
   "dca.frequency": "Frequency",
@@ -310,7 +310,7 @@ const en: Record<keyof typeof id, string> = {
   "dca.cancelBtn": "Cancel DCA",
   "dca.swapHistory": "Swap History",
   "dca.noSwapsYet":
-    "No swaps executed yet. Chainlink Automation will run the first swap on schedule.",
+    "No swaps executed yet. The first swap will run automatically on schedule.",
   "dca.totalIdrx": "Total IDRX",
   "dca.totalBtc": "Total cbBTC",
 
@@ -324,12 +324,12 @@ const en: Record<keyof typeof id, string> = {
   "dca.form.swapsHint":
     "Leave empty or enter 0 for unlimited DCA (can be cancelled anytime).",
   "dca.form.info":
-    "One confirmation: approve IDRX + create DCA order in a single transaction. Chainlink Automation then executes swaps automatically.",
+    "One confirmation: approve IDRX + create DCA order in a single transaction. Swaps then execute automatically.",
   "dca.form.submit": "Start DCA",
   "dca.form.submitting": "Sending transaction…",
   "dca.form.success": "DCA order created successfully!",
   "dca.form.successHint":
-    "Chainlink Automation will execute swaps automatically on schedule. No further action needed.",
+    "Swaps will execute automatically on schedule. No further action needed.",
   "dca.form.viewBasescan": "View on Basescan",
   "dca.form.errorAmount": "Enter amount per swap (min. Rp 1)",
   "dca.form.errorSwaps": "Swap count must be a whole number (0 = unlimited)",
