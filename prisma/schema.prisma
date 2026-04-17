@@ -21,6 +21,26 @@ model User {
   updatedAt             DateTime  @updatedAt
 
   mintSnapshots MintRequestSnapshot[]
+  creditLoans   CreditLoan[]
+}
+
+model CreditLoan {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletAddress String
+  collateralRaw String
+  borrowRaw     String
+  lockTxHash    String
+  borrowTxHash  String
+  settleTxHash  String?
+  status        String    @default("active")
+  openedAt      DateTime  @default(now())
+  settledAt     DateTime?
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([walletAddress])
 }
 
 /// Optional local snapshot after mint / for quicker empty states; list view still uses IDRX history API.

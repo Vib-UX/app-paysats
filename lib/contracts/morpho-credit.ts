@@ -76,6 +76,11 @@ export const morphoOracleAbi = parseAbi([
   "function price() view returns (uint256)",
 ]);
 
+/** Morpho AdaptiveCurveIrm — returns per-second borrow rate (WAD-scaled). */
+export const morphoIrmAbi = parseAbi([
+  "function borrowRateView((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, (uint128 totalSupplyAssets, uint128 totalSupplyShares, uint128 totalBorrowAssets, uint128 totalBorrowShares, uint128 lastUpdate, uint128 fee) market) view returns (uint256)",
+]);
+
 // ---------------------------------------------------------------------------
 // Derived types
 // ---------------------------------------------------------------------------
@@ -109,14 +114,35 @@ export type CreditHealth = {
 // Pure helpers
 // ---------------------------------------------------------------------------
 
-/** Convert borrow shares → actual USDC owed, given market state. */
+/** Convert borrow shares → actual USDC owed (ceiling division, matches Morpho's mulDivUp). */
 export function borrowSharesToAssets(
   borrowShares: bigint,
   totalBorrowAssets: bigint,
   totalBorrowShares: bigint,
 ): bigint {
   if (totalBorrowShares === BigInt(0)) return BigInt(0);
-  return (borrowShares * totalBorrowAssets) / totalBorrowShares;
+  return (
+    (borrowShares * totalBorrowAssets + totalBorrowShares - BigInt(1)) /
+    totalBorrowShares
+  );
+}
+
+/**
+ * Simulate interest accrual since `lastUpdate` to get the real-time
+ * totalBorrowAssets. `borrowRatePerSecond` comes from the IRM contract.
+ */
+export function accrueInterestView(
+  totalBorrowAssets: bigint,
+  lastUpdate: bigint,
+  borrowRatePerSecond: bigint,
+  nowSeconds?: bigint,
+): bigint {
+  const now = nowSeconds ?? BigInt(Math.floor(Date.now() / 1000));
+  const elapsed = now - lastUpdate;
+  if (elapsed <= BigInt(0)) return totalBorrowAssets;
+  const interest =
+    (totalBorrowAssets * borrowRatePerSecond * elapsed) / WAD;
+  return totalBorrowAssets + interest;
 }
 
 /** Collateral value denominated in the loan token (USDC). */
