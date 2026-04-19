@@ -337,57 +337,61 @@ export function useOpenCreditLine() {
           );
         }
 
-        const needsApproval = currentAllowance < params.collateralAmount;
+        // Bundle approve (if needed) + supplyCollateral + borrow into a
+        // SINGLE ERC-4337 UserOp. Either all three land on-chain or none do,
+        // preventing the "supplied but never borrowed" stuck state.
+        const calls: TxCall[] = [];
 
-        if (needsApproval) {
-          const approveData = encodeFunctionData({
-            abi: erc20Abi,
-            functionName: "approve",
-            args: [MORPHO_BLUE_ADDRESS, MAX_UINT256],
+        if (currentAllowance < params.collateralAmount) {
+          calls.push({
+            to: CBBTC_ADDRESS,
+            data: encodeFunctionData({
+              abi: erc20Abi,
+              functionName: "approve",
+              args: [MORPHO_BLUE_ADDRESS, MAX_UINT256],
+            }),
+            value: BigInt(0),
           });
-          await smartWalletSend([
-            { to: CBBTC_ADDRESS, data: approveData, value: BigInt(0) },
-          ]);
         }
 
-        const supplyCollateralData = encodeFunctionData({
-          abi: morphoBlueAbi,
-          functionName: "supplyCollateral",
-          args: [
-            CBBTC_USDC_MARKET_PARAMS,
-            params.collateralAmount,
-            smartAddr,
-            "0x",
-          ],
+        calls.push({
+          to: MORPHO_BLUE_ADDRESS,
+          data: encodeFunctionData({
+            abi: morphoBlueAbi,
+            functionName: "supplyCollateral",
+            args: [
+              CBBTC_USDC_MARKET_PARAMS,
+              params.collateralAmount,
+              smartAddr,
+              "0x",
+            ],
+          }),
+          value: BigInt(0),
         });
 
-        const lockHash = await smartWalletSend([
-          {
-            to: MORPHO_BLUE_ADDRESS,
-            data: supplyCollateralData,
-            value: BigInt(0),
-          },
-        ]);
-        setLockTxHash(lockHash);
-
-        const borrowData = encodeFunctionData({
-          abi: morphoBlueAbi,
-          functionName: "borrow",
-          args: [
-            CBBTC_USDC_MARKET_PARAMS,
-            params.borrowAmount,
-            BigInt(0),
-            smartAddr,
-            smartAddr,
-          ],
+        calls.push({
+          to: MORPHO_BLUE_ADDRESS,
+          data: encodeFunctionData({
+            abi: morphoBlueAbi,
+            functionName: "borrow",
+            args: [
+              CBBTC_USDC_MARKET_PARAMS,
+              params.borrowAmount,
+              BigInt(0),
+              smartAddr,
+              smartAddr,
+            ],
+          }),
+          value: BigInt(0),
         });
 
-        const hash = await smartWalletSend([
-          { to: MORPHO_BLUE_ADDRESS, data: borrowData, value: BigInt(0) },
-        ]);
+        const hash = await smartWalletSend(calls);
 
+        // Both halves of the open flow live in the same UserOp now, so the
+        // lock and borrow share a single on-chain tx hash.
+        setLockTxHash(hash);
         setBorrowTxHash(hash);
-        return { lockTxHash: lockHash, borrowTxHash: hash };
+        return { lockTxHash: hash, borrowTxHash: hash };
       } catch (e) {
         setError(humaniseError(e, "Gagal membuka kredit"));
         return null;
@@ -399,6 +403,61 @@ export function useOpenCreditLine() {
   );
 
   return { open, busy, error, lockTxHash, borrowTxHash };
+}
+
+// ---------------------------------------------------------------------------
+// Borrow-only recovery: draw USDC against already-locked collateral.
+// Useful when a previous open flow supplied collateral but the borrow step
+// never landed (pre-batching bug, dropped UserOp, page closed mid-flow, etc).
+// ---------------------------------------------------------------------------
+
+export function useBorrowAgainstCollateral() {
+  const smartWalletSend = useSmartWalletSendCalls();
+  const smartAddr = useSmartWalletAddress();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState<string | null>(null);
+
+  const borrow = useCallback(
+    async (borrowAmount: bigint) => {
+      setError(null);
+      setTxHash(null);
+      setBusy(true);
+
+      try {
+        if (!smartAddr) throw new Error("Smart wallet belum tersedia");
+        if (borrowAmount <= BigInt(0))
+          throw new Error("Nominal pinjaman tidak valid.");
+
+        const borrowData = encodeFunctionData({
+          abi: morphoBlueAbi,
+          functionName: "borrow",
+          args: [
+            CBBTC_USDC_MARKET_PARAMS,
+            borrowAmount,
+            BigInt(0),
+            smartAddr,
+            smartAddr,
+          ],
+        });
+
+        const hash = await smartWalletSend([
+          { to: MORPHO_BLUE_ADDRESS, data: borrowData, value: BigInt(0) },
+        ]);
+
+        setTxHash(hash);
+        return hash;
+      } catch (e) {
+        setError(humaniseError(e, "Gagal menarik USDC"));
+        return null;
+      } finally {
+        setBusy(false);
+      }
+    },
+    [smartWalletSend, smartAddr],
+  );
+
+  return { borrow, busy, error, txHash };
 }
 
 // ---------------------------------------------------------------------------

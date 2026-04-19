@@ -79,7 +79,7 @@ function SwapHistoryRow({ exec, localeStr }: { exec: DcaExecution; localeStr: st
   );
 }
 
-function SwapHistory() {
+export function SwapHistory() {
   const { executions, loading, error } = useDcaExecutions();
   const t = useT();
   const { locale } = useLocale();
@@ -217,8 +217,6 @@ export function DcaActiveOrder({ order, onCancelled }: Props) {
           )}
         </dl>
       </Card>
-
-      <SwapHistory />
 
       {error && (
         <p className="text-sm text-arka-danger" role="alert">
