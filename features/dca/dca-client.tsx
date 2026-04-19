@@ -14,7 +14,7 @@ import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getAddress, isAddress } from "viem";
 import { getBasePublicClient } from "@/lib/base-client";
-import { DcaActiveOrder } from "./dca-active-order";
+import { DcaActiveOrder, SwapHistory } from "./dca-active-order";
 import { DcaForm } from "./dca-form";
 
 function useSmartAddr() {
@@ -125,6 +125,11 @@ export function DcaClient() {
       >
         <SmartWalletBalanceCard />
         <DcaActiveOrder order={order} onCancelled={refetch} />
+        {/* Rendered outside DcaActiveOrder so the history survives when the
+            user cancels and the screen flips back to DcaForm. */}
+        <div className="mt-4">
+          <SwapHistory />
+        </div>
       </Screen>
     );
   }
@@ -136,6 +141,11 @@ export function DcaClient() {
     >
       <SmartWalletBalanceCard />
       <DcaForm onCreated={refetch} />
+      {/* Persistent cross-cycle swap history — shown even when there's no
+          active order so users can still see their prior DCA's swaps. */}
+      <div className="mt-4">
+        <SwapHistory />
+      </div>
     </Screen>
   );
 }

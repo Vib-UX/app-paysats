@@ -14,6 +14,7 @@ import {
 import {
   useCreditPosition,
   useOpenCreditLine,
+  useBorrowAgainstCollateral,
   useRepayCreditLine,
   useWithdrawCollateral,
   useCreditLoans,
@@ -28,6 +29,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { CreditEducation } from "./credit-education";
+import { OfframpClient } from "@/features/offramp/offramp-client";
 
 // ---------------------------------------------------------------------------
 // Safety meter
@@ -249,6 +251,144 @@ function OpenCreditFlow({
 }
 
 // ---------------------------------------------------------------------------
+// Recovery card: supplied collateral but no debt drawn yet
+// ---------------------------------------------------------------------------
+
+function FinishBorrowCard({
+  collateral,
+  oraclePrice,
+  walletAddress,
+  onSuccess,
+}: {
+  collateral: bigint;
+  oraclePrice: bigint;
+  walletAddress: string;
+  onSuccess: () => void;
+}) {
+  const t = useT();
+  const { locale } = useLocale();
+  const localeStr = locale === "id" ? "id-ID" : "en-US";
+
+  const [borrowPct, setBorrowPct] = useState(50);
+  const { borrow, busy, error, txHash } = useBorrowAgainstCollateral();
+  const createLoan = useCreateCreditLoan();
+
+  const maxBorrow = useMemo(
+    () => maxSafeBorrow(collateral, oraclePrice),
+    [collateral, oraclePrice],
+  );
+
+  const borrowAmount = useMemo(
+    () => (maxBorrow * BigInt(borrowPct)) / BigInt(100),
+    [maxBorrow, borrowPct],
+  );
+
+  const previewHealth = useMemo(
+    () => deriveCreditHealth(collateral, oraclePrice, borrowAmount),
+    [collateral, oraclePrice, borrowAmount],
+  );
+
+  const handleBorrow = useCallback(async () => {
+    if (borrowAmount <= BigInt(0)) return;
+    const hash = await borrow(borrowAmount);
+    if (hash) {
+      // Persist the recovered loan. The collateral is already on-chain from an
+      // earlier supply tx we don't hold a hash for, so we reuse this borrow
+      // hash as both the lock and borrow reference.
+      await createLoan({
+        walletAddress,
+        collateralRaw: collateral.toString(),
+        borrowRaw: borrowAmount.toString(),
+        lockTxHash: hash,
+        borrowTxHash: hash,
+      });
+      onSuccess();
+    }
+  }, [borrow, createLoan, borrowAmount, collateral, walletAddress, onSuccess]);
+
+  if (txHash) {
+    return (
+      <Card className="text-center">
+        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl">
+          ✓
+        </div>
+        <p className="text-sm font-semibold text-arka-text">
+          {t("credit.successTitle")}
+        </p>
+        <p className="mt-1 text-xs text-arka-text-muted">
+          {t("credit.successDesc")}
+        </p>
+        <a
+          href={`https://basescan.org/tx/${txHash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-block text-xs font-medium text-arka-accent hover:underline"
+        >
+          {t("credit.viewBasescan")}
+        </a>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <div className="mb-3 rounded-lg bg-amber-50 p-3 text-xs font-medium text-amber-900">
+        {t("credit.finishBorrowNotice")}
+      </div>
+
+      <p className="mb-3 text-sm font-medium text-arka-text">
+        {t("credit.finishBorrowDesc")}
+      </p>
+
+      <label className="text-xs font-medium text-arka-text-muted">
+        {t("credit.borrowLabel")}
+      </label>
+      <div className="mt-1 flex items-center gap-3">
+        <input
+          type="range"
+          min={5}
+          max={100}
+          step={1}
+          value={borrowPct}
+          onChange={(e) => setBorrowPct(Number(e.target.value))}
+          className="flex-1 accent-arka-accent"
+        />
+        <span className="w-28 text-right font-mono text-sm text-arka-text">
+          ${formatUsdc(borrowAmount, localeStr)}
+        </span>
+      </div>
+      <p className="mt-1 text-right text-[11px] text-arka-text-muted">
+        {t("credit.maxBorrow")}: ${formatUsdc(maxBorrow, localeStr)}
+      </p>
+
+      <div className="mt-4">
+        <SafetyMeter
+          score={previewHealth.safetyScore}
+          zone={previewHealth.zone}
+          label={t("credit.safetyLabel")}
+        />
+      </div>
+
+      {error && (
+        <p className="mt-3 text-sm text-red-600" role="alert">
+          {error}
+        </p>
+      )}
+
+      <Button
+        className="mt-4"
+        onClick={handleBorrow}
+        disabled={
+          busy || borrowAmount <= BigInt(0) || previewHealth.zone === "danger"
+        }
+      >
+        {busy ? t("credit.finishBorrowBusy") : t("credit.finishBorrowBtn")}
+      </Button>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Active position view
 // ---------------------------------------------------------------------------
 
@@ -256,10 +396,14 @@ function ActivePosition({
   onRefresh,
   activeLoan,
   onLoanSettled,
+  walletAddress,
+  onLoanCreated,
 }: {
   onRefresh: () => void;
   activeLoan?: CreditLoanRecord | null;
   onLoanSettled?: () => void;
+  walletAddress?: string;
+  onLoanCreated?: () => void;
 }) {
   const { data } = useCreditPosition();
   const t = useT();
@@ -280,11 +424,18 @@ function ActivePosition({
 
   if (!data) return null;
 
-  const { position, borrowedAssets, health, usdcBalance, borrowApyPercent } =
-    data;
+  const {
+    position,
+    borrowedAssets,
+    health,
+    usdcBalance,
+    borrowApyPercent,
+    oraclePrice,
+  } = data;
 
-  const canWithdraw =
+  const hasStrandedCollateral =
     position.borrowShares === BigInt(0) && position.collateral > BigInt(0);
+  const canWithdraw = hasStrandedCollateral;
 
   const repayAllSufficient = usdcBalance >= borrowedAssets;
 
@@ -386,6 +537,24 @@ function ActivePosition({
           />
         </div>
       </Card>
+
+      {/* Recovery: collateral supplied but no debt drawn yet
+          (happens when a prior open flow partially completed). */}
+      {hasStrandedCollateral && walletAddress && (
+        <FinishBorrowCard
+          collateral={position.collateral}
+          oraclePrice={oraclePrice}
+          walletAddress={walletAddress}
+          onSuccess={() => {
+            onRefresh();
+            onLoanCreated?.();
+          }}
+        />
+      )}
+
+      {/* Cash out to bank / e-wallet (USDC → IDR offramp) — always rendered so
+          the transaction history remains accessible after balance hits 0. */}
+      <OfframpClient usdcBalance={usdcBalance} />
 
       {/* Repay section */}
       {borrowedAssets > BigInt(0) && (
@@ -661,6 +830,8 @@ export function CreditClient() {
           onRefresh={refetch}
           activeLoan={activeLoan}
           onLoanSettled={handleLoanSettled}
+          walletAddress={address}
+          onLoanCreated={refetchLoans}
         />
       )}
 
