@@ -337,61 +337,69 @@ export function useOpenCreditLine() {
           );
         }
 
-        // Bundle approve (if needed) + supplyCollateral + borrow into a
-        // SINGLE ERC-4337 UserOp. Either all three land on-chain or none do,
-        // preventing the "supplied but never borrowed" stuck state.
-        const calls: TxCall[] = [];
+        // Send approve / supplyCollateral / borrow as three SEPARATE
+        // ERC-4337 UserOps rather than one batched UserOp.
+        //
+        // We tried batching them into a single UserOp and it consistently
+        // failed gas estimation on the bundler — the combined call was
+        // either rejected during simulation or landed with an insufficient
+        // gas limit on-chain. Splitting the steps keeps each UserOp well
+        // within the bundler's estimation envelope.
+        //
+        // Trade-off: if the borrow UserOp fails after collateral is already
+        // supplied, the user ends up with locked collateral and no USDC.
+        // That recovery case is handled by `useBorrowAgainstCollateral` +
+        // the `FinishBorrowCard` UI in features/credit/credit-client.tsx,
+        // which lets the user complete the borrow against the already-
+        // locked collateral.
 
         if (currentAllowance < params.collateralAmount) {
-          calls.push({
-            to: CBBTC_ADDRESS,
-            data: encodeFunctionData({
-              abi: erc20Abi,
-              functionName: "approve",
-              args: [MORPHO_BLUE_ADDRESS, MAX_UINT256],
-            }),
-            value: BigInt(0),
+          const approveData = encodeFunctionData({
+            abi: erc20Abi,
+            functionName: "approve",
+            args: [MORPHO_BLUE_ADDRESS, MAX_UINT256],
           });
+          await smartWalletSend([
+            { to: CBBTC_ADDRESS, data: approveData, value: BigInt(0) },
+          ]);
         }
 
-        calls.push({
-          to: MORPHO_BLUE_ADDRESS,
-          data: encodeFunctionData({
-            abi: morphoBlueAbi,
-            functionName: "supplyCollateral",
-            args: [
-              CBBTC_USDC_MARKET_PARAMS,
-              params.collateralAmount,
-              smartAddr,
-              "0x",
-            ],
-          }),
-          value: BigInt(0),
+        const supplyCollateralData = encodeFunctionData({
+          abi: morphoBlueAbi,
+          functionName: "supplyCollateral",
+          args: [
+            CBBTC_USDC_MARKET_PARAMS,
+            params.collateralAmount,
+            smartAddr,
+            "0x",
+          ],
         });
+        const lockHash = await smartWalletSend([
+          {
+            to: MORPHO_BLUE_ADDRESS,
+            data: supplyCollateralData,
+            value: BigInt(0),
+          },
+        ]);
+        setLockTxHash(lockHash);
 
-        calls.push({
-          to: MORPHO_BLUE_ADDRESS,
-          data: encodeFunctionData({
-            abi: morphoBlueAbi,
-            functionName: "borrow",
-            args: [
-              CBBTC_USDC_MARKET_PARAMS,
-              params.borrowAmount,
-              BigInt(0),
-              smartAddr,
-              smartAddr,
-            ],
-          }),
-          value: BigInt(0),
+        const borrowData = encodeFunctionData({
+          abi: morphoBlueAbi,
+          functionName: "borrow",
+          args: [
+            CBBTC_USDC_MARKET_PARAMS,
+            params.borrowAmount,
+            BigInt(0),
+            smartAddr,
+            smartAddr,
+          ],
         });
+        const borrowHash = await smartWalletSend([
+          { to: MORPHO_BLUE_ADDRESS, data: borrowData, value: BigInt(0) },
+        ]);
+        setBorrowTxHash(borrowHash);
 
-        const hash = await smartWalletSend(calls);
-
-        // Both halves of the open flow live in the same UserOp now, so the
-        // lock and borrow share a single on-chain tx hash.
-        setLockTxHash(hash);
-        setBorrowTxHash(hash);
-        return { lockTxHash: hash, borrowTxHash: hash };
+        return { lockTxHash: lockHash, borrowTxHash: borrowHash };
       } catch (e) {
         setError(humaniseError(e, "Gagal membuka kredit"));
         return null;
