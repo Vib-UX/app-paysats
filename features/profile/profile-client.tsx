@@ -248,53 +248,59 @@ export function ProfileClient() {
         </Section>
 
         <Section title={t("settings.preferences")}>
-          <div className="py-3">
-            <div
-              className="mb-2 text-[12px] font-semibold"
+          <div className="flex items-center justify-between gap-3 py-3">
+            <span
+              className="text-[13px] font-semibold"
               style={{ color: "var(--arka-text)" }}
             >
               {t("settings.currency")}
+            </span>
+            <div className="w-[160px] shrink-0">
+              <PillSeg<"IDR" | "USD">
+                value={currency}
+                onChange={updateCurrency}
+                options={[
+                  { value: "IDR", label: "IDR" },
+                  { value: "USD", label: "USD" },
+                ]}
+              />
             </div>
-            <PillSeg<"IDR" | "USD">
-              value={currency}
-              onChange={updateCurrency}
-              options={[
-                { value: "IDR", label: "IDR (Rp)" },
-                { value: "USD", label: "USD ($)" },
-              ]}
-            />
           </div>
-          <div className="py-3">
-            <div
-              className="mb-2 text-[12px] font-semibold"
+          <div className="flex items-center justify-between gap-3 py-3">
+            <span
+              className="text-[13px] font-semibold"
               style={{ color: "var(--arka-text)" }}
             >
               {t("settings.display")}
+            </span>
+            <div className="w-[160px] shrink-0">
+              <PillSeg<DisplayUnit>
+                value={displayUnit}
+                onChange={updateDisplayUnit}
+                options={[
+                  { value: "SATS", label: "Sats" },
+                  { value: "BTC", label: "BTC" },
+                ]}
+              />
             </div>
-            <PillSeg<DisplayUnit>
-              value={displayUnit}
-              onChange={updateDisplayUnit}
-              options={[
-                { value: "SATS", label: "Sats" },
-                { value: "BTC", label: "BTC" },
-              ]}
-            />
           </div>
-          <div className="py-3">
-            <div
-              className="mb-2 text-[12px] font-semibold"
+          <div className="flex items-center justify-between gap-3 py-3">
+            <span
+              className="text-[13px] font-semibold"
               style={{ color: "var(--arka-text)" }}
             >
               {t("settings.language")}
+            </span>
+            <div className="w-[120px] shrink-0">
+              <PillSeg<Locale>
+                value={locale}
+                onChange={setLocale}
+                options={[
+                  { value: "id", label: "ID" },
+                  { value: "en", label: "EN" },
+                ]}
+              />
             </div>
-            <PillSeg<Locale>
-              value={locale}
-              onChange={setLocale}
-              options={[
-                { value: "id", label: "Bahasa" },
-                { value: "en", label: "English" },
-              ]}
-            />
           </div>
         </Section>
 
