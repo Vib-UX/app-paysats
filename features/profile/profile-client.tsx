@@ -52,21 +52,34 @@ function Row({
   onClick,
   href,
   tone,
+  leading,
+  trailing,
+  external,
 }: {
   label: string;
   value?: React.ReactNode;
   onClick?: () => void;
   href?: string;
   tone?: "default" | "danger";
+  leading?: React.ReactNode;
+  trailing?: React.ReactNode;
+  external?: boolean;
 }) {
   const color =
     tone === "danger" ? "var(--arka-danger)" : "var(--arka-text)";
   const content = (
     <div className="flex items-center justify-between gap-3 py-2.5">
-      <span className="text-[13px] font-semibold" style={{ color }}>
-        {label}
+      <span className="flex min-w-0 items-center gap-2.5">
+        {leading}
+        <span className="text-[13px] font-semibold" style={{ color }}>
+          {label}
+        </span>
       </span>
-      {value !== undefined ? (
+      {trailing !== undefined ? (
+        <span className="flex items-center gap-1.5 text-right">
+          {trailing}
+        </span>
+      ) : value !== undefined ? (
         <span
           className="max-w-[55%] truncate text-right text-[12px]"
           style={{ color: "var(--arka-text-muted)" }}
@@ -78,15 +91,18 @@ function Row({
           className="text-[14px]"
           style={{ color: "var(--arka-text-faint)" }}
         >
-          ›
+          {external ? "↗" : "›"}
         </span>
       ) : null}
     </div>
   );
 
   if (href) {
+    const externalLinkProps = external
+      ? { target: "_blank", rel: "noreferrer" as const }
+      : {};
     return (
-      <a href={href} data-pressable className="block">
+      <a href={href} data-pressable className="block" {...externalLinkProps}>
         {content}
       </a>
     );
@@ -99,6 +115,98 @@ function Row({
     );
   }
   return <div>{content}</div>;
+}
+
+// ---------- Inline SVG icons ----------
+
+function TelegramIcon() {
+  return (
+    <span
+      aria-hidden
+      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+      style={{ background: "rgba(51,144,236,0.14)", color: "#3390ec" }}
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M21.5 3.5 2.9 10.7c-1 .4-1 1.7 0 2.1l4.7 1.6 1.8 5.8c.2.7 1.1.9 1.6.4l2.7-2.6 4.9 3.6c.8.6 1.9.1 2-.9l3.1-15.6c.2-1.1-.9-2-2.2-1.6Z"
+          fill="currentColor"
+        />
+        <path
+          d="m8.1 14.4 8.7-6.6c.2-.2.5.1.3.3l-7.3 6.9-.3 3-1.4-3.6Z"
+          fill="#fff"
+        />
+      </svg>
+    </span>
+  );
+}
+
+function EmailIcon() {
+  return (
+    <span
+      aria-hidden
+      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+      style={{ background: "var(--arka-accent-soft)", color: "var(--arka-accent)" }}
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect
+          x="3"
+          y="5"
+          width="18"
+          height="14"
+          rx="2.5"
+          stroke="currentColor"
+          strokeWidth="1.8"
+        />
+        <path
+          d="m4 7 7.3 5.2a1.2 1.2 0 0 0 1.4 0L20 7"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+      </svg>
+    </span>
+  );
+}
+
+function CopyIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <rect
+        x="9"
+        y="9"
+        width="11"
+        height="11"
+        rx="2.2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M15 9V6.2A2.2 2.2 0 0 0 12.8 4H6.2A2.2 2.2 0 0 0 4 6.2v6.6A2.2 2.2 0 0 0 6.2 15H9"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
 
 export function ProfileClient() {
@@ -305,15 +413,62 @@ export function ProfileClient() {
         </Section>
 
         <Section title={t("settings.wallet")}>
-          <Row label={t("profile.wallet")} value={short} />
           <Row
-            label={copied ? t("settings.copied") : t("settings.copyAddress")}
-            onClick={copyWallet}
+            label={t("profile.wallet")}
+            trailing={
+              <>
+                <span
+                  className="max-w-[45%] truncate text-[12px] tabular-nums"
+                  style={{ color: "var(--arka-text-muted)" }}
+                >
+                  {short}
+                </span>
+                {walletDisplay ? (
+                  <button
+                    type="button"
+                    onClick={copyWallet}
+                    aria-label={t("settings.copyAddress")}
+                    data-pressable
+                    className="flex h-7 w-7 items-center justify-center rounded-[8px]"
+                    style={{
+                      background: copied
+                        ? "var(--arka-accent-soft)"
+                        : "var(--arka-surface-muted)",
+                      color: copied
+                        ? "var(--arka-accent)"
+                        : "var(--arka-text-muted)",
+                    }}
+                    title={copied ? t("settings.copied") : t("settings.copyAddress")}
+                  >
+                    {copied ? (
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        aria-hidden
+                      >
+                        <path
+                          d="m5 12 4.5 4.5L19 7"
+                          stroke="currentColor"
+                          strokeWidth="2.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    ) : (
+                      <CopyIcon />
+                    )}
+                  </button>
+                ) : null}
+              </>
+            }
           />
           {walletDisplay ? (
             <Row
               label={t("settings.viewOnBasescan")}
               href={`https://basescan.org/address/${walletDisplay}`}
+              external
             />
           ) : null}
         </Section>
@@ -326,10 +481,14 @@ export function ProfileClient() {
           <Row
             label={t("settings.contactTelegram")}
             href="https://t.me/+C2O7jGRN7xo3MWMx"
+            leading={<TelegramIcon />}
+            external
           />
           <Row
             label={t("settings.contactEmail")}
-            href="mailto:hi@arka.finance"
+            href="mailto:arkasavesbitcoin@gmail.com"
+            leading={<EmailIcon />}
+            external
           />
         </Section>
 
