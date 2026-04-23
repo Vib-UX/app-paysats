@@ -1,8 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Screen } from "@/components/ui/screen";
+import { GradButton } from "@/components/ui/grad-button";
+import { InlinePanel } from "@/components/ui/inline-panel";
+import { Input, Label } from "@/components/ui/input";
+import { useCurrency } from "@/lib/currency";
+import { useT } from "@/lib/i18n";
 import {
   CBBTC_DECIMALS,
   USDC_DECIMALS,
@@ -17,31 +20,124 @@ import {
   useBorrowAgainstCollateral,
   useRepayCreditLine,
   useWithdrawCollateral,
-  useCreditLoans,
-  useCreateCreditLoan,
-  useSettleCreditLoan,
   formatUsdc,
   formatCbBtc,
-  type CreditLoanRecord,
 } from "@/hooks/use-credit-line";
-import { useLocale, useT } from "@/lib/i18n";
-import { usePrivy } from "@privy-io/react-auth";
-import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
 import { CreditEducation } from "./credit-education";
-import { OfframpClient } from "@/features/offramp/offramp-client";
+import { useCallback, useMemo, useState } from "react";
+import { formatUnits, parseUnits } from "viem";
 
-// ---------------------------------------------------------------------------
-// Safety meter
-// ---------------------------------------------------------------------------
+const IDR_FALLBACK_PER_USD = 16_500;
 
-const ZONE_COLORS: Record<SafetyZone, { bar: string; text: string; bg: string }> = {
-  safe: { bar: "bg-green-500", text: "text-green-700", bg: "bg-green-50" },
-  warning: { bar: "bg-yellow-500", text: "text-yellow-700", bg: "bg-yellow-50" },
-  danger: { bar: "bg-red-500", text: "text-red-700", bg: "bg-red-50" },
+function shortFiat(v: number, currency: "IDR" | "USD") {
+  if (!Number.isFinite(v)) return "—";
+  if (currency === "USD")
+    return `$${v.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+  return `Rp ${v.toLocaleString("id-ID", { maximumFractionDigits: 0 })}`;
+}
+
+const ZONE: Record<
+  SafetyZone,
+  { color: string; background: string; label: "safe" | "warning" | "danger" }
+> = {
+  safe: {
+    color: "var(--arka-success)",
+    background: "var(--arka-success-soft)",
+    label: "safe",
+  },
+  warning: {
+    color: "var(--arka-warning)",
+    background: "var(--arka-warning-soft)",
+    label: "warning",
+  },
+  danger: {
+    color: "var(--arka-danger)",
+    background: "rgba(196,48,48,0.08)",
+    label: "danger",
+  },
 };
 
-function SafetyMeter({
+function Hero({
+  title,
+  primary,
+  secondary,
+}: {
+  title: string;
+  primary: string;
+  secondary?: string;
+}) {
+  return (
+    <div
+      className="relative overflow-hidden rounded-[22px] p-6 text-white"
+      style={{
+        background: "var(--arka-gradient-hero)",
+        backgroundSize: "300% 300%",
+        animation: "grad-move 14s ease infinite",
+        boxShadow: "var(--arka-shadow-hero)",
+      }}
+    >
+      <div
+        className="text-[11px] font-bold uppercase tracking-[0.1em]"
+        style={{ color: "rgba(255,255,255,0.75)" }}
+      >
+        {title}
+      </div>
+      <div
+        className="mt-2.5 text-[34px] font-extrabold leading-none"
+        style={{ letterSpacing: -0.8 }}
+      >
+        {primary}
+      </div>
+      {secondary ? (
+        <div
+          className="mt-2 text-[12px]"
+          style={{ color: "rgba(255,255,255,0.85)" }}
+        >
+          {secondary}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function StatRow({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone?: "text" | "accent" | "success" | "warning" | "danger";
+}) {
+  const color =
+    tone === "accent"
+      ? "var(--arka-accent)"
+      : tone === "success"
+        ? "var(--arka-success)"
+        : tone === "warning"
+          ? "var(--arka-warning)"
+          : tone === "danger"
+            ? "var(--arka-danger)"
+            : "var(--arka-text)";
+  return (
+    <div className="flex items-center justify-between py-2">
+      <span
+        className="text-[12px]"
+        style={{ color: "var(--arka-text-muted)" }}
+      >
+        {label}
+      </span>
+      <span
+        className="text-[13px] font-extrabold tabular-nums"
+        style={{ color }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function HealthBar({
   score,
   zone,
   label,
@@ -50,839 +146,559 @@ function SafetyMeter({
   zone: SafetyZone;
   label: string;
 }) {
-  const t = useT();
-  const colors = ZONE_COLORS[zone];
-  const zoneKeys: Record<SafetyZone, Parameters<typeof t>[0]> = {
-    safe: "credit.zoneSafe",
-    warning: "credit.zoneWarning",
-    danger: "credit.zoneDanger",
-  };
-
+  const z = ZONE[zone];
   return (
-    <div>
-      <div className="mb-1.5 flex items-center justify-between text-xs">
-        <span className="font-medium text-arka-text-muted">{label}</span>
-        <span className={`font-semibold ${colors.text}`}>
-          {t(zoneKeys[zone])}
+    <div className="pt-1">
+      <div className="mb-1 flex items-center justify-between text-[11px]">
+        <span style={{ color: "var(--arka-text-muted)" }}>{label}</span>
+        <span
+          className="rounded-[6px] px-1.5 py-0.5 text-[10px] font-extrabold uppercase"
+          style={{ color: z.color, background: z.background }}
+        >
+          {z.label}
         </span>
       </div>
-      <div className="h-2.5 w-full overflow-hidden rounded-full bg-arka-border/40">
+      <div
+        className="h-2 w-full overflow-hidden rounded-full"
+        style={{ background: "var(--arka-border)" }}
+      >
         <div
-          className={`h-full rounded-full transition-all duration-500 ${colors.bar}`}
-          style={{ width: `${Math.max(4, score)}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Open credit flow
-// ---------------------------------------------------------------------------
-
-type OpenSuccessData = {
-  lockTxHash: string;
-  borrowTxHash: string;
-  collateralRaw: string;
-  borrowRaw: string;
-};
-
-function OpenCreditFlow({
-  cbBtcBalance,
-  oraclePrice,
-  walletAddress,
-  onSuccess,
-}: {
-  cbBtcBalance: bigint;
-  oraclePrice: bigint;
-  walletAddress: string;
-  onSuccess: (data: OpenSuccessData) => void;
-}) {
-  const t = useT();
-  const { locale } = useLocale();
-  const localeStr = locale === "id" ? "id-ID" : "en-US";
-
-  const [collateralPct, setCollateralPct] = useState(100);
-  const [borrowPct, setBorrowPct] = useState(50);
-
-  const collateralAmount = useMemo(
-    () => (cbBtcBalance * BigInt(collateralPct)) / BigInt(100),
-    [cbBtcBalance, collateralPct],
-  );
-
-  const maxBorrow = useMemo(
-    () => maxSafeBorrow(collateralAmount, oraclePrice),
-    [collateralAmount, oraclePrice],
-  );
-
-  const borrowAmount = useMemo(
-    () => (maxBorrow * BigInt(borrowPct)) / BigInt(100),
-    [maxBorrow, borrowPct],
-  );
-
-  const previewHealth = useMemo(
-    () => deriveCreditHealth(collateralAmount, oraclePrice, borrowAmount),
-    [collateralAmount, oraclePrice, borrowAmount],
-  );
-
-  const { open, busy, error, borrowTxHash } = useOpenCreditLine();
-  const createLoan = useCreateCreditLoan();
-
-  const handleOpen = useCallback(async () => {
-    if (borrowAmount <= BigInt(0) || collateralAmount <= BigInt(0)) return;
-    const result = await open({ collateralAmount, borrowAmount });
-    if (result) {
-      createLoan({
-        walletAddress,
-        collateralRaw: collateralAmount.toString(),
-        borrowRaw: borrowAmount.toString(),
-        lockTxHash: result.lockTxHash,
-        borrowTxHash: result.borrowTxHash,
-      });
-      onSuccess({
-        lockTxHash: result.lockTxHash,
-        borrowTxHash: result.borrowTxHash,
-        collateralRaw: collateralAmount.toString(),
-        borrowRaw: borrowAmount.toString(),
-      });
-    }
-  }, [open, createLoan, collateralAmount, borrowAmount, walletAddress, onSuccess]);
-
-  if (borrowTxHash) {
-    return (
-      <Card className="text-center">
-        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl">
-          ✓
-        </div>
-        <p className="text-sm font-semibold text-arka-text">
-          {t("credit.successTitle")}
-        </p>
-        <p className="mt-1 text-xs text-arka-text-muted">
-          {t("credit.successDesc")}
-        </p>
-        <a
-          href={`https://basescan.org/tx/${borrowTxHash}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-block text-xs font-medium text-arka-accent hover:underline"
-        >
-          {t("credit.viewBasescan")}
-        </a>
-      </Card>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <Card>
-        <p className="mb-3 text-sm font-medium text-arka-text">
-          {t("credit.openDesc")}
-        </p>
-
-        {/* Collateral slider */}
-        <label className="text-xs font-medium text-arka-text-muted">
-          {t("credit.lockLabel")}
-        </label>
-        <div className="mt-1 flex items-center gap-3">
-          <input
-            type="range"
-            min={10}
-            max={100}
-            step={1}
-            value={collateralPct}
-            onChange={(e) => setCollateralPct(Number(e.target.value))}
-            className="flex-1 accent-arka-accent"
-          />
-          <span className="w-24 text-right font-mono text-sm text-arka-text">
-            {formatCbBtc(collateralAmount, localeStr)} BTC
-          </span>
-        </div>
-
-        {/* Borrow slider */}
-        <label className="mt-4 block text-xs font-medium text-arka-text-muted">
-          {t("credit.borrowLabel")}
-        </label>
-        <div className="mt-1 flex items-center gap-3">
-          <input
-            type="range"
-            min={5}
-            max={100}
-            step={1}
-            value={borrowPct}
-            onChange={(e) => setBorrowPct(Number(e.target.value))}
-            className="flex-1 accent-arka-accent"
-          />
-          <span className="w-28 text-right font-mono text-sm text-arka-text">
-            ${formatUsdc(borrowAmount, localeStr)}
-          </span>
-        </div>
-        <p className="mt-1 text-right text-[11px] text-arka-text-muted">
-          {t("credit.maxBorrow")}: ${formatUsdc(maxBorrow, localeStr)}
-        </p>
-      </Card>
-
-      {/* Safety preview */}
-      <Card>
-        <SafetyMeter
-          score={previewHealth.safetyScore}
-          zone={previewHealth.zone}
-          label={t("credit.safetyLabel")}
-        />
-        <div className="mt-3 flex items-center justify-between text-xs text-arka-text-muted">
-          <span>{t("credit.interestRate")}</span>
-          <span className="font-medium text-arka-text">~4.5% {t("credit.aprNote")}</span>
-        </div>
-      </Card>
-
-      {error && (
-        <p className="text-sm text-red-600" role="alert">
-          {error}
-        </p>
-      )}
-
-      <Button
-        onClick={handleOpen}
-        disabled={busy || borrowAmount <= BigInt(0) || previewHealth.zone === "danger"}
-      >
-        {busy ? t("credit.confirmingBtn") : t("credit.confirmBtn")}
-      </Button>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Recovery card: supplied collateral but no debt drawn yet
-// ---------------------------------------------------------------------------
-
-function FinishBorrowCard({
-  collateral,
-  oraclePrice,
-  walletAddress,
-  onSuccess,
-}: {
-  collateral: bigint;
-  oraclePrice: bigint;
-  walletAddress: string;
-  onSuccess: () => void;
-}) {
-  const t = useT();
-  const { locale } = useLocale();
-  const localeStr = locale === "id" ? "id-ID" : "en-US";
-
-  const [borrowPct, setBorrowPct] = useState(50);
-  const { borrow, busy, error, txHash } = useBorrowAgainstCollateral();
-  const createLoan = useCreateCreditLoan();
-
-  const maxBorrow = useMemo(
-    () => maxSafeBorrow(collateral, oraclePrice),
-    [collateral, oraclePrice],
-  );
-
-  const borrowAmount = useMemo(
-    () => (maxBorrow * BigInt(borrowPct)) / BigInt(100),
-    [maxBorrow, borrowPct],
-  );
-
-  const previewHealth = useMemo(
-    () => deriveCreditHealth(collateral, oraclePrice, borrowAmount),
-    [collateral, oraclePrice, borrowAmount],
-  );
-
-  const handleBorrow = useCallback(async () => {
-    if (borrowAmount <= BigInt(0)) return;
-    const hash = await borrow(borrowAmount);
-    if (hash) {
-      // Persist the recovered loan. The collateral is already on-chain from an
-      // earlier supply tx we don't hold a hash for, so we reuse this borrow
-      // hash as both the lock and borrow reference.
-      await createLoan({
-        walletAddress,
-        collateralRaw: collateral.toString(),
-        borrowRaw: borrowAmount.toString(),
-        lockTxHash: hash,
-        borrowTxHash: hash,
-      });
-      onSuccess();
-    }
-  }, [borrow, createLoan, borrowAmount, collateral, walletAddress, onSuccess]);
-
-  if (txHash) {
-    return (
-      <Card className="text-center">
-        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl">
-          ✓
-        </div>
-        <p className="text-sm font-semibold text-arka-text">
-          {t("credit.successTitle")}
-        </p>
-        <p className="mt-1 text-xs text-arka-text-muted">
-          {t("credit.successDesc")}
-        </p>
-        <a
-          href={`https://basescan.org/tx/${txHash}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-block text-xs font-medium text-arka-accent hover:underline"
-        >
-          {t("credit.viewBasescan")}
-        </a>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <div className="mb-3 rounded-lg bg-amber-50 p-3 text-xs font-medium text-amber-900">
-        {t("credit.finishBorrowNotice")}
-      </div>
-
-      <p className="mb-3 text-sm font-medium text-arka-text">
-        {t("credit.finishBorrowDesc")}
-      </p>
-
-      <label className="text-xs font-medium text-arka-text-muted">
-        {t("credit.borrowLabel")}
-      </label>
-      <div className="mt-1 flex items-center gap-3">
-        <input
-          type="range"
-          min={5}
-          max={100}
-          step={1}
-          value={borrowPct}
-          onChange={(e) => setBorrowPct(Number(e.target.value))}
-          className="flex-1 accent-arka-accent"
-        />
-        <span className="w-28 text-right font-mono text-sm text-arka-text">
-          ${formatUsdc(borrowAmount, localeStr)}
-        </span>
-      </div>
-      <p className="mt-1 text-right text-[11px] text-arka-text-muted">
-        {t("credit.maxBorrow")}: ${formatUsdc(maxBorrow, localeStr)}
-      </p>
-
-      <div className="mt-4">
-        <SafetyMeter
-          score={previewHealth.safetyScore}
-          zone={previewHealth.zone}
-          label={t("credit.safetyLabel")}
-        />
-      </div>
-
-      {error && (
-        <p className="mt-3 text-sm text-red-600" role="alert">
-          {error}
-        </p>
-      )}
-
-      <Button
-        className="mt-4"
-        onClick={handleBorrow}
-        disabled={
-          busy || borrowAmount <= BigInt(0) || previewHealth.zone === "danger"
-        }
-      >
-        {busy ? t("credit.finishBorrowBusy") : t("credit.finishBorrowBtn")}
-      </Button>
-    </Card>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Active position view
-// ---------------------------------------------------------------------------
-
-function ActivePosition({
-  onRefresh,
-  activeLoan,
-  onLoanSettled,
-  walletAddress,
-  onLoanCreated,
-}: {
-  onRefresh: () => void;
-  activeLoan?: CreditLoanRecord | null;
-  onLoanSettled?: () => void;
-  walletAddress?: string;
-  onLoanCreated?: () => void;
-}) {
-  const { data } = useCreditPosition();
-  const t = useT();
-  const { locale } = useLocale();
-  const localeStr = locale === "id" ? "id-ID" : "en-US";
-  const [repayMode, setRepayMode] = useState(false);
-  const [repayInput, setRepayInput] = useState("");
-
-  const { repay, busy: repayBusy, error: repayError, txHash: repayTx } =
-    useRepayCreditLine();
-  const {
-    withdraw,
-    busy: withdrawBusy,
-    error: withdrawError,
-    txHash: withdrawTx,
-  } = useWithdrawCollateral();
-  const settleLoan = useSettleCreditLoan();
-
-  if (!data) return null;
-
-  const {
-    position,
-    borrowedAssets,
-    health,
-    usdcBalance,
-    borrowApyPercent,
-    oraclePrice,
-  } = data;
-
-  const hasStrandedCollateral =
-    position.borrowShares === BigInt(0) && position.collateral > BigInt(0);
-  const canWithdraw = hasStrandedCollateral;
-
-  const repayAllSufficient = usdcBalance >= borrowedAssets;
-
-  const debtUsd = Number(borrowedAssets) / 10 ** USDC_DECIMALS;
-  const dailyInterest = debtUsd * (borrowApyPercent / 100) / 365;
-
-  const usdcMaxStr = (Number(usdcBalance) / 10 ** USDC_DECIMALS).toFixed(6);
-
-  const handleRepay = async () => {
-    if (!repayInput.trim()) return;
-    const amount = BigInt(
-      Math.round(parseFloat(repayInput) * 10 ** USDC_DECIMALS),
-    );
-    if (amount <= BigInt(0)) return;
-    const hash = await repay(amount);
-    if (hash) {
-      setRepayMode(false);
-      setRepayInput("");
-      onRefresh();
-    }
-  };
-
-  const handleRepayAll = async () => {
-    if (!repayAllSufficient) return;
-    const hash = await repay(BigInt(0), {
-      fullRepayShares: position.borrowShares,
-    });
-    if (hash) {
-      setRepayMode(false);
-      if (activeLoan) {
-        await settleLoan(activeLoan.id, hash);
-        onLoanSettled?.();
-      }
-      onRefresh();
-    }
-  };
-
-  const handleWithdraw = async () => {
-    const hash = await withdraw(position.collateral);
-    if (hash) onRefresh();
-  };
-
-  return (
-    <div className="space-y-4">
-      {/* Warning banners */}
-      {health.zone === "warning" && (
-        <div className="rounded-lg bg-yellow-50 p-3 text-xs font-medium text-yellow-800">
-          {t("credit.warningBanner")}
-        </div>
-      )}
-      {health.zone === "danger" && (
-        <div className="rounded-lg bg-red-50 p-3 text-xs font-medium text-red-800">
-          {t("credit.dangerBanner")}
-        </div>
-      )}
-
-      {/* Position overview card */}
-      <Card className="relative overflow-hidden">
-        <div className="absolute right-3 top-3 text-2xl font-semibold opacity-10">
-          ₿
-        </div>
-        <h2 className="text-sm font-semibold text-arka-text">
-          {t("credit.activeTitle")}
-        </h2>
-
-        <div className="mt-4 grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-wide text-arka-text-muted">
-              {t("credit.lockedBtc")}
-            </p>
-            <p className="mt-1 font-mono text-lg font-semibold text-arka-text">
-              {formatCbBtc(position.collateral, localeStr)}
-            </p>
-          </div>
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-wide text-arka-text-muted">
-              {t("credit.totalDebt")}
-            </p>
-            <p className="mt-1 font-mono text-lg font-semibold text-arka-text">
-              ${formatUsdc(borrowedAssets, localeStr)}
-            </p>
-            {borrowApyPercent > 0 && (
-              <p className="mt-0.5 text-[10px] text-arka-text-muted">
-                {borrowApyPercent.toFixed(2)}% APY · ~$
-                {dailyInterest < 0.01
-                  ? dailyInterest.toFixed(6)
-                  : dailyInterest.toFixed(2)}
-                /day
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <SafetyMeter
-            score={health.safetyScore}
-            zone={health.zone}
-            label={t("credit.healthLabel")}
-          />
-        </div>
-      </Card>
-
-      {/* Recovery: collateral supplied but no debt drawn yet
-          (happens when a prior open flow partially completed). */}
-      {hasStrandedCollateral && walletAddress && (
-        <FinishBorrowCard
-          collateral={position.collateral}
-          oraclePrice={oraclePrice}
-          walletAddress={walletAddress}
-          onSuccess={() => {
-            onRefresh();
-            onLoanCreated?.();
+          className="h-full rounded-full transition-all"
+          style={{
+            width: `${Math.max(6, Math.min(100, score))}%`,
+            background: z.color,
           }}
         />
-      )}
-
-      {/* Cash out to bank / e-wallet (USDC → IDR offramp) — always rendered so
-          the transaction history remains accessible after balance hits 0. */}
-      <OfframpClient usdcBalance={usdcBalance} />
-
-      {/* Repay section */}
-      {borrowedAssets > BigInt(0) && (
-        <Card>
-          {repayMode ? (
-            <div className="space-y-3">
-              <label className="text-xs font-medium text-arka-text-muted">
-                {t("credit.repayAmountLabel")}
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  value={repayInput}
-                  onChange={(e) => setRepayInput(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full rounded-lg border border-arka-border bg-arka-surface px-3 py-2.5 pr-16 font-mono text-sm text-arka-text outline-none focus:border-arka-accent"
-                />
-                <button
-                  type="button"
-                  onClick={() => setRepayInput(usdcMaxStr)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-arka-accent/10 px-2.5 py-1 text-[11px] font-semibold text-arka-accent hover:bg-arka-accent/20"
-                >
-                  {t("credit.maxBtn")}
-                </button>
-              </div>
-              <p className="text-xs text-arka-text-muted">
-                {t("credit.usdcBalance")}: ${formatUsdc(usdcBalance, localeStr)}
-              </p>
-
-              {repayError && (
-                <p className="text-xs text-red-600">{repayError}</p>
-              )}
-              {repayTx && (
-                <a
-                  href={`https://basescan.org/tx/${repayTx}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-arka-accent hover:underline"
-                >
-                  {t("credit.repaySuccess")} →
-                </a>
-              )}
-
-              <div className="grid grid-cols-2 gap-2">
-                <Button onClick={handleRepay} disabled={repayBusy}>
-                  {repayBusy ? t("credit.repaying") : t("credit.repayBtn")}
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={handleRepayAll}
-                  disabled={repayBusy || !repayAllSufficient}
-                >
-                  {t("credit.repayAll")}
-                </Button>
-              </div>
-              {!repayAllSufficient && (
-                <p className="text-[11px] text-amber-600">
-                  {t("credit.repayAllInsufficient")}
-                </p>
-              )}
-              <button
-                type="button"
-                onClick={() => setRepayMode(false)}
-                className="text-xs text-arka-text-muted hover:text-arka-text"
-              >
-                ← Kembali
-              </button>
-            </div>
-          ) : (
-            <Button onClick={() => setRepayMode(true)}>
-              {t("credit.repayBtn")}
-            </Button>
-          )}
-        </Card>
-      )}
-
-      {/* Withdraw collateral (only when fully repaid) */}
-      {canWithdraw && (
-        <Card>
-          {withdrawTx ? (
-            <a
-              href={`https://basescan.org/tx/${withdrawTx}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-arka-accent hover:underline"
-            >
-              {t("credit.withdrawSuccess")} →
-            </a>
-          ) : (
-            <>
-              {withdrawError && (
-                <p className="mb-2 text-xs text-red-600">{withdrawError}</p>
-              )}
-              <Button onClick={handleWithdraw} disabled={withdrawBusy}>
-                {withdrawBusy
-                  ? t("credit.withdrawing")
-                  : t("credit.withdrawBtn")}
-              </Button>
-            </>
-          )}
-        </Card>
-      )}
+      </div>
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Fulfilled loan card
-// ---------------------------------------------------------------------------
+// ---------- BorrowSetup ----------
 
-function FulfilledLoanCard({
-  loan,
-  onOpenNew,
-}: {
-  loan: CreditLoanRecord;
-  onOpenNew: () => void;
-}) {
+function BorrowSetup() {
   const t = useT();
-  const { locale } = useLocale();
-  const localeStr = locale === "id" ? "id-ID" : "en-US";
+  const { currency } = useCurrency();
+  const { data } = useCreditPosition();
+  const { open, busy, error } = useOpenCreditLine();
 
-  const collateral = Number(loan.collateralRaw) / 1e8;
-  const borrow = Number(loan.borrowRaw) / 10 ** USDC_DECIMALS;
+  const [pct, setPct] = useState(50);
 
-  const fmtDate = (iso: string) =>
-    new Date(iso).toLocaleDateString(localeStr, {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const cbBtc = data?.cbBtcBalance ?? BigInt(0);
+  const collateralAmount = (cbBtc * BigInt(Math.floor(pct))) / BigInt(100);
+  const maxBorrow = data
+    ? maxSafeBorrow(collateralAmount, data.oraclePrice)
+    : BigInt(0);
+
+  const borrowUsd = Number(formatUnits(maxBorrow, USDC_DECIMALS));
+  const fiat = currency === "USD" ? borrowUsd : borrowUsd * IDR_FALLBACK_PER_USD;
+
+  const handleOpen = useCallback(async () => {
+    if (collateralAmount <= BigInt(0) || maxBorrow <= BigInt(0)) return;
+    try {
+      await open({ collateralAmount, borrowAmount: maxBorrow });
+    } catch {
+      /* surfaced via error state */
+    }
+  }, [open, collateralAmount, maxBorrow]);
+
+  if (!data) {
+    return (
+      <Card>
+        <div className="h-20 animate-pulse rounded bg-arka-border/40" />
+      </Card>
+    );
+  }
+
+  if (cbBtc === BigInt(0)) {
+    return (
+      <Card className="text-center">
+        <p
+          className="text-sm"
+          style={{ color: "var(--arka-text-muted)" }}
+        >
+          {t("credit.noBtc")}
+        </p>
+        <div className="mt-3">
+          <a
+            href="/save"
+            className="inline-block rounded-[10px] px-3 py-2 text-[12px] font-extrabold"
+            style={{
+              color: "var(--arka-accent)",
+              background: "var(--arka-accent-soft)",
+            }}
+          >
+            {t("credit.noBtcBtn")}
+          </a>
+        </div>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="relative overflow-hidden">
-      <div className="absolute right-3 top-3 text-2xl font-semibold text-green-200">
-        ✓
-      </div>
+    <div className="space-y-4">
+      <Hero
+        title={t("credit.openTitle")}
+        primary={shortFiat(fiat, currency)}
+        secondary={`≈ ${formatCbBtc(collateralAmount)} BTC ${t(
+          "credit.lockLabel",
+        )}`}
+      />
 
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-lg text-green-700">
-          ✓
-        </div>
-        <div>
-          <h2 className="text-sm font-semibold text-arka-text">
-            {t("credit.loanFulfilled")}
-          </h2>
-          <p className="text-[11px] text-arka-text-muted">
-            {t("credit.settledOn")} {fmtDate(loan.settledAt!)}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
-        <div>
-          <p className="text-[10px] font-medium uppercase tracking-wide text-arka-text-muted">
-            {t("credit.lockedBtc")}
-          </p>
-          <p className="mt-0.5 font-mono font-semibold text-arka-text">
-            {collateral.toFixed(8)} BTC
-          </p>
-        </div>
-        <div>
-          <p className="text-[10px] font-medium uppercase tracking-wide text-arka-text-muted">
-            {t("credit.outstanding")}
-          </p>
-          <p className="mt-0.5 font-mono font-semibold text-arka-text">
-            ${borrow.toFixed(6)} USDC
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-4 space-y-1.5">
-        <TxLink label={t("credit.lockBtcTx")} hash={loan.lockTxHash} />
-        <TxLink label={t("credit.borrowTx")} hash={loan.borrowTxHash} />
-        {loan.settleTxHash && (
-          <TxLink label={t("credit.settleTx")} hash={loan.settleTxHash} />
-        )}
-      </div>
-
-      <p className="mt-3 text-[10px] text-arka-text-muted">
-        {t("credit.openedOn")} {fmtDate(loan.openedAt)}
-      </p>
-
-      <Button className="mt-4" onClick={onOpenNew}>
-        {t("credit.openNewCredit")}
-      </Button>
-    </Card>
-  );
-}
-
-function TxLink({ label, hash }: { label: string; hash: string }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-[11px] text-arka-text-muted">{label}</span>
-      <a
-        href={`https://basescan.org/tx/${hash}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-[11px] font-medium text-arka-accent hover:underline"
-      >
-        {hash.slice(0, 8)}…{hash.slice(-6)} →
-      </a>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Main credit client
-// ---------------------------------------------------------------------------
-
-export function CreditClient() {
-  const { ready, authenticated } = usePrivy();
-  const t = useT();
-  const { data, loading, error, refetch, address } = useCreditPosition();
-  const {
-    loans,
-    loading: loansLoading,
-    refetch: refetchLoans,
-  } = useCreditLoans();
-  const [showOpenFlow, setShowOpenFlow] = useState(false);
-
-  const activeLoan = loans.find((l) => l.status === "active") ?? null;
-  const latestFulfilled = loans.find((l) => l.status === "fulfilled") ?? null;
-
-  const handleOpenSuccess = useCallback(
-    (_data: OpenSuccessData) => {
-      setShowOpenFlow(false);
-      refetch();
-      refetchLoans();
-    },
-    [refetch, refetchLoans],
-  );
-
-  const handleLoanSettled = useCallback(() => {
-    refetchLoans();
-  }, [refetchLoans]);
-
-  if (!ready || !authenticated) return null;
-
-  const hasPosition =
-    data &&
-    (data.position.collateral > BigInt(0) ||
-      data.position.borrowShares > BigInt(0));
-  const hasBtc = data && data.cbBtcBalance > BigInt(0);
-
-  const showFulfilledCard =
-    data && !hasPosition && !showOpenFlow && latestFulfilled;
-
-  return (
-    <Screen title={t("credit.title")} subtitle={t("credit.subtitle")}>
-      {(loading || loansLoading) && !data && (
+      <Card>
         <div className="space-y-3">
-          {[1, 2].map((i) => (
-            <div
-              key={i}
-              className="h-24 animate-pulse rounded-[var(--radius-card)] bg-arka-border/60"
-            />
-          ))}
+          <div className="flex items-center justify-between">
+            <span
+              className="text-[12px]"
+              style={{ color: "var(--arka-text-muted)" }}
+            >
+              {t("credit.lockLabel")}
+            </span>
+            <span className="text-[13px] font-extrabold tabular-nums">
+              {pct}%
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={pct}
+            onChange={(e) => setPct(Number(e.target.value))}
+            className="w-full accent-[var(--arka-accent)]"
+          />
+          <StatRow
+            label={t("credit.maxBorrow")}
+            value={`${formatUsdc(maxBorrow)} USDC`}
+            tone="accent"
+          />
+          <StatRow
+            label={t("credit.interestRate")}
+            value={`~ ${(Number(MAX_BORROW_LTV_RATIO) * 0 + 6).toFixed(2)}% APR`}
+          />
         </div>
-      )}
+      </Card>
 
-      {error && (
-        <p className="mb-4 text-sm text-red-600" role="alert">
+      {error ? (
+        <p className="text-xs" style={{ color: "var(--arka-danger)" }}>
           {error}
         </p>
-      )}
+      ) : null}
 
-      {/* State 1: Active position */}
-      {data && hasPosition && (
-        <ActivePosition
-          onRefresh={refetch}
-          activeLoan={activeLoan}
-          onLoanSettled={handleLoanSettled}
-          walletAddress={address}
-          onLoanCreated={refetchLoans}
-        />
-      )}
-
-      {/* State 2: Fulfilled loan — no active on-chain position */}
-      {showFulfilledCard && (
-        <FulfilledLoanCard
-          loan={latestFulfilled}
-          onOpenNew={() => setShowOpenFlow(true)}
-        />
-      )}
-
-      {/* State 3: Open flow (no position, has BTC, no recent fulfilled or user clicked "Open New") */}
-      {data &&
-        !hasPosition &&
-        hasBtc &&
-        !showFulfilledCard &&
-        address && (
-          <OpenCreditFlow
-            cbBtcBalance={data.cbBtcBalance}
-            oraclePrice={data.oraclePrice}
-            walletAddress={address}
-            onSuccess={handleOpenSuccess}
-          />
-        )}
-
-      {/* Explicit open flow after clicking "Open New Credit" on fulfilled card */}
-      {data && !hasPosition && showOpenFlow && address && (
-        <OpenCreditFlow
-          cbBtcBalance={data.cbBtcBalance}
-          oraclePrice={data.oraclePrice}
-          walletAddress={address}
-          onSuccess={handleOpenSuccess}
-        />
-      )}
-
-      {/* State 4: No BTC at all, no fulfilled loan */}
-      {data && !hasPosition && !hasBtc && !showFulfilledCard && (
-        <Card className="text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-2xl">
-            ₿
-          </div>
-          <p className="text-sm text-arka-text-muted">{t("credit.noBtc")}</p>
-          <Link href="/dca" className="mt-3 inline-block">
-            <Button variant="primary" className="w-auto min-w-[10rem]">
-              {t("credit.noBtcBtn")}
-            </Button>
-          </Link>
-        </Card>
-      )}
+      <GradButton onClick={handleOpen} disabled={busy || maxBorrow === BigInt(0)}>
+        {busy ? t("credit.confirmingBtn") : t("credit.confirmBtn")}
+      </GradButton>
 
       <CreditEducation />
-    </Screen>
+    </div>
+  );
+}
+
+// ---------- BorrowActive ----------
+
+type ActivePanel = "borrow" | "repay" | null;
+
+function BorrowActive() {
+  const t = useT();
+  const { currency } = useCurrency();
+  const { data, refetch } = useCreditPosition();
+  const borrowMore = useBorrowAgainstCollateral();
+  const repay = useRepayCreditLine();
+  const withdrawCollat = useWithdrawCollateral();
+
+  const [panel, setPanel] = useState<ActivePanel>(null);
+  const togglePanel = (p: ActivePanel) =>
+    setPanel((cur) => (cur === p ? null : p));
+
+  const [borrowAmt, setBorrowAmt] = useState("");
+  const [repayAmt, setRepayAmt] = useState("");
+
+  // Max additional borrow available against the currently-locked collateral,
+  // after subtracting outstanding debt.
+  const maxAdditionalBorrow = useMemo(() => {
+    if (!data) return BigInt(0);
+    const cap = maxSafeBorrow(data.position.collateral, data.oraclePrice);
+    if (cap <= data.borrowedAssets) return BigInt(0);
+    return cap - data.borrowedAssets;
+  }, [data]);
+
+  const doBorrowMore = useCallback(async () => {
+    const n = Number(borrowAmt);
+    if (!Number.isFinite(n) || n <= 0) return;
+    try {
+      await borrowMore.borrow(parseUnits(n.toFixed(USDC_DECIMALS), USDC_DECIMALS));
+      setBorrowAmt("");
+      await refetch();
+    } catch {
+      /* error surfaced by hook */
+    }
+  }, [borrowAmt, borrowMore, refetch]);
+
+  const doRepay = useCallback(async () => {
+    const n = Number(repayAmt);
+    if (!Number.isFinite(n) || n <= 0) return;
+    try {
+      await repay.repay(parseUnits(n.toFixed(USDC_DECIMALS), USDC_DECIMALS));
+      setRepayAmt("");
+      await refetch();
+    } catch {
+      /* error surfaced by hook */
+    }
+  }, [repayAmt, repay, refetch]);
+
+  const doRepayAll = useCallback(async () => {
+    if (!data) return;
+    const shares = data.position.borrowShares;
+    if (shares <= BigInt(0)) return;
+    // Guard: require USDC balance ≥ outstanding debt (with tiny buffer for rounding).
+    if (data.usdcBalance < data.borrowedAssets) {
+      return;
+    }
+    try {
+      await repay.repay(BigInt(0), { fullRepayShares: shares });
+      setRepayAmt("");
+      await refetch();
+    } catch {
+      /* error surfaced by hook */
+    }
+  }, [data, repay, refetch]);
+
+  const doWithdrawAllCollateral = useCallback(async () => {
+    if (!data) return;
+    const amount = data.position.collateral;
+    if (amount <= BigInt(0)) return;
+    try {
+      await withdrawCollat.withdraw(amount);
+      await refetch();
+    } catch {
+      /* error surfaced by hook */
+    }
+  }, [data, withdrawCollat, refetch]);
+
+  if (!data) {
+    return (
+      <Card>
+        <div className="h-28 animate-pulse rounded bg-arka-border/40" />
+      </Card>
+    );
+  }
+
+  const outstandingUsd = Number(
+    formatUnits(data.borrowedAssets, USDC_DECIMALS),
+  );
+  const outstandingFiat =
+    currency === "USD" ? outstandingUsd : outstandingUsd * IDR_FALLBACK_PER_USD;
+
+  const collatBtc = Number(
+    formatUnits(data.position.collateral, CBBTC_DECIMALS),
+  );
+
+  const health = deriveCreditHealth(
+    data.position.collateral,
+    data.oraclePrice,
+    data.borrowedAssets,
+  );
+
+  const isFullyRepaid =
+    data.borrowedAssets === BigInt(0) &&
+    data.position.borrowShares === BigInt(0) &&
+    data.position.collateral > BigInt(0);
+
+  const usdcBal = data.usdcBalance;
+  const canRepayAll =
+    data.borrowedAssets > BigInt(0) && usdcBal >= data.borrowedAssets;
+
+  // ----- Fully repaid state: only withdraw-collateral is available -----
+  if (isFullyRepaid) {
+    return (
+      <div className="space-y-4">
+        <Hero
+          title={t("credit.repaidTitle")}
+          primary={`${collatBtc.toFixed(6)} BTC`}
+          secondary={t("credit.repaidDesc")}
+        />
+
+        <Card>
+          <StatRow
+            label={t("credit.outstanding")}
+            value={`0.00 USDC`}
+            tone="success"
+          />
+          <StatRow
+            label={t("credit.lockedBtc")}
+            value={`${collatBtc.toFixed(6)} BTC`}
+          />
+        </Card>
+
+        {withdrawCollat.error ? (
+          <p className="text-xs" style={{ color: "var(--arka-danger)" }}>
+            {withdrawCollat.error}
+          </p>
+        ) : null}
+
+        <GradButton
+          onClick={doWithdrawAllCollateral}
+          disabled={withdrawCollat.busy}
+        >
+          {withdrawCollat.busy
+            ? t("credit.withdrawing")
+            : t("credit.withdrawAllCollatBtn")}
+        </GradButton>
+
+        <CreditEducation />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <Hero
+        title={t("credit.activeTitle")}
+        primary={shortFiat(outstandingFiat, currency)}
+        secondary={`${formatUsdc(data.borrowedAssets)} USDC · ${collatBtc.toFixed(
+          6,
+        )} BTC ${t("credit.lockedBtc").toLowerCase()}`}
+      />
+
+      <Card>
+        <StatRow
+          label={t("credit.outstanding")}
+          value={`${formatUsdc(data.borrowedAssets)} USDC`}
+        />
+        <StatRow
+          label={t("credit.lockedBtc")}
+          value={`${collatBtc.toFixed(6)} BTC`}
+        />
+        <HealthBar
+          score={health.safetyScore}
+          zone={health.zone}
+          label={t("credit.healthLabel")}
+        />
+      </Card>
+
+      <div className="grid grid-cols-2 gap-2">
+        {[
+          { key: "borrow" as const, label: t("credit.borrowMoreBtn") },
+          { key: "repay" as const, label: t("credit.repayBtn") },
+        ].map((b) => {
+          const active = panel === b.key;
+          return (
+            <button
+              key={b.key}
+              type="button"
+              onClick={() => togglePanel(b.key)}
+              className="rounded-[14px] px-3 py-3 text-[12px] font-extrabold transition"
+              style={{
+                background: active
+                  ? "var(--arka-accent)"
+                  : "var(--arka-surface)",
+                color: active ? "#fff" : "var(--arka-text)",
+                boxShadow: "var(--arka-shadow-card)",
+              }}
+              data-pressable
+            >
+              {b.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <InlinePanel open={panel === "borrow"}>
+        <Card className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="w-amt">{t("credit.borrowLabel")}</Label>
+            <button
+              type="button"
+              onClick={() =>
+                setBorrowAmt(
+                  formatUnits(maxAdditionalBorrow, USDC_DECIMALS),
+                )
+              }
+              className="rounded-[8px] px-2 py-1 text-[11px] font-extrabold"
+              style={{
+                color: "var(--arka-accent)",
+                background: "var(--arka-accent-soft)",
+              }}
+              data-pressable
+              disabled={maxAdditionalBorrow === BigInt(0)}
+            >
+              {t("credit.maxBtn")}
+            </button>
+          </div>
+          <Input
+            id="w-amt"
+            inputMode="decimal"
+            value={borrowAmt}
+            onChange={(e) => setBorrowAmt(e.target.value)}
+            placeholder="0.00"
+          />
+          <div
+            className="text-[11px]"
+            style={{ color: "var(--arka-text-muted)" }}
+          >
+            {t("credit.maxAvailable")}:{" "}
+            <span
+              className="font-extrabold tabular-nums"
+              style={{ color: "var(--arka-accent)" }}
+            >
+              {formatUsdc(maxAdditionalBorrow)} USDC
+            </span>
+          </div>
+          {borrowMore.error ? (
+            <p className="text-xs" style={{ color: "var(--arka-danger)" }}>
+              {borrowMore.error}
+            </p>
+          ) : null}
+          <GradButton
+            onClick={doBorrowMore}
+            disabled={borrowMore.busy || maxAdditionalBorrow === BigInt(0)}
+          >
+            {borrowMore.busy
+              ? t("credit.confirmingBtn")
+              : t("credit.finishBorrowBtn")}
+          </GradButton>
+        </Card>
+      </InlinePanel>
+
+      <InlinePanel open={panel === "repay"}>
+        <Card className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="r-amt">{t("credit.repayAmountLabel")}</Label>
+            <div
+              className="text-[11px]"
+              style={{ color: "var(--arka-text-muted)" }}
+            >
+              {t("credit.usdcBalance")}:{" "}
+              <span className="font-extrabold tabular-nums">
+                {formatUsdc(usdcBal)}
+              </span>
+            </div>
+          </div>
+          <Input
+            id="r-amt"
+            inputMode="decimal"
+            value={repayAmt}
+            onChange={(e) => setRepayAmt(e.target.value)}
+            placeholder="0.00"
+          />
+          {repay.error ? (
+            <p className="text-xs" style={{ color: "var(--arka-danger)" }}>
+              {repay.error}
+            </p>
+          ) : null}
+          <div className="grid grid-cols-2 gap-2">
+            <GradButton onClick={doRepay} disabled={repay.busy}>
+              {repay.busy ? t("credit.repaying") : t("credit.repayBtn")}
+            </GradButton>
+            <button
+              type="button"
+              onClick={doRepayAll}
+              disabled={repay.busy || !canRepayAll}
+              className="rounded-[14px] px-3 py-3 text-[13px] font-extrabold transition disabled:opacity-50"
+              style={{
+                background: "var(--arka-surface)",
+                color: "var(--arka-accent)",
+                boxShadow: "var(--arka-shadow-card)",
+                border: "1px solid var(--arka-accent-soft)",
+              }}
+              data-pressable
+            >
+              {repay.busy ? t("credit.repaying") : t("credit.repayAll")}
+            </button>
+          </div>
+          {!canRepayAll && data.borrowedAssets > BigInt(0) ? (
+            <p
+              className="text-[11px]"
+              style={{ color: "var(--arka-text-muted)" }}
+            >
+              {t("credit.repayAllInsufficient")}
+            </p>
+          ) : null}
+        </Card>
+      </InlinePanel>
+
+      {health.zone === "warning" ? (
+        <div
+          className="rounded-[12px] p-3 text-[12px]"
+          style={{
+            background: "var(--arka-warning-soft)",
+            color: "var(--arka-warning)",
+          }}
+        >
+          {t("credit.warningBanner")}
+        </div>
+      ) : null}
+      {health.zone === "danger" ? (
+        <div
+          className="rounded-[12px] p-3 text-[12px]"
+          style={{
+            background: "rgba(196,48,48,0.08)",
+            color: "var(--arka-danger)",
+          }}
+        >
+          {t("credit.dangerBanner")}
+        </div>
+      ) : null}
+
+      <CreditEducation />
+    </div>
+  );
+}
+
+// ---------- Root ----------
+
+function BackHeader({ title }: { title: string }) {
+  return (
+    <div className="flex items-center gap-3 pt-12">
+      <a
+        href="/home"
+        aria-label="Back"
+        className="flex h-10 w-10 items-center justify-center rounded-[12px]"
+        data-pressable
+        style={{
+          background: "var(--arka-surface)",
+          boxShadow: "var(--arka-shadow-card)",
+          color: "var(--arka-text)",
+        }}
+      >
+        ←
+      </a>
+      <div
+        className="text-lg font-extrabold"
+        style={{ color: "var(--arka-text)", letterSpacing: -0.4 }}
+      >
+        {title}
+      </div>
+    </div>
+  );
+}
+
+export function CreditClient() {
+  const t = useT();
+  const { data, loading } = useCreditPosition();
+
+  const hasPosition = useMemo(() => {
+    if (!data) return false;
+    return (
+      data.position.collateral > BigInt(0) ||
+      data.position.borrowShares > BigInt(0)
+    );
+  }, [data]);
+
+  return (
+    <div className="px-5 pb-14">
+      <BackHeader title={t("credit.title")} />
+      <div className="mt-5">
+        {loading && !data ? (
+          <Card>
+            <div className="h-28 animate-pulse rounded bg-arka-border/40" />
+          </Card>
+        ) : hasPosition ? (
+          <BorrowActive />
+        ) : (
+          <BorrowSetup />
+        )}
+      </div>
+    </div>
   );
 }

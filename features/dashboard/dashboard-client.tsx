@@ -1,25 +1,27 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { LogoMark, LogoTile } from "@/components/brand/logo";
 import { Card } from "@/components/ui/card";
-import { fetchWithPrivy } from "@/lib/api";
-import { defaultChainId } from "@/lib/chains";
-import { IDRX_DECIMALS, INTERVAL_PRESETS, erc20Abi } from "@/lib/contracts/arka-dca";
-import { USDC_ADDRESS, USDC_DECIMALS } from "@/lib/contracts/morpho-credit";
-import { getBasePublicClient } from "@/lib/base-client";
-import { useDcaOrder } from "@/hooks/use-dca-contract";
-import { useCreditPosition, formatUsdc, formatCbBtc } from "@/hooks/use-credit-line";
-import { useLocale, useT } from "@/lib/i18n";
-import { resolveWalletDisplayAddress } from "@/lib/privy-destination-wallet";
-import { TransactionList } from "@/features/transactions/transaction-list";
-import type { MintTransaction } from "@/types/transaction";
 import {
-  useActiveWallet,
-  usePrivy,
-  useWallets,
-} from "@privy-io/react-auth";
+  ActivityRow,
+  relativeTime,
+  type ActivityItem,
+} from "@/features/transactions/activity-row";
+import { useBalances } from "@/hooks/use-balances";
+import { useCreditPosition } from "@/hooks/use-credit-line";
+import { useDcaOrder } from "@/hooks/use-dca-contract";
+import { fetchWithPrivy } from "@/lib/api";
+import { useCurrency } from "@/lib/currency";
+import { useDisplayUnit } from "@/lib/display-unit";
+import { useT } from "@/lib/i18n";
+import {
+  collateralValueInLoan,
+  USDC_DECIMALS,
+} from "@/lib/contracts/morpho-credit";
+import { IDRX_DECIMALS, INTERVAL_PRESETS } from "@/lib/contracts/arka-dca";
+import { usePrivy } from "@privy-io/react-auth";
 import Link from "next/link";
-import { formatUnits } from "viem";
+import { useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -29,656 +31,513 @@ import {
   useState,
 } from "react";
 
-type BalanceTab = "IDRX" | "BTC" | "USDC";
+const IDR_FALLBACK_PER_USD = 16_500;
 
-function shortenAddr(a: string) {
-  if (a.length < 12) return a;
-  return `${a.slice(0, 6)}…${a.slice(-4)}`;
+type MintTx = {
+  id: string;
+  paymentStatus?: string;
+  paymentAmount?: number;
+  toBeMinted?: string | number;
+  createdAt: string;
+  txHash?: string | null;
+};
+
+function greetKey() {
+  const h = new Date().getHours();
+  if (h < 11) return "home.greet.morning";
+  if (h < 17) return "home.greet.afternoon";
+  return "home.greet.evening";
 }
 
-function DcaDashboardCard() {
-  const { order, loading } = useDcaOrder();
-  const t = useT();
-  const { locale } = useLocale();
-
-  if (loading) {
-    return (
-      <section className="mt-6">
-        <Card className="flex items-start gap-3 border-arka-border/80 bg-arka-surface-muted/40">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-arka-border bg-arka-surface text-xs font-semibold text-arka-text-muted"
-            aria-hidden
-          >
-            DCA
-          </div>
-          <div className="flex-1">
-            <div className="h-4 w-24 animate-pulse rounded bg-arka-border/60" />
-            <div className="mt-2 h-3 w-40 animate-pulse rounded bg-arka-border/40" />
-          </div>
-        </Card>
-      </section>
-    );
+function shortFiat(v: number, currency: "IDR" | "USD"): string {
+  if (!Number.isFinite(v)) return "—";
+  if (currency === "USD") {
+    if (v >= 1000)
+      return `$${(v / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k`;
+    return `$${v.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
   }
+  if (v >= 1_000_000)
+    return `Rp ${(v / 1_000_000).toLocaleString("id-ID", { maximumFractionDigits: 1 })}jt`;
+  if (v >= 1_000)
+    return `Rp ${(v / 1_000).toLocaleString("id-ID", { maximumFractionDigits: 0 })}rb`;
+  return `Rp ${v.toLocaleString("id-ID")}`;
+}
 
-  if (order) {
-    const perSwapIdr = Number(order.amountPerSwap) / 10 ** IDRX_DECIMALS;
-    const intervalMatch = INTERVAL_PRESETS.find(
-      (p) => p.seconds === Number(order.interval),
-    );
-    const intervalKeys: Record<number, string> = {
-      86_400: "dca.interval.daily",
-      604_800: "dca.interval.weekly",
-      2_592_000: "dca.interval.monthly",
-    };
-    const freqLabel = intervalMatch
-      ? t(intervalKeys[intervalMatch.seconds] as Parameters<typeof t>[0])
-      : `${Number(order.interval)}s`;
-    const remaining =
-      order.totalSwaps === BigInt(0)
-        ? t("dashboard.unlimitedSwaps")
-        : `${order.executedSwaps}/${order.totalSwaps}`;
-
-    return (
-      <section className="mt-6">
-        <Link href="/dca">
-          <Card className="flex items-start gap-3 border-green-300/40 bg-green-50/20">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-100 text-xs font-semibold text-green-700">
-              DCA
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
-                <p className="text-sm font-medium text-arka-text">{t("dashboard.dcaActive")}</p>
-              </div>
-              <p className="mt-1 text-xs text-arka-text-muted">
-                Rp {perSwapIdr.toLocaleString(locale === "id" ? "id-ID" : "en-US")} · {freqLabel} ·{" "}
-                {remaining}
-              </p>
-            </div>
-          </Card>
-        </Link>
-      </section>
-    );
-  }
-
+function AvatarTile({ initial }: { initial: string }) {
   return (
-    <section className="mt-6">
-      <Link href="/dca">
-        <Card className="flex items-start gap-3 border-arka-border/80 bg-arka-surface-muted/40 transition hover:border-arka-accent/30">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-arka-border bg-arka-surface text-xs font-semibold text-arka-text-muted"
-            aria-hidden
-          >
-            DCA
-          </div>
-          <div>
-            <p className="text-sm font-medium text-arka-text">
-              {t("dashboard.dcaAutoTitle")}
-            </p>
-            <p className="mt-1 text-xs text-arka-text-muted">
-              {t("dashboard.dcaAutoDesc")}
-            </p>
-          </div>
-        </Card>
-      </Link>
-    </section>
+    <Link
+      href="/profile"
+      aria-label="Profile"
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]"
+      data-pressable
+      style={{
+        background: "var(--arka-gradient)",
+        boxShadow: "var(--arka-shadow-tile)",
+        color: "#fff",
+        fontWeight: 800,
+        fontSize: 15,
+      }}
+    >
+      {initial}
+    </Link>
   );
 }
 
-const ZONE_DOT: Record<string, string> = {
-  safe: "bg-green-500",
-  warning: "bg-yellow-500",
-  danger: "bg-red-500",
-};
-
-function CreditDashboardCard() {
-  const { data, loading } = useCreditPosition();
-  const t = useT();
-  const { locale } = useLocale();
-  const localeStr = locale === "id" ? "id-ID" : "en-US";
-
-  if (loading || !data) return null;
-
-  const hasPosition =
-    data.position.collateral > BigInt(0) || data.position.borrowShares > BigInt(0);
-  const hasBtc = data.cbBtcBalance > BigInt(0);
-
-  if (!hasPosition && !hasBtc) return null;
-
-  if (hasPosition) {
-    const dot = ZONE_DOT[data.health.zone] ?? "bg-gray-400";
+function ActionTile({
+  label,
+  onClick,
+  href,
+  icon,
+}: {
+  label: string;
+  onClick?: () => void;
+  href?: string;
+  icon: string;
+}) {
+  const body = (
+    <div
+      className="flex flex-col items-center gap-1.5 rounded-[16px] px-3 py-3.5"
+      style={{
+        background: "var(--arka-surface)",
+        boxShadow: "var(--arka-shadow-card)",
+      }}
+      data-pressable
+    >
+      <div
+        className="flex h-11 w-11 items-center justify-center rounded-[14px]"
+        style={{
+          background: "var(--arka-accent-soft)",
+          color: "var(--arka-accent)",
+          fontSize: 18,
+          fontWeight: 800,
+        }}
+      >
+        {icon}
+      </div>
+      <span
+        className="text-[11px] font-bold"
+        style={{ color: "var(--arka-text)" }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+  if (href)
     return (
-      <section className="mt-4">
-        <Link href="/credit">
-          <Card className="flex items-start gap-3 border-arka-accent/30 bg-gradient-to-r from-arka-surface to-amber-50/20">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-arka-accent/10 text-sm font-bold text-arka-accent">
-              $
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className={`inline-block h-2 w-2 rounded-full ${dot}`} />
-                <p className="text-sm font-medium text-arka-text">
-                  {t("credit.dashboardActiveLabel")}
-                </p>
-              </div>
-              <p className="mt-1 text-xs text-arka-text-muted">
-                {formatCbBtc(data.position.collateral, localeStr)} BTC · $
-                {formatUsdc(data.borrowedAssets, localeStr)} USDC
-              </p>
-            </div>
-          </Card>
+      <Link href={href} className="flex-1">
+        {body}
+      </Link>
+    );
+  return (
+    <button type="button" onClick={onClick} className="flex-1">
+      {body}
+    </button>
+  );
+}
+
+function HeroBalance({
+  sats,
+  fiat,
+  currency,
+  cashFiat,
+  creditFiat,
+}: {
+  sats: number | null;
+  fiat: number;
+  currency: "IDR" | "USD";
+  cashFiat: number;
+  creditFiat: number;
+}) {
+  const t = useT();
+  const { format: formatUnit, label: unitLabel } = useDisplayUnit();
+  return (
+    <div
+      className="relative overflow-hidden rounded-[22px] px-5 py-6 text-white"
+      style={{
+        background: "var(--arka-gradient-hero)",
+        backgroundSize: "300% 300%",
+        animation: "grad-move 14s ease infinite",
+        boxShadow: "var(--arka-shadow-hero)",
+      }}
+    >
+      <div
+        className="absolute -right-4 top-2"
+        style={{ opacity: 0.07 }}
+        aria-hidden
+      >
+        <LogoMark size={120} color="#ffffff" />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div
+          className="text-[11px] font-bold uppercase tracking-[0.1em]"
+          style={{ color: "rgba(255,255,255,0.75)" }}
+        >
+          {t("home.balance.label")}
+        </div>
+        <LogoMark size={18} color="rgba(255,255,255,0.6)" />
+      </div>
+
+      <div className="mt-3 flex items-baseline gap-1.5">
+        <span
+          className="text-[40px] font-extrabold leading-none"
+          style={{ letterSpacing: -1 }}
+        >
+          {formatUnit(sats)}
+        </span>
+        <span
+          className="text-sm font-bold"
+          style={{ color: "rgba(255,255,255,0.8)" }}
+        >
+          {unitLabel}
+        </span>
+      </div>
+      <div
+        className="mt-1.5 text-[13px]"
+        style={{ color: "rgba(255,255,255,0.8)" }}
+      >
+        {t("home.balance.sub")} {shortFiat(fiat, currency)}
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        <Link
+          href="/cash"
+          data-pressable
+          className="rounded-[14px] px-3.5 py-3"
+          style={{ background: "rgba(255,255,255,0.12)" }}
+        >
+          <div
+            className="text-[10px] font-bold uppercase tracking-[0.08em]"
+            style={{ color: "rgba(255,255,255,0.7)" }}
+          >
+            {t("home.tile.cash")}
+          </div>
+          <div className="mt-1 text-[15px] font-extrabold">
+            {shortFiat(cashFiat, currency)}
+          </div>
         </Link>
-      </section>
+        <Link
+          href="/credit"
+          data-pressable
+          className="rounded-[14px] px-3.5 py-3"
+          style={{ background: "rgba(255,255,255,0.12)" }}
+        >
+          <div
+            className="text-[10px] font-bold uppercase tracking-[0.08em]"
+            style={{ color: "rgba(255,255,255,0.7)" }}
+          >
+            {t("home.tile.credit")}
+          </div>
+          <div className="mt-1 text-[15px] font-extrabold">
+            {shortFiat(creditFiat, currency)}
+          </div>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function AutobuyNudge() {
+  const { order, loading } = useDcaOrder();
+  const t = useT();
+
+  if (loading) {
+    return (
+      <Card className="flex items-center gap-3">
+        <div className="h-10 w-10 animate-pulse rounded-[12px] bg-arka-border/60" />
+        <div className="flex-1">
+          <div className="h-4 w-32 animate-pulse rounded bg-arka-border/60" />
+          <div className="mt-2 h-3 w-40 animate-pulse rounded bg-arka-border/40" />
+        </div>
+      </Card>
     );
   }
 
-  return (
-    <section className="mt-4">
-      <Link href="/credit">
-        <Card className="flex items-start gap-3 border-arka-border/80 bg-arka-surface-muted/40 transition hover:border-arka-accent/30">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-arka-border bg-arka-surface text-sm font-bold text-arka-text-muted">
-            $
+  if (!order) {
+    return (
+      <Link href="/save" data-pressable className="block">
+        <Card className="flex items-center gap-3">
+          <LogoTile size={40} />
+          <div className="min-w-0 flex-1">
+            <div
+              className="text-[13px] font-bold"
+              style={{ color: "var(--arka-text)" }}
+            >
+              {t("home.autobuy.startTitle")}
+            </div>
+            <div
+              className="mt-0.5 text-[11px]"
+              style={{ color: "var(--arka-text-faint)" }}
+            >
+              {t("home.autobuy.startDesc")}
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-arka-text">
-              {t("credit.dashboardTeaser")}
-            </p>
-            <p className="mt-1 text-xs text-arka-text-muted">
-              {t("credit.dashboardTeaserDesc")}
-            </p>
-          </div>
+          <span
+            className="rounded-[10px] px-3 py-1.5 text-[11px] font-extrabold"
+            style={{
+              color: "var(--arka-accent)",
+              background: "var(--arka-accent-soft)",
+            }}
+          >
+            {t("home.autobuy.startBtn")}
+          </span>
         </Card>
       </Link>
-    </section>
+    );
+  }
+
+  const perSwapIdr = Number(order.amountPerSwap) / 10 ** IDRX_DECIMALS;
+  const intervalSec = Number(order.interval);
+  const intervalMatch = INTERVAL_PRESETS.find((p) => p.seconds === intervalSec);
+  const intervalLabelKey =
+    intervalMatch?.seconds === 86_400
+      ? "dca.interval.daily"
+      : intervalMatch?.seconds === 604_800
+        ? "dca.interval.weekly"
+        : intervalMatch?.seconds === 2_592_000
+          ? "dca.interval.monthly"
+          : null;
+  const freqLabel = intervalLabelKey ? t(intervalLabelKey) : `${intervalSec}s`;
+  const nextAt =
+    Number(order.lastExecutedAt) > 0
+      ? new Date((Number(order.lastExecutedAt) + intervalSec) * 1000)
+      : null;
+
+  return (
+    <Link href="/save" data-pressable className="block">
+      <Card className="flex items-center gap-3">
+        <LogoTile size={40} />
+        <div className="min-w-0 flex-1">
+          <div
+            className="flex items-center gap-2 text-[13px] font-bold"
+            style={{ color: "var(--arka-text)" }}
+          >
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ background: "var(--arka-success)" }}
+            />
+            {t("home.autobuy.nextTitle")}
+          </div>
+          <div
+            className="mt-0.5 text-[11px]"
+            style={{ color: "var(--arka-text-faint)" }}
+          >
+            Rp {perSwapIdr.toLocaleString("id-ID")} · {freqLabel}
+            {nextAt ? ` · ${nextAt.toLocaleDateString()}` : ""}
+          </div>
+        </div>
+        <span
+          className="rounded-[10px] px-3 py-1.5 text-[11px] font-extrabold"
+          style={{
+            color: "var(--arka-accent)",
+            background: "var(--arka-accent-soft)",
+          }}
+        >
+          {t("home.autobuy.nextBtn")}
+        </span>
+      </Card>
+    </Link>
   );
 }
 
 export function DashboardClient() {
-  const { getAccessToken, ready, authenticated, user } = usePrivy();
-  const { wallets } = useWallets();
-  const { wallet: activeWallet } = useActiveWallet();
+  const router = useRouter();
   const t = useT();
-  const { locale } = useLocale();
-  const localeStr = locale === "id" ? "id-ID" : "en-US";
+  const { getAccessToken, ready, authenticated, user } = usePrivy();
+  const { currency } = useCurrency();
+  const balances = useBalances();
+  const credit = useCreditPosition();
 
-  const [tab, setTab] = useState<BalanceTab>("IDRX");
-  const [dbWallet, setDbWallet] = useState<string | null>(null);
-  const [idrxFormatted, setIdrxFormatted] = useState<string | null>(null);
-  const [idrxState, setIdrxState] = useState<
-    "idle" | "loading" | "ready" | "error"
-  >("idle");
-  const [idrxErrorHint, setIdrxErrorHint] = useState<string | null>(null);
-  const [btcFormatted, setBtcFormatted] = useState<string | null>(null);
-  const [btcSymbol, setBtcSymbol] = useState<string>("sats");
-  const [btcConfigured, setBtcConfigured] = useState<boolean | null>(null);
-  const [btcState, setBtcState] = useState<"idle" | "loading" | "ready" | "error">(
-    "idle",
-  );
-  const [usdcFormatted, setUsdcFormatted] = useState<string | null>(null);
-  const [usdcState, setUsdcState] = useState<"idle" | "loading" | "ready" | "error">(
-    "idle",
-  );
-  const [txItems, setTxItems] = useState<MintTransaction[] | null>(null);
-  const [txError, setTxError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
-  const getAccessTokenRef = useRef(getAccessToken);
-  useLayoutEffect(() => {
-    getAccessTokenRef.current = getAccessToken;
-  }, [getAccessToken]);
-
-  const balanceFetchGen = useRef(0);
-
-  useEffect(() => {
-    if (!ready || !authenticated) return;
-    let cancelled = false;
-    void (async () => {
-      const res = await fetchWithPrivy(getAccessTokenRef.current, "/api/user/me");
-      const j = (await res.json().catch(() => ({}))) as {
-        walletAddress?: string | null;
-      };
-      if (cancelled) return;
-      if (res.ok && typeof j.walletAddress === "string" && j.walletAddress) {
-        setDbWallet(j.walletAddress);
-      } else {
-        setDbWallet(null);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [ready, authenticated]);
-
-  const resolvedAddress = useMemo(
-    () =>
-      resolveWalletDisplayAddress({
-        wallets,
-        user,
-        activeWallet,
-        dbWallet,
-      }),
-    [wallets, user, activeWallet, dbWallet],
-  );
-
-  const loadBalances = useCallback(async () => {
-    if (!resolvedAddress) {
-      balanceFetchGen.current += 1;
-      setIdrxState("idle");
-      setIdrxFormatted(null);
-      setIdrxErrorHint(null);
-      setBtcState("idle");
-      setBtcFormatted(null);
-      setBtcConfigured(null);
-      setUsdcState("idle");
-      setUsdcFormatted(null);
-      return;
-    }
-    const gen = ++balanceFetchGen.current;
-    const chain = defaultChainId();
-    const qs = new URLSearchParams({
-      networkChainId: chain,
-      walletAddress: resolvedAddress,
-    });
-
-    setIdrxState("loading");
-    setIdrxErrorHint(null);
-    setBtcState("loading");
-    setUsdcState("loading");
-
-    const q = qs.toString();
-    const tokenFn = getAccessTokenRef.current;
-
-    const runIdrx = async () => {
-      try {
-        const idrxRes = await fetchWithPrivy(
-          tokenFn,
-          `/api/idrx/balance?${q}`,
-        );
-        const idrxJ = (await idrxRes.json().catch(() => ({}))) as {
-          balanceFormatted?: string | number | null;
-          error?: string;
-        };
-        if (gen !== balanceFetchGen.current) return;
-        if (idrxRes.ok && idrxJ.balanceFormatted != null && !idrxJ.error) {
-          const raw = idrxJ.balanceFormatted;
-          const n = typeof raw === "number" ? raw : Number(raw);
-          setIdrxFormatted(
-            Number.isFinite(n)
-              ? n.toLocaleString(localeStr, { maximumFractionDigits: 6 })
-              : String(raw),
-          );
-          setIdrxState("ready");
-        } else {
-          setIdrxFormatted(null);
-          setIdrxState("error");
-          setIdrxErrorHint(
-            idrxJ.error ?? (idrxRes.ok ? null : t("dashboard.failedLoadBalance")),
-          );
-        }
-      } catch {
-        if (gen !== balanceFetchGen.current) return;
-        setIdrxFormatted(null);
-        setIdrxState("error");
-        setIdrxErrorHint(t("dashboard.failedLoadBalance"));
-      }
-    };
-
-    const runBtc = async () => {
-      try {
-        const btcRes = await fetchWithPrivy(
-          tokenFn,
-          `/api/wallet/btc-balance?${q}`,
-          typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
-            ? { signal: AbortSignal.timeout(25_000) }
-            : {},
-        );
-        const btcJ = (await btcRes.json().catch(() => ({}))) as {
-          configured?: boolean;
-          balanceRaw?: string | null;
-          balanceFormatted?: string | number | null;
-          symbol?: string;
-          error?: string;
-        };
-        if (gen !== balanceFetchGen.current) return;
-        if (btcJ.configured === false) {
-          setBtcConfigured(false);
-          setBtcFormatted(null);
-          setBtcState("ready");
-        } else if (btcRes.ok && !btcJ.error && (btcJ.balanceRaw != null || btcJ.balanceFormatted != null)) {
-          setBtcConfigured(true);
-          setBtcSymbol("sats");
-
-          const sats = btcJ.balanceRaw != null ? Number(btcJ.balanceRaw) : null;
-          if (sats != null && Number.isFinite(sats)) {
-            setBtcFormatted(
-              sats.toLocaleString(localeStr, { maximumFractionDigits: 0 }),
-            );
-          } else {
-            const n = Number(btcJ.balanceFormatted);
-            const fallbackSats = Number.isFinite(n) ? Math.round(n * 1e8) : 0;
-            setBtcFormatted(
-              fallbackSats.toLocaleString(localeStr, { maximumFractionDigits: 0 }),
-            );
-          }
-          setBtcState("ready");
-        } else {
-          setBtcConfigured(true);
-          setBtcFormatted(null);
-          setBtcState("error");
-        }
-      } catch {
-        if (gen !== balanceFetchGen.current) return;
-        setBtcConfigured(true);
-        setBtcFormatted(null);
-        setBtcState("error");
-      }
-    };
-
-    const runUsdc = async () => {
-      try {
-        const pc = getBasePublicClient();
-        const rawBalance = await pc.readContract({
-          address: USDC_ADDRESS,
-          abi: erc20Abi,
-          functionName: "balanceOf",
-          args: [resolvedAddress as `0x${string}`],
-        });
-        if (gen !== balanceFetchGen.current) return;
-        const n = Number(formatUnits(rawBalance, USDC_DECIMALS));
-        setUsdcFormatted(
-          n.toLocaleString(localeStr, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 6,
-          }),
-        );
-        setUsdcState("ready");
-      } catch {
-        if (gen !== balanceFetchGen.current) return;
-        setUsdcFormatted(null);
-        setUsdcState("error");
-      }
-    };
-
-    await Promise.allSettled([runIdrx(), runBtc(), runUsdc()]);
-  }, [resolvedAddress, localeStr, t]);
-
-  useEffect(() => {
-    if (!ready || !authenticated) return;
-    let cancelled = false;
-    void (async () => {
-      await loadBalances();
-      if (cancelled) return;
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [ready, authenticated, loadBalances]);
-
-  const loadTx = useCallback(async () => {
-    setTxError(null);
-    const q = new URLSearchParams({ page: "1", take: "5" });
-    const res = await fetchWithPrivy(
-      getAccessTokenRef.current,
-      `/api/idrx/transactions?${q.toString()}`,
+  // Fiat conversions
+  const btcUsd = useMemo(() => {
+    if (!credit.data) return null;
+    const oneBtcInSats = BigInt(1e8);
+    // collateralValueInLoan returns USDC amount (6 decimals) for given sats.
+    const usdc = collateralValueInLoan(
+      oneBtcInSats,
+      credit.data.oraclePrice,
     );
-    const j = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setTxError(j.error || t("general.failedLoad"));
-      setTxItems([]);
-      return;
+    return Number(usdc) / 10 ** USDC_DECIMALS;
+  }, [credit.data]);
+
+  const fxUsdToIdr = IDR_FALLBACK_PER_USD;
+
+  const btcSats = balances.btcSats;
+  const btcUnit = btcSats != null ? btcSats / 1e8 : 0;
+  const btcFiat = useMemo(() => {
+    if (btcUsd == null) return 0;
+    const usd = btcUnit * btcUsd;
+    return currency === "IDR" ? usd * fxUsdToIdr : usd;
+  }, [btcUnit, btcUsd, currency, fxUsdToIdr]);
+
+  const cashFiat = useMemo(() => {
+    const usdcAmt = balances.usdc ?? 0;
+    const idrxAmt = balances.idrx ?? 0;
+    if (currency === "USD") {
+      const idrxAsUsd = idrxAmt / fxUsdToIdr;
+      return usdcAmt + idrxAsUsd;
     }
-    setTxItems(j.transactions ?? []);
-  }, [t]);
+    return usdcAmt * fxUsdToIdr + idrxAmt;
+  }, [balances.idrx, balances.usdc, currency, fxUsdToIdr]);
+
+  const creditFiat = useMemo(() => {
+    if (!credit.data) return 0;
+    const borrowedUsd =
+      Number(credit.data.borrowedAssets) / 10 ** USDC_DECIMALS;
+    return currency === "USD" ? borrowedUsd : borrowedUsd * fxUsdToIdr;
+  }, [credit.data, currency, fxUsdToIdr]);
+
+  // Activity feed (mint transactions; DCA executions come later)
+  const [mintTx, setMintTx] = useState<MintTx[] | null>(null);
+  const tokenRef = useRef(getAccessToken);
+  useLayoutEffect(() => {
+    tokenRef.current = getAccessToken;
+  }, [getAccessToken]);
+  const loadTx = useCallback(async () => {
+    try {
+      const q = new URLSearchParams({ page: "1", take: "5" }).toString();
+      const res = await fetchWithPrivy(
+        tokenRef.current,
+        `/api/idrx/transactions?${q}`,
+      );
+      const j = (await res.json().catch(() => ({}))) as {
+        transactions?: MintTx[];
+      };
+      setMintTx(j.transactions ?? []);
+    } catch {
+      setMintTx([]);
+    }
+  }, []);
 
   useEffect(() => {
     if (!ready || !authenticated) return;
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (!cancelled) void loadTx();
-    });
-    return () => {
-      cancelled = true;
-    };
+    void loadTx();
   }, [ready, authenticated, loadTx]);
 
-  const explorerUrl = resolvedAddress
-    ? `https://basescan.org/address/${resolvedAddress}`
-    : null;
+  const firstName = useMemo(() => {
+    const name =
+      (user?.google?.name as string | undefined) ??
+      (user?.email?.address as string | undefined) ??
+      "";
+    return name ? name.split(/\s|@/)[0] : "";
+  }, [user]);
 
-  const copyAddress = () => {
-    if (!resolvedAddress) return;
-    void navigator.clipboard.writeText(resolvedAddress).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
+  const initial = (firstName || "A").slice(0, 1).toUpperCase();
+
+  const activityItems: ActivityItem[] = useMemo(() => {
+    const items: ActivityItem[] = [];
+    // DCA buys from on-chain executions would merge here.
+    for (const tx of mintTx ?? []) {
+      const idr = tx.paymentAmount ?? 0;
+      items.push({
+        id: tx.id,
+        type: "in",
+        title: "IDRX deposit",
+        subtitle: relativeTime(tx.createdAt),
+        primary: `+Rp ${Number(idr).toLocaleString("id-ID")}`,
+        secondary: tx.paymentStatus ?? undefined,
+        tone: "success",
+      });
+    }
+    return items;
+  }, [mintTx]);
 
   if (!ready || !authenticated) return null;
 
-  const waitingWallet = !resolvedAddress;
-
-  const idrxLoading =
-    idrxState === "loading" ||
-    (idrxState === "idle" && Boolean(resolvedAddress));
-  const btcLoading =
-    btcState === "loading" ||
-    (btcState === "idle" && Boolean(resolvedAddress));
-  const usdcLoading =
-    usdcState === "loading" ||
-    (usdcState === "idle" && Boolean(resolvedAddress));
-
-  const balanceLabel =
-    tab === "IDRX"
-      ? waitingWallet
-        ? t("dashboard.loadingWallet")
-        : idrxLoading
-          ? t("dashboard.loading")
-          : idrxState === "ready" && idrxFormatted != null
-            ? idrxFormatted
-            : "—"
-      : tab === "BTC"
-        ? waitingWallet
-          ? t("dashboard.loadingWallet")
-          : btcLoading
-            ? t("dashboard.loading")
-            : btcConfigured === false
-              ? "—"
-              : btcState === "ready" && btcFormatted != null
-                ? btcFormatted
-                : "—"
-        : waitingWallet
-          ? t("dashboard.loadingWallet")
-          : usdcLoading
-            ? t("dashboard.loading")
-            : usdcState === "ready" && usdcFormatted != null
-              ? usdcFormatted
-              : "—";
-
-  const balanceUnit =
-    tab === "IDRX" ? "IDRX" : tab === "BTC" ? btcSymbol : "USDC";
-  const balanceTitle =
-    tab === "IDRX"
-      ? t("dashboard.balanceIdrx")
-      : tab === "BTC"
-        ? t("dashboard.balanceBtc")
-        : t("dashboard.balanceUsdc");
-
   return (
-    <div className="px-4 pb-28 pt-4">
-      {/* Balance card */}
-      <section className="relative overflow-hidden rounded-[var(--radius-card)] bg-gradient-to-br from-arka-accent via-arka-accent to-arka-accent-muted p-5 text-white shadow-md">
-        <div className="absolute right-3 top-3 text-2xl font-semibold opacity-20">
-          {tab === "IDRX" ? "Rp" : tab === "BTC" ? "₿" : "$"}
-        </div>
-        <p className="text-xs font-medium uppercase tracking-wide text-white/80">
-          {balanceTitle}
-        </p>
-        <div className="mt-3 inline-flex rounded-lg bg-black/15 p-0.5">
-          <button
-            type="button"
-            onClick={() => setTab("IDRX")}
-            className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-              tab === "IDRX"
-                ? "bg-white text-arka-accent shadow-sm"
-                : "text-white/90 hover:bg-white/10"
-            }`}
+    <div className="px-5 pt-12">
+      <div className="flex items-center justify-between">
+        <div>
+          <div
+            className="text-[11px] font-bold uppercase tracking-[0.1em]"
+            style={{ color: "var(--arka-text-faint)" }}
           >
-            IDRX
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab("BTC")}
-            className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-              tab === "BTC"
-                ? "bg-white text-arka-accent shadow-sm"
-                : "text-white/90 hover:bg-white/10"
-            }`}
-          >
-            cbBTC
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab("USDC")}
-            className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-              tab === "USDC"
-                ? "bg-white text-arka-accent shadow-sm"
-                : "text-white/90 hover:bg-white/10"
-            }`}
-          >
-            USDC
-          </button>
-        </div>
-        <p className="mt-4 font-mono text-3xl font-semibold tabular-nums tracking-tight">
-          {balanceLabel}
-          <span className="ml-2 text-lg font-medium text-white/90">
-            {balanceUnit}
-          </span>
-        </p>
-        {tab === "IDRX" && idrxState === "error" && idrxErrorHint ? (
-          <p className="mt-2 text-xs text-white/85">{idrxErrorHint}</p>
-        ) : null}
-        {tab === "BTC" && btcConfigured === false ? (
-          <p className="mt-2 text-xs text-white/80">
-            {t("dashboard.setBtcEnv")}
-          </p>
-        ) : null}
-        {tab === "BTC" && btcState === "error" ? (
-          <p className="mt-2 text-xs text-white/85">
-            {t("dashboard.failedLoadBtc")}
-          </p>
-        ) : null}
-        {tab === "USDC" && usdcState === "error" ? (
-          <p className="mt-2 text-xs text-white/85">
-            {t("dashboard.failedLoadUsdc")}
-          </p>
-        ) : null}
-        {resolvedAddress ? (
-          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/20 pt-4 text-xs text-white/90">
-            <span className="font-mono">{shortenAddr(resolvedAddress)}</span>
-            <button
-              type="button"
-              onClick={copyAddress}
-              className="rounded-md bg-white/15 px-2 py-1 text-[11px] font-medium hover:bg-white/25"
-            >
-              {copied ? t("dashboard.copied") : t("dashboard.copy")}
-            </button>
-            {explorerUrl ? (
-              <a
-                href={explorerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-md bg-white/15 px-2 py-1 text-[11px] font-medium hover:bg-white/25"
-              >
-                Basescan
-              </a>
-            ) : null}
+            {t(greetKey())}
           </div>
-        ) : (
-          <p className="mt-4 text-xs text-white/80">
-            {t("dashboard.walletNotDetected")}
-          </p>
-        )}
-      </section>
+          <div
+            className="mt-1 text-xl font-extrabold"
+            style={{ color: "var(--arka-text)", letterSpacing: -0.5 }}
+          >
+            {firstName || "Arka"}
+          </div>
+        </div>
+        <AvatarTile initial={initial} />
+      </div>
 
-      {/* Deposit IDR → IDRX CTA */}
-      <section className="mt-5">
-        <Card className="flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-arka-accent/10 text-sm">💱</span>
-              <p className="text-sm font-medium text-arka-text">
-                {t("dashboard.depositIdr")}
-              </p>
-            </div>
-            <p className="mt-1.5 text-xs text-arka-text-muted">
-              {t("dashboard.depositDesc")}
-            </p>
+      <div className="mt-5">
+        <HeroBalance
+          sats={btcSats}
+          fiat={btcFiat}
+          currency={currency}
+          cashFiat={cashFiat}
+          creditFiat={creditFiat}
+        />
+      </div>
+
+      <div className="mt-5 flex items-stretch gap-2.5">
+        <ActionTile
+          label={t("home.action.deposit")}
+          href="/mint"
+          icon="↓"
+        />
+        <ActionTile
+          label={t("home.action.credit")}
+          href="/credit"
+          icon="$"
+        />
+        <ActionTile
+          label={t("home.action.withdraw")}
+          href="/withdraw"
+          icon="↑"
+        />
+      </div>
+
+      <div className="mt-5">
+        <AutobuyNudge />
+      </div>
+
+      <section className="mt-7">
+        <div className="mb-2 flex items-center justify-between">
+          <div
+            className="text-[11px] font-bold uppercase tracking-[0.1em]"
+            style={{ color: "var(--arka-text-faint)" }}
+          >
+            {t("home.activity.title")}
           </div>
-          <Link href="/mint" className="shrink-0">
-            <Button type="button" variant="primary" className="w-auto min-w-[7rem]">
-              {t("dashboard.depositBtn")}
-            </Button>
-          </Link>
+          <button
+            type="button"
+            onClick={() => router.push("/activity")}
+            className="text-[11px] font-bold"
+            style={{ color: "var(--arka-accent)" }}
+          >
+            {t("dashboard.viewAll")}
+          </button>
+        </div>
+
+        <Card className="divide-y divide-arka-border/70 py-0">
+          {mintTx === null ? (
+            <div className="space-y-3 py-3">
+              {[1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="h-14 animate-pulse rounded-[12px] bg-arka-border/60"
+                />
+              ))}
+            </div>
+          ) : activityItems.length === 0 ? (
+            <div
+              className="py-6 text-center text-[12px]"
+              style={{ color: "var(--arka-text-faint)" }}
+            >
+              {t("home.activity.empty")}
+            </div>
+          ) : (
+            activityItems.map((it) => <ActivityRow key={it.id} item={it} />)
+          )}
         </Card>
       </section>
 
-      <DcaDashboardCard />
-
-      <CreditDashboardCard />
-
-      {/* Simulator teaser */}
-      <section className="mt-4">
-        <Link href="/savings">
-          <Card className="flex items-start gap-3 border-arka-border/80 bg-gradient-to-r from-arka-surface to-amber-50/30 transition hover:border-arka-accent/30">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-lg">
-              📊
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-arka-text">
-                {t("dashboard.simTitle")}
-              </p>
-              <p className="mt-1 text-xs text-arka-text-muted">
-                {t("dashboard.simDesc")}
-              </p>
-            </div>
-            <span className="shrink-0 self-center rounded-full bg-arka-accent/10 px-3 py-1 text-xs font-medium text-arka-accent">
-              {t("dashboard.simBtn")}
-            </span>
-          </Card>
-        </Link>
-      </section>
-
-      {/* Activity */}
-      <section className="mt-8">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-arka-text-muted">
-            {t("dashboard.recentActivity")}
-          </h2>
-          <Link
-            href="/activity"
-            className="text-xs font-medium text-arka-accent hover:underline"
-          >
-            {t("dashboard.viewAll")}
-          </Link>
-        </div>
-        {txError ? (
-          <p className="mb-3 text-sm text-arka-danger" role="alert">
-            {txError}
-          </p>
-        ) : null}
-        {txItems === null ? (
-          <div className="space-y-3">
-            {[1, 2].map((i) => (
-              <div
-                key={i}
-                className="h-20 animate-pulse rounded-[var(--radius-card)] bg-arka-border/60"
-              />
-            ))}
-          </div>
-        ) : (
-          <TransactionList items={txItems} />
-        )}
-      </section>
+      <div className="pb-4" />
     </div>
   );
 }

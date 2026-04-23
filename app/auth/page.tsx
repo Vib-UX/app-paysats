@@ -1,5 +1,5 @@
-import { AuthEntry } from "./auth-entry";
+import { redirect } from "next/navigation";
 
 export default function AuthPage() {
-  return <AuthEntry />;
+  redirect("/onboarding");
 }

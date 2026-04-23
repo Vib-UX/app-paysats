@@ -19,6 +19,9 @@ export async function GET(request: NextRequest) {
     displayName: row?.displayName ?? null,
     walletAddress: row?.walletAddress ?? null,
     onboardingCompleted: Boolean(row?.onboardingCompletedAt),
+    onboardingCompletedAt: row?.onboardingCompletedAt?.toISOString() ?? null,
+    currencyPreference: row?.currencyPreference ?? null,
+    displayUnit: row?.displayUnit ?? null,
     idrxUserId: row?.idrxUserId ?? null,
   });
 }
