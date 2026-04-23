@@ -1,16 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const viewport: Viewport = {
-  themeColor: "#b45309",
+  themeColor: "#b85c38",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -18,9 +18,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Arka — BTC Pockets",
+  title: "Arka — Save in Bitcoin",
   description:
-    "Save into BTC Pockets. Arka x IDRX allows direct IDR deposits and auto DCA into Bitcoin.",
+    "Save in Bitcoin. Preserve wealth. Never sell. Arka x IDRX allows direct IDR deposits and auto DCA into Bitcoin.",
   icons: {
     icon: "/icon.svg",
     apple: "/apple-icon.svg",
@@ -43,7 +43,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${dmSans.variable} h-full antialiased`}
+      className={`${plusJakarta.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       {/* Extensions (e.g. password managers) inject attributes on <body>; suppress avoids false hydration errors. */}

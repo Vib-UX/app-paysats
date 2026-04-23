@@ -1,19 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  --arka-bg: #f6f4f1;
+  /* Brand palette — warm cream, rich ink, orange gradient accent */
+  --arka-bg: #f7f3ef;
   --arka-surface: #ffffff;
-  --arka-surface-muted: #f0ebe3;
-  --arka-border: #e6dfd4;
-  --arka-text: #1c1917;
-  --arka-text-muted: #57534e;
-  --arka-accent: #b45309;
-  --arka-accent-muted: #d97706;
-  --arka-success: #15803d;
-  --arka-warning: #ca8a04;
-  --arka-danger: #b91c1c;
-  --radius-card: 14px;
-  --radius-control: 10px;
+  --arka-surface-muted: #f0ebe5;
+  --arka-border: #e8e2dc;
+  --arka-text: #161210;
+  --arka-text-muted: #7a7168;
+  --arka-text-faint: #b8b0a6;
+  --arka-line: #e8e2dc;
+  --arka-accent: #b85c38;
+  --arka-accent-muted: #d08850;
+  --arka-accent-soft: rgba(184, 92, 56, 0.06);
+  --arka-success: #2da84e;
+  --arka-success-soft: rgba(45, 168, 78, 0.07);
+  --arka-warning: #cc9a0a;
+  --arka-warning-soft: rgba(204, 154, 10, 0.08);
+  --arka-danger: #c43030;
+
+  --arka-gradient: linear-gradient(
+    140deg,
+    #be6640 0%,
+    #d08850 55%,
+    #dca060 100%
+  );
+  --arka-gradient-hero: linear-gradient(
+    140deg,
+    #a84e2e,
+    #be6640,
+    #cc7d48,
+    #d89255,
+    #dca060,
+    #cc7d48,
+    #be6640,
+    #a84e2e
+  );
+
+  --arka-shadow-card: 0 1px 3px rgba(22, 18, 16, 0.04);
+  --arka-shadow-hero: 0 10px 40px rgba(170, 80, 40, 0.22);
+  --arka-shadow-tile: 0 6px 20px rgba(170, 80, 40, 0.25);
+
+  --radius-card: 18px;
+  --radius-pill: 14px;
+  --radius-control: 12px;
+  --radius-tile: 26%;
 
   /* Bridge for @predator_757/bitflation-idr-dca CSS module */
   --border: var(--arka-border);
@@ -34,14 +65,20 @@
   --color-arka-surface: var(--arka-surface);
   --color-arka-surface-muted: var(--arka-surface-muted);
   --color-arka-border: var(--arka-border);
+  --color-arka-line: var(--arka-line);
   --color-arka-text: var(--arka-text);
   --color-arka-text-muted: var(--arka-text-muted);
+  --color-arka-text-faint: var(--arka-text-faint);
   --color-arka-accent: var(--arka-accent);
   --color-arka-accent-muted: var(--arka-accent-muted);
+  --color-arka-accent-soft: var(--arka-accent-soft);
   --color-arka-success: var(--arka-success);
+  --color-arka-success-soft: var(--arka-success-soft);
   --color-arka-warning: var(--arka-warning);
+  --color-arka-warning-soft: var(--arka-warning-soft);
   --color-arka-danger: var(--arka-danger);
-  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-plus-jakarta-sans), ui-sans-serif, system-ui,
+    sans-serif;
 }
 
 body {
@@ -49,22 +86,166 @@ body {
   color: var(--arka-text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
 }
 
+/* ===== Motion primitives ===== */
+
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes float-slow {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-6px) rotate(3deg); }
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(3deg);
+  }
 }
 
 @keyframes pulse-ring {
-  0% { transform: scale(0.9); opacity: 0.6; }
-  50% { transform: scale(1.05); opacity: 0.3; }
-  100% { transform: scale(0.9); opacity: 0.6; }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+}
+
+@keyframes grad-move {
+  0% {
+    background-position: 0% 0%;
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+@keyframes orb-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(15px, -20px) scale(1.05);
+  }
+  66% {
+    transform: translate(-10px, 15px) scale(0.95);
+  }
+}
+
+@keyframes tile-in {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bar-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dot-pop {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes mark-bar-breathe {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+  50% {
+    opacity: 0.92;
+    transform: translateY(0) scaleY(1.02);
+  }
+}
+
+@keyframes mark-dot-breathe {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.88;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes tile-confirm {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.045);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes splash-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-float {
@@ -77,4 +258,34 @@ body {
 
 .animate-pulse-ring {
   animation: pulse-ring 3s ease-in-out infinite;
+}
+
+.animate-fade-rise {
+  animation: fade-rise 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===== Global press effect =====
+   Any clickable element with [data-pressable] or role=button / cursor:pointer gets a subtle press-in. */
+[data-pressable],
+[role="button"],
+button {
+  transition:
+    transform 0.1s ease,
+    opacity 0.1s ease;
+}
+
+[data-pressable]:active,
+[role="button"]:active,
+button:not(:disabled):active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+/* ===== Hide scrollbar helper (drum picker, horizontal rails) ===== */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

@@ -23,6 +23,8 @@ const id = {
   "nav.dca": "DCA",
   "nav.deposit": "Deposit",
   "nav.profile": "Profil",
+  "nav.save": "Tabung",
+  "nav.borrow": "Pinjam",
 
   // Dashboard
   "dashboard.balanceIdrx": "Saldo IDRX",
@@ -122,43 +124,40 @@ const id = {
   "dca.interval.hours": "jam",
   "dca.interval.days": "hari",
 
-  // Mint
-  "mint.title": "Mint IDRX",
+  // Deposit IDR (IDRX mint behind the scenes)
+  "mint.title": "Deposit IDR",
   "mint.subtitle":
-    "Tukar rupiah menjadi IDRX ke dompet Arka kamu. Setelah permintaan dibuat, kamu akan diarahkan ke halaman pembayaran mitra.",
-  "mint.checkingIdrx": "Memeriksa status IDRX…",
-  "mint.linkingIdrx": "Menghubungkan akun IDRX (email Privy)…",
+    "Transfer rupiah dan saldo kamu akan muncul di Arka dalam beberapa menit.",
+  "mint.checkingIdrx": "Memeriksa status…",
+  "mint.linkingIdrx": "Menyiapkan akun deposit…",
   "mint.linkingWait": "Satu saat lagi…",
-  "mint.preparing": "Menyiapkan mint…",
-  "mint.errorTitle": "Tidak bisa menyiapkan IDRX. Coba lagi.",
+  "mint.preparing": "Menyiapkan…",
+  "mint.errorTitle": "Tidak bisa menyiapkan deposit. Coba lagi.",
   "mint.errorDefault":
-    "Gagal memeriksa atau menghubungkan onboarding. Periksa jaringan lalu muat ulang halaman.",
-  "mint.destLabel": "Dompet tujuan (Arka)",
+    "Gagal menyiapkan akun. Periksa jaringan lalu muat ulang halaman.",
+  "mint.destLabel": "Disetor ke dompet Arka",
   "mint.destWaiting": "Menunggu dompet…",
-  "mint.amountLabel": "Nominal IDRX (IDR)",
+  "mint.amountLabel": "Nominal (Rp)",
   "mint.amountPlaceholder": "Min. Rp 20.000",
-  "mint.amountHint":
-    "Minimum Rp 20.000 sesuai ketentuan IDRX. Nominal bayar bisa sedikit berbeda setelah biaya.",
+  "mint.amountHint": "Minimum Rp 20.000.",
   "mint.networkLabel": "Jaringan",
-  "mint.networkHint":
-    "Base dipilih sebagai default untuk ekspansi produk ke depan.",
+  "mint.networkHint": "",
   "mint.expiryLabel": "Batas waktu pembayaran",
-  "mint.resultTitle":
-    "Permintaan dibuat. Lanjutkan pembayaran untuk menyelesaikan mint.",
+  "mint.resultTitle": "Permintaan dibuat. Lanjutkan pembayaran untuk menyelesaikan.",
   "mint.resultTotalPay": "Total bayar",
   "mint.resultReference": "Referensi",
   "mint.resultOrder": "Order",
   "mint.resultPayBtn": "Lanjut ke pembayaran",
   "mint.resultActivityLink": "Aktivitas",
   "mint.resultTrackPrefix": "Pantau status di",
-  "mint.resultTrackSuffix": "setelah membayar — verifikasi dari API transaksi IDRX.",
-  "mint.submit": "Buat permintaan mint",
+  "mint.resultTrackSuffix": "setelah membayar.",
+  "mint.submit": "Lanjut ke pembayaran",
   "mint.submitting": "Memproses…",
   "mint.errorNoWallet": "Dompet belum tersedia",
   "mint.errorNoAmount": "Masukkan nominal",
   "mint.errorGeneric": "Permintaan gagal",
   "mint.processingNotice":
-    "Setelah pembayaran dikonfirmasi, IDRX membutuhkan 1–2 menit untuk muncul di dompet kamu.",
+    "Saldo biasanya muncul 1–2 menit setelah pembayaran dikonfirmasi.",
 
   // Activity
   "activity.title": "Aktivitas",
@@ -237,6 +236,71 @@ const id = {
   "dashboard.simDesc": "Lihat perbandingan historis DCA dan proyeksi tabunganmu.",
   "dashboard.simBtn": "Simulasi",
 
+  // Home (redesigned)
+  "home.greet.morning": "Selamat pagi",
+  "home.greet.afternoon": "Selamat siang",
+  "home.greet.evening": "Selamat malam",
+  "home.balance.label": "Total Bitcoin",
+  "home.balance.sub": "Senilai",
+  "home.tile.cash": "Uang Tunai",
+  "home.tile.credit": "Pinjaman",
+  "home.action.deposit": "Deposit",
+  "home.action.credit": "Pinjam",
+  "home.action.withdraw": "Tarik",
+  "home.autobuy.startTitle": "Mulai Auto-buy",
+  "home.autobuy.startDesc":
+    "Beli Bitcoin otomatis sesuai jadwalmu — rupiah atau USD.",
+  "home.autobuy.startBtn": "Mulai",
+  "home.autobuy.nextTitle": "Pembelian berikutnya",
+  "home.autobuy.nextBtn": "Kelola",
+  "home.activity.title": "Aktivitas",
+  "home.activity.empty": "Belum ada aktivitas.",
+
+  // Cash
+  "cash.title": "Uang Tunai",
+  "cash.total": "Saldo Total",
+  "cash.idrx": "IDRX",
+  "cash.idrxDesc": "Rupiah on-chain (Base)",
+  "cash.usdc": "USDC",
+  "cash.cashBalance": "Saldo tunai",
+  "cash.creditBalance": "Saldo pinjaman",
+
+  // Withdraw
+  "withdraw.title": "Tarik",
+  "withdraw.source": "Sumber dana",
+  "withdraw.source.idrx": "IDRX (rupiah)",
+  "withdraw.source.usdc": "USDC",
+  "withdraw.destination": "Tujuan",
+  "withdraw.dest.bank": "Bank / E-wallet",
+  "withdraw.dest.external": "Dompet luar",
+  "withdraw.external.desc":
+    "Kirim ke alamat dompet crypto kamu (transfer ERC-20 di Base).",
+  "withdraw.external.address": "Alamat tujuan (0x…)",
+  "withdraw.external.amount": "Nominal",
+  "withdraw.external.submit": "Kirim",
+  "withdraw.external.sending": "Mengirim…",
+  "withdraw.external.sent": "Terkirim",
+  "withdraw.external.errorAddress": "Alamat tidak valid",
+  "withdraw.external.errorAmount": "Nominal tidak valid",
+  "withdraw.external.errorBalance": "Saldo tidak cukup",
+  "withdraw.sellBtc": "Jual Bitcoin (hubungi support)",
+
+  // Add Funds (Deposit menu)
+  "addfunds.title": "Tambah Dana",
+  "addfunds.bank": "Deposit IDR",
+  "addfunds.bankDesc": "Transfer rupiah, saldo masuk otomatis",
+  "addfunds.usdc": "USDC",
+  "addfunds.usdcDesc": "Setor USDC di jaringan Base",
+  "addfunds.usdt": "USDT",
+  "addfunds.usdtDesc": "Setor dari crypto wallet lain",
+  "addfunds.chain": "Jaringan",
+  "addfunds.copyAddress": "Salin alamat",
+  "addfunds.copied": "Tersalin",
+  "addfunds.warning":
+    "Kirim USDC hanya di jaringan Base. Jaringan lain akan menyebabkan dana hilang.",
+  "addfunds.yourAddress": "Alamat dompet Arka",
+  "addfunds.waitingAddress": "Menyiapkan alamat…",
+
   // Onboarding
   "onboarding.title": "IDRX",
   "onboarding.subtitle":
@@ -244,6 +308,37 @@ const id = {
   "onboarding.desc":
     "Buka halaman Mint untuk menyelesaikan penautan IDRX di latar belakang dan membuat permintaan IDRX.",
   "onboarding.goDeposit": "Ke Deposit",
+
+  // Onboarding — hook (rotating slides) & creating & currency picker
+  "onb.headline": "Simpan ke Bitcoin.",
+  "onb.sub": "Jaga kekayaanmu. Jangan dijual.",
+  "onb.orEmail": "atau lanjutkan dengan email",
+  "onb.terms":
+    "Dengan melanjutkan, kamu setuju dengan Ketentuan dan Kebijakan Privasi kami",
+  "onb.slide1.big": "2.4×",
+  "onb.slide1.sub": "rata-rata return 3 tahun",
+  "onb.slide1.note": "mulai kecil, sesuai jadwalmu",
+  "onb.slide2.big": "300Jt+",
+  "onb.slide2.sub": "orang menabung di Bitcoin",
+  "onb.slide2.note": "kamu tidak terlambat — kamu tepat waktu",
+  "onb.slide3.big": "#1",
+  "onb.slide3.sub": "aset dengan performa terbaik",
+  "onb.slide3.note": "dalam satu dekade terakhir",
+  "onb.slide4.big": "24/7",
+  "onb.slide4.sub": "instan, aturanmu",
+  "onb.slide4.note": "tanpa antri, tanpa izin",
+  "onb.slide5.big": "21Jt BTC",
+  "onb.slide5.sub": "dapatkan bagianmu",
+  "onb.slide5.note": "satu pembelian dalam satu waktu",
+  "onb.creating.title": "Menyiapkan akunmu",
+  "onb.creating.sub": "Hanya butuh sesaat",
+  "onb.creating.doneTitle": "Semuanya siap",
+  "onb.creating.doneSub": "Selamat datang di Arka",
+  "onb.currency.title": "Pilih mata uangmu",
+  "onb.currency.sub": "Kamu bisa mengubahnya di Pengaturan.",
+  "onb.currency.idr": "Rupiah",
+  "onb.currency.usd": "US Dollar",
+  "onb.currency.continue": "Lanjutkan",
 
   // Expiry presets
   "expiry.1h": "1 jam",
@@ -318,6 +413,11 @@ const id = {
   "credit.finishBorrowDesc": "Pilih nominal USDC yang ingin ditarik.",
   "credit.finishBorrowBtn": "Tarik USDC sekarang",
   "credit.finishBorrowBusy": "Menarik USDC…",
+  "credit.borrowMoreBtn": "Pinjam Lagi",
+  "credit.maxAvailable": "Maksimal tersedia",
+  "credit.repaidTitle": "Pinjaman Lunas",
+  "credit.repaidDesc": "BTC kamu siap ditarik kembali ke dompet.",
+  "credit.withdrawAllCollatBtn": "Tarik Semua BTC",
 
   // Offramp (USDC → IDR)
   "offramp.sectionTitle": "Cairkan ke Bank / E-wallet",
@@ -390,6 +490,53 @@ const id = {
   "offramp.historyEmpty": "Belum ada redeem.",
   "offramp.amountReceived": "Diterima",
 
+  // Settings (redesign)
+  "settings.title": "Pengaturan",
+  "settings.account": "Akun",
+  "settings.preferences": "Preferensi",
+  "settings.currency": "Mata uang",
+  "settings.display": "Tampilan BTC",
+  "settings.language": "Bahasa",
+  "settings.wallet": "Dompet",
+  "settings.copyAddress": "Salin alamat",
+  "settings.copied": "Tersalin!",
+  "settings.viewOnBasescan": "Lihat di Basescan",
+  "settings.linkedAccounts": "Akun terhubung",
+  "settings.payoutDestinations": "Tujuan pencairan",
+  "settings.helpSupport": "Bantuan",
+  "settings.contactTelegram": "Telegram",
+  "settings.contactEmail": "Email",
+  "settings.about": "Tentang",
+  "settings.terms": "Syarat & Ketentuan",
+  "settings.privacy": "Privasi",
+  "settings.version": "Versi",
+
+  // Save (redesign)
+  "save.title": "Tabungan",
+  "save.projectionTitle": "Dalam 1 tahun",
+  "save.perYear": "per tahun",
+  "save.amountLabel": "Nominal setiap beli",
+  "save.startBtn": "Mulai auto-buy",
+  "save.day": "hari",
+  "save.week": "minggu",
+  "save.month": "bulan",
+  "save.accumulatedTitle": "Terkumpul",
+  "save.invested": "Diinvestasikan",
+  "save.recentBuys": "Pembelian terakhir",
+  "save.market.title": "BTC vs pasar",
+  "save.market.subDay": "Rp {amount}/hari selama 5 tahun:",
+  "save.market.subWeek": "Rp {amount}/minggu selama 5 tahun:",
+  "save.market.subMonth": "Rp {amount}/bulan selama 5 tahun:",
+  "save.market.btc": "Bitcoin",
+  "save.market.spx": "S&P 500",
+  "save.market.gold": "Emas",
+  "save.market.ihsg": "IHSG",
+  "save.market.deposit": "Deposito",
+  "save.market.callout":
+    "Bitcoin mengubah {invested} menjadi {value} — {multiple}× investasimu.",
+  "save.market.footnote":
+    "Simulasi historis. Kinerja masa lalu bukan jaminan masa depan.",
+
   // General
   "general.failedLoad": "Gagal memuat",
 } as const;
@@ -419,6 +566,8 @@ const en: Record<keyof typeof id, string> = {
   "nav.dca": "DCA",
   "nav.deposit": "Deposit",
   "nav.profile": "Profile",
+  "nav.save": "Save",
+  "nav.borrow": "Borrow",
 
   // Dashboard
   "dashboard.balanceIdrx": "IDRX Balance",
@@ -518,42 +667,40 @@ const en: Record<keyof typeof id, string> = {
   "dca.interval.hours": "hours",
   "dca.interval.days": "days",
 
-  // Mint
-  "mint.title": "Mint IDRX",
+  // Deposit IDR (IDRX mint behind the scenes)
+  "mint.title": "Deposit IDR",
   "mint.subtitle":
-    "Convert rupiah to IDRX into your Arka wallet. After the request is created, you'll be directed to the partner payment page.",
-  "mint.checkingIdrx": "Checking IDRX status…",
-  "mint.linkingIdrx": "Linking IDRX account (Privy email)…",
+    "Transfer rupiah and your balance appears in Arka in a few minutes.",
+  "mint.checkingIdrx": "Checking status…",
+  "mint.linkingIdrx": "Preparing deposit account…",
   "mint.linkingWait": "Just a moment…",
-  "mint.preparing": "Preparing mint…",
-  "mint.errorTitle": "Cannot prepare IDRX. Try again.",
+  "mint.preparing": "Preparing…",
+  "mint.errorTitle": "Cannot prepare deposit. Try again.",
   "mint.errorDefault":
-    "Failed to check or link onboarding. Check your network and reload the page.",
-  "mint.destLabel": "Destination wallet (Arka)",
+    "Failed to prepare account. Check your network and reload the page.",
+  "mint.destLabel": "Deposited to your Arka wallet",
   "mint.destWaiting": "Waiting for wallet…",
-  "mint.amountLabel": "IDRX Amount (IDR)",
+  "mint.amountLabel": "Amount (Rp)",
   "mint.amountPlaceholder": "Min. Rp 20,000",
-  "mint.amountHint":
-    "Minimum Rp 20,000 per IDRX policy. Payment amount may differ slightly after fees.",
+  "mint.amountHint": "Minimum Rp 20,000.",
   "mint.networkLabel": "Network",
-  "mint.networkHint": "Base is selected as default for future product expansion.",
+  "mint.networkHint": "",
   "mint.expiryLabel": "Payment deadline",
-  "mint.resultTitle":
-    "Request created. Continue with payment to complete the mint.",
+  "mint.resultTitle": "Request created. Continue with payment to complete.",
   "mint.resultTotalPay": "Total pay",
   "mint.resultReference": "Reference",
   "mint.resultOrder": "Order",
   "mint.resultPayBtn": "Continue to payment",
   "mint.resultActivityLink": "Activity",
   "mint.resultTrackPrefix": "Track status in",
-  "mint.resultTrackSuffix": "after paying — verified via IDRX transaction API.",
-  "mint.submit": "Create mint request",
+  "mint.resultTrackSuffix": "after paying.",
+  "mint.submit": "Continue to payment",
   "mint.submitting": "Processing…",
   "mint.errorNoWallet": "Wallet not available",
   "mint.errorNoAmount": "Enter an amount",
   "mint.errorGeneric": "Request failed",
   "mint.processingNotice":
-    "After payment is confirmed, it may take 1–2 minutes for IDRX to appear in your wallet.",
+    "Balance usually appears 1–2 minutes after payment is confirmed.",
 
   // Activity
   "activity.title": "Activity",
@@ -632,6 +779,71 @@ const en: Record<keyof typeof id, string> = {
   "dashboard.simDesc": "Compare historical DCA results and see your projected savings.",
   "dashboard.simBtn": "Simulate",
 
+  // Home (redesigned)
+  "home.greet.morning": "Good morning",
+  "home.greet.afternoon": "Good afternoon",
+  "home.greet.evening": "Good evening",
+  "home.balance.label": "Total Bitcoin",
+  "home.balance.sub": "Worth",
+  "home.tile.cash": "Cash",
+  "home.tile.credit": "Credit",
+  "home.action.deposit": "Deposit",
+  "home.action.credit": "Borrow",
+  "home.action.withdraw": "Withdraw",
+  "home.autobuy.startTitle": "Start Auto-buy",
+  "home.autobuy.startDesc":
+    "Auto-buy Bitcoin on your schedule — rupiah or USD.",
+  "home.autobuy.startBtn": "Start",
+  "home.autobuy.nextTitle": "Next buy",
+  "home.autobuy.nextBtn": "Manage",
+  "home.activity.title": "Activity",
+  "home.activity.empty": "No activity yet.",
+
+  // Cash
+  "cash.title": "Cash",
+  "cash.total": "Total balance",
+  "cash.idrx": "IDRX",
+  "cash.idrxDesc": "On-chain rupiah (Base)",
+  "cash.usdc": "USDC",
+  "cash.cashBalance": "Cash balance",
+  "cash.creditBalance": "Credit balance",
+
+  // Withdraw
+  "withdraw.title": "Withdraw",
+  "withdraw.source": "Source",
+  "withdraw.source.idrx": "IDRX (rupiah)",
+  "withdraw.source.usdc": "USDC",
+  "withdraw.destination": "Destination",
+  "withdraw.dest.bank": "Bank / E-wallet",
+  "withdraw.dest.external": "External wallet",
+  "withdraw.external.desc":
+    "Send to your own crypto address (ERC-20 transfer on Base).",
+  "withdraw.external.address": "Destination address (0x…)",
+  "withdraw.external.amount": "Amount",
+  "withdraw.external.submit": "Send",
+  "withdraw.external.sending": "Sending…",
+  "withdraw.external.sent": "Sent",
+  "withdraw.external.errorAddress": "Invalid address",
+  "withdraw.external.errorAmount": "Invalid amount",
+  "withdraw.external.errorBalance": "Insufficient balance",
+  "withdraw.sellBtc": "Sell Bitcoin (contact support)",
+
+  // Add Funds (Deposit menu)
+  "addfunds.title": "Add Funds",
+  "addfunds.bank": "Deposit IDR",
+  "addfunds.bankDesc": "Transfer rupiah, balance lands automatically",
+  "addfunds.usdc": "USDC",
+  "addfunds.usdcDesc": "Deposit USDC on the Base network",
+  "addfunds.usdt": "USDT",
+  "addfunds.usdtDesc": "Deposit from another crypto wallet",
+  "addfunds.chain": "Network",
+  "addfunds.copyAddress": "Copy address",
+  "addfunds.copied": "Copied",
+  "addfunds.warning":
+    "Send USDC only on the Base network. Other networks will result in lost funds.",
+  "addfunds.yourAddress": "Your Arka wallet address",
+  "addfunds.waitingAddress": "Preparing address…",
+
   // Onboarding
   "onboarding.title": "IDRX",
   "onboarding.subtitle":
@@ -639,6 +851,36 @@ const en: Record<keyof typeof id, string> = {
   "onboarding.desc":
     "Open the Mint page to complete IDRX linking in the background and create IDRX requests.",
   "onboarding.goDeposit": "Go to Deposit",
+
+  // Onboarding — hook (rotating slides) & creating & currency picker
+  "onb.headline": "Save in Bitcoin.",
+  "onb.sub": "Preserve wealth. Never sell.",
+  "onb.orEmail": "or continue with email",
+  "onb.terms": "By continuing, you agree to our Terms and Privacy Policy",
+  "onb.slide1.big": "2.4×",
+  "onb.slide1.sub": "average 3-year return",
+  "onb.slide1.note": "start small, your schedule",
+  "onb.slide2.big": "300M+",
+  "onb.slide2.sub": "people save in Bitcoin",
+  "onb.slide2.note": "you're not early — you're on time",
+  "onb.slide3.big": "#1",
+  "onb.slide3.sub": "best performing asset",
+  "onb.slide3.note": "of the last decade",
+  "onb.slide4.big": "24/7",
+  "onb.slide4.sub": "instant, your rules",
+  "onb.slide4.note": "no waiting, no asking",
+  "onb.slide5.big": "21M BTC",
+  "onb.slide5.sub": "earn your share",
+  "onb.slide5.note": "one buy at a time",
+  "onb.creating.title": "Setting up your account",
+  "onb.creating.sub": "This only takes a moment",
+  "onb.creating.doneTitle": "You're all set",
+  "onb.creating.doneSub": "Welcome to Arka",
+  "onb.currency.title": "Choose your currency",
+  "onb.currency.sub": "You can change this later in Settings.",
+  "onb.currency.idr": "Indonesian Rupiah",
+  "onb.currency.usd": "US Dollar",
+  "onb.currency.continue": "Continue",
 
   // Expiry presets
   "expiry.1h": "1 hour",
@@ -713,6 +955,11 @@ const en: Record<keyof typeof id, string> = {
   "credit.finishBorrowDesc": "Pick how much USDC to withdraw.",
   "credit.finishBorrowBtn": "Withdraw USDC now",
   "credit.finishBorrowBusy": "Withdrawing USDC…",
+  "credit.borrowMoreBtn": "Borrow More",
+  "credit.maxAvailable": "Max available",
+  "credit.repaidTitle": "Loan Repaid",
+  "credit.repaidDesc": "Your BTC is ready to withdraw back to your wallet.",
+  "credit.withdrawAllCollatBtn": "Withdraw All BTC",
 
   // Offramp (USDC → IDR)
   "offramp.sectionTitle": "Cash out to Bank / E-wallet",
@@ -784,6 +1031,53 @@ const en: Record<keyof typeof id, string> = {
   "offramp.historyTitle": "Redeem history",
   "offramp.historyEmpty": "No redeems yet.",
   "offramp.amountReceived": "Received",
+
+  // Settings (redesign)
+  "settings.title": "Settings",
+  "settings.account": "Account",
+  "settings.preferences": "Preferences",
+  "settings.currency": "Currency",
+  "settings.display": "BTC display",
+  "settings.language": "Language",
+  "settings.wallet": "Wallet",
+  "settings.copyAddress": "Copy address",
+  "settings.copied": "Copied!",
+  "settings.viewOnBasescan": "View on Basescan",
+  "settings.linkedAccounts": "Linked accounts",
+  "settings.payoutDestinations": "Payout destinations",
+  "settings.helpSupport": "Help & Support",
+  "settings.contactTelegram": "Telegram",
+  "settings.contactEmail": "Email",
+  "settings.about": "About",
+  "settings.terms": "Terms",
+  "settings.privacy": "Privacy",
+  "settings.version": "Version",
+
+  // Save (redesign)
+  "save.title": "Savings",
+  "save.projectionTitle": "In 1 year",
+  "save.perYear": "per year",
+  "save.amountLabel": "Amount per buy",
+  "save.startBtn": "Start auto-buy",
+  "save.day": "day",
+  "save.week": "week",
+  "save.month": "month",
+  "save.accumulatedTitle": "Accumulated",
+  "save.invested": "Invested",
+  "save.recentBuys": "Recent buys",
+  "save.market.title": "BTC vs the market",
+  "save.market.subDay": "Rp {amount}/day for 5 years:",
+  "save.market.subWeek": "Rp {amount}/week for 5 years:",
+  "save.market.subMonth": "Rp {amount}/month for 5 years:",
+  "save.market.btc": "Bitcoin",
+  "save.market.spx": "S&P 500",
+  "save.market.gold": "Gold",
+  "save.market.ihsg": "IHSG",
+  "save.market.deposit": "Deposit",
+  "save.market.callout":
+    "Bitcoin turned {invested} into {value} — {multiple}× your investment.",
+  "save.market.footnote":
+    "Historical simulation. Past performance is not a future guarantee.",
 
   // General
   "general.failedLoad": "Failed to load",

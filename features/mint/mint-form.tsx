@@ -1,16 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input, Label } from "@/components/ui/input";
-import { Screen } from "@/components/ui/screen";
+import { GradButton } from "@/components/ui/grad-button";
 import { fetchWithPrivy } from "@/lib/api";
-import { CHAIN_OPTIONS, defaultChainId } from "@/lib/chains";
+import { defaultChainId } from "@/lib/chains";
 import { useT } from "@/lib/i18n";
-import {
-  ethereumAddressFromPrivyUser,
-  resolveWalletDisplayAddress,
-} from "@/lib/privy-destination-wallet";
+import { resolveWalletDisplayAddress } from "@/lib/privy-destination-wallet";
 import {
   useActiveWallet,
   usePrivy,
@@ -19,11 +14,8 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-const EXPIRY_PRESETS: { labelKey: "expiry.1h" | "expiry.6h" | "expiry.24h"; sec: number }[] = [
-  { labelKey: "expiry.1h", sec: 3600 },
-  { labelKey: "expiry.6h", sec: 3600 * 6 },
-  { labelKey: "expiry.24h", sec: 86400 },
-];
+const DEFAULT_EXPIRY_SEC = 3600;
+const IDR_PRESETS = [50_000, 100_000, 250_000, 500_000];
 
 type IdrxGate = "loading" | "linking_idrx" | "ready" | "error";
 
@@ -116,9 +108,7 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
     [wallets, user, activeWallet, meWallet, walletAddress],
   );
 
-  const [amount, setAmount] = useState("");
-  const [chainId, setChainId] = useState(defaultChainId());
-  const [expiry, setExpiry] = useState(EXPIRY_PRESETS[2].sec);
+  const [amountIdr, setAmountIdr] = useState<number>(100_000);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{
@@ -130,9 +120,12 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
 
   const submit = useCallback(async () => {
     setError(null);
-    const raw = amount.replace(/\./g, "").replace(/,/g, "").trim();
-    if (!raw || !dest) {
-      setError(!dest ? t("mint.errorNoWallet") : t("mint.errorNoAmount"));
+    if (!dest) {
+      setError(t("mint.errorNoWallet"));
+      return;
+    }
+    if (!amountIdr || amountIdr < 1) {
+      setError(t("mint.errorNoAmount"));
       return;
     }
     setLoading(true);
@@ -140,9 +133,9 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        toBeMinted: raw,
-        expiryPeriod: expiry,
-        networkChainId: chainId,
+        toBeMinted: String(Math.floor(amountIdr)),
+        expiryPeriod: DEFAULT_EXPIRY_SEC,
+        networkChainId: defaultChainId(),
         requestType: "idrx",
         destinationWalletAddress: dest,
       }),
@@ -159,174 +152,217 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
       reference: j.reference,
       merchantOrderId: j.merchantOrderId,
     });
-  }, [amount, chainId, dest, expiry, getAccessToken, t]);
+  }, [amountIdr, dest, getAccessToken, t]);
 
   if (idrxGate === "loading" || idrxGate === "linking_idrx") {
     return (
-      <Screen
-        title={t("mint.title")}
-        subtitle={
-          idrxGate === "linking_idrx"
+      <Card className="flex min-h-[40vh] flex-col items-center justify-center gap-3">
+        <div className="h-8 w-8 animate-pulse rounded-full bg-arka-border" />
+        <p
+          className="text-sm"
+          style={{ color: "var(--arka-text-muted)" }}
+        >
+          {idrxGate === "linking_idrx"
             ? t("mint.linkingIdrx")
-            : t("mint.checkingIdrx")
-        }
-      >
-        <div className="flex min-h-[30vh] flex-col items-center justify-center gap-3">
-          <div className="h-8 w-8 animate-pulse rounded-full bg-arka-border" />
-          <p className="text-sm text-arka-text-muted">
-            {idrxGate === "linking_idrx"
-              ? t("mint.linkingWait")
-              : t("mint.preparing")}
-          </p>
-        </div>
-      </Screen>
+            : t("mint.preparing")}
+        </p>
+      </Card>
     );
   }
 
   if (idrxGate === "error") {
     return (
-      <Screen
-        title={t("mint.title")}
-        subtitle={t("mint.errorTitle")}
-      >
-        <Card className="space-y-3 p-4">
-          <p className="text-sm text-arka-danger" role="alert">
-            {gateError || t("mint.errorDefault")}
+      <Card className="space-y-3">
+        <div
+          className="text-[13px] font-extrabold"
+          style={{ color: "var(--arka-text)" }}
+        >
+          {t("mint.errorTitle")}
+        </div>
+        <p
+          className="text-[12px]"
+          style={{ color: "var(--arka-danger)" }}
+          role="alert"
+        >
+          {gateError || t("mint.errorDefault")}
+        </p>
+      </Card>
+    );
+  }
+
+  if (result) {
+    return (
+      <div className="space-y-4">
+        <Card className="space-y-3">
+          <div
+            className="text-[13px] font-extrabold"
+            style={{ color: "var(--arka-text)" }}
+          >
+            {t("mint.resultTitle")}
+          </div>
+          <dl className="space-y-2 text-[12px]">
+            <div className="flex justify-between gap-2">
+              <dt style={{ color: "var(--arka-text-muted)" }}>
+                {t("mint.resultTotalPay")}
+              </dt>
+              <dd
+                className="font-extrabold tabular-nums"
+                style={{ color: "var(--arka-text)" }}
+              >
+                Rp {result.amount}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-2">
+              <dt style={{ color: "var(--arka-text-muted)" }}>
+                {t("mint.resultReference")}
+              </dt>
+              <dd
+                className="max-w-[55%] truncate font-mono text-[11px]"
+                style={{ color: "var(--arka-text)" }}
+              >
+                {result.reference}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-2">
+              <dt style={{ color: "var(--arka-text-muted)" }}>
+                {t("mint.resultOrder")}
+              </dt>
+              <dd
+                className="font-mono text-[11px]"
+                style={{ color: "var(--arka-text)" }}
+              >
+                {result.merchantOrderId}
+              </dd>
+            </div>
+          </dl>
+
+          <a
+            href={result.paymentUrl}
+            data-pressable
+            className="block w-full rounded-[14px] px-4 py-3 text-center text-[13px] font-extrabold text-white"
+            style={{
+              background: "var(--arka-gradient)",
+              boxShadow: "var(--arka-shadow-hero)",
+            }}
+          >
+            {t("mint.resultPayBtn")}
+          </a>
+
+          <div
+            className="flex items-start gap-2 rounded-[12px] p-3 text-[11px]"
+            style={{
+              background: "var(--arka-warning-soft)",
+              color: "var(--arka-warning)",
+            }}
+          >
+            <span aria-hidden>⏱</span>
+            <span>{t("mint.processingNotice")}</span>
+          </div>
+
+          <p
+            className="text-[11px]"
+            style={{ color: "var(--arka-text-faint)" }}
+          >
+            {t("mint.resultTrackPrefix")}{" "}
+            <Link
+              href={`/activity?merchantOrderId=${encodeURIComponent(result.merchantOrderId)}`}
+              className="font-extrabold underline"
+              style={{ color: "var(--arka-accent)" }}
+            >
+              {t("mint.resultActivityLink")}
+            </Link>{" "}
+            {t("mint.resultTrackSuffix")}
           </p>
         </Card>
-      </Screen>
+      </div>
     );
   }
 
   return (
-    <Screen
-      title={t("mint.title")}
-      subtitle={t("mint.subtitle")}
-    >
-      <div className="space-y-4">
-        <Card className="space-y-3">
-          <div>
-            <Label>{t("mint.destLabel")}</Label>
-            <p className="mt-1 break-all font-mono text-xs text-arka-text-muted">
-              {dest || t("mint.destWaiting")}
-            </p>
+    <div className="space-y-4">
+      <Card className="space-y-4">
+        <div>
+          <div
+            className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em]"
+            style={{ color: "var(--arka-text-muted)" }}
+          >
+            {t("mint.amountLabel")}
           </div>
-          <div>
-            <Label htmlFor="amt">{t("mint.amountLabel")}</Label>
-            <Input
-              id="amt"
-              inputMode="numeric"
-              placeholder={t("mint.amountPlaceholder")}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            />
-            <p className="mt-1 text-xs text-arka-text-muted">
-              {t("mint.amountHint")}
-            </p>
-          </div>
-          <div>
-            <Label htmlFor="chain">{t("mint.networkLabel")}</Label>
-            <select
-              id="chain"
-              className="min-h-11 w-full rounded-[var(--radius-control)] border border-arka-border bg-arka-surface px-3 text-base"
-              value={chainId}
-              onChange={(e) => setChainId(e.target.value)}
-            >
-              {CHAIN_OPTIONS.map((c) => (
-                <option key={c.id} value={c.networkChainId}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-arka-text-muted">
-              {t("mint.networkHint")}
-            </p>
-          </div>
-          <div>
-            <Label>{t("mint.expiryLabel")}</Label>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {EXPIRY_PRESETS.map((p) => (
+          <div className="grid grid-cols-4 gap-2">
+            {IDR_PRESETS.map((p) => {
+              const active = amountIdr === p;
+              return (
                 <button
-                  key={p.sec}
+                  key={p}
                   type="button"
-                  onClick={() => setExpiry(p.sec)}
-                  className={`rounded-full px-3 py-1.5 text-sm ${
-                    expiry === p.sec
-                      ? "bg-arka-accent text-white"
-                      : "bg-arka-surface-muted text-arka-text"
-                  }`}
+                  onClick={() => setAmountIdr(p)}
+                  className="rounded-[12px] px-2 py-2 text-[12px] font-extrabold"
+                  style={{
+                    color: active ? "#fff" : "var(--arka-text)",
+                    background: active
+                      ? "var(--arka-accent)"
+                      : "var(--arka-surface-muted)",
+                  }}
+                  data-pressable
                 >
-                  {t(p.labelKey)}
+                  {(p / 1000).toFixed(0)}K
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        </Card>
-
-        {error ? (
-          <p className="text-sm text-arka-danger" role="alert">
-            {error}
+          <input
+            type="number"
+            inputMode="numeric"
+            value={amountIdr}
+            onChange={(e) => setAmountIdr(Number(e.target.value) || 0)}
+            placeholder={t("mint.amountPlaceholder")}
+            className="mt-3 w-full rounded-[12px] border px-3 py-2 text-[14px] font-semibold tabular-nums"
+            style={{
+              borderColor: "var(--arka-border)",
+              background: "var(--arka-surface)",
+              color: "var(--arka-text)",
+            }}
+          />
+          <p
+            className="mt-1.5 text-[11px]"
+            style={{ color: "var(--arka-text-faint)" }}
+          >
+            {t("mint.amountHint")}
           </p>
-        ) : null}
+        </div>
 
-        {result ? (
-          <Card className="space-y-3 border-arka-accent/30 bg-amber-50/40">
-            <p className="text-sm font-medium text-arka-text">
-              {t("mint.resultTitle")}
-            </p>
-            <dl className="space-y-1 text-sm">
-              <div className="flex justify-between gap-2">
-                <dt className="text-arka-text-muted">{t("mint.resultTotalPay")}</dt>
-                <dd className="font-medium">Rp {result.amount}</dd>
-              </div>
-              <div className="flex justify-between gap-2">
-                <dt className="text-arka-text-muted">{t("mint.resultReference")}</dt>
-                <dd className="max-w-[55%] truncate font-mono text-xs">
-                  {result.reference}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-2">
-                <dt className="text-arka-text-muted">{t("mint.resultOrder")}</dt>
-                <dd className="font-mono text-xs">{result.merchantOrderId}</dd>
-              </div>
-            </dl>
-            <a
-              href={result.paymentUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-control)] bg-arka-accent px-4 text-sm font-medium text-white transition hover:bg-arka-accent-muted active:scale-[0.99]"
-            >
-              {t("mint.resultPayBtn")}
-            </a>
+        <div
+          className="rounded-[12px] p-2.5"
+          style={{ background: "var(--arka-surface-muted)" }}
+        >
+          <div
+            className="text-[10px] font-bold uppercase tracking-[0.08em]"
+            style={{ color: "var(--arka-text-faint)" }}
+          >
+            {t("mint.destLabel")}
+          </div>
+          <div
+            className="mt-1 truncate font-mono text-[11px]"
+            style={{ color: "var(--arka-text)" }}
+          >
+            {dest || t("mint.destWaiting")}
+          </div>
+        </div>
+      </Card>
 
-            {/* Processing delay notice */}
-            <div className="flex items-start gap-2.5 rounded-lg border border-amber-200/60 bg-amber-50/60 px-3 py-2.5">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0 text-arka-warning">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
-              <p className="text-xs leading-relaxed text-arka-text-muted">
-                {t("mint.processingNotice")}
-              </p>
-            </div>
+      {error ? (
+        <p
+          className="text-[12px]"
+          style={{ color: "var(--arka-danger)" }}
+          role="alert"
+        >
+          {error}
+        </p>
+      ) : null}
 
-            <p className="text-xs text-arka-text-muted">
-              {t("mint.resultTrackPrefix")}{" "}
-              <Link
-                href={`/activity?merchantOrderId=${encodeURIComponent(result.merchantOrderId)}`}
-                className="font-medium text-arka-accent underline"
-              >
-                {t("mint.resultActivityLink")}
-              </Link>{" "}
-              {t("mint.resultTrackSuffix")}
-            </p>
-          </Card>
-        ) : (
-          <Button onClick={submit} disabled={loading}>
-            {loading ? t("mint.submitting") : t("mint.submit")}
-          </Button>
-        )}
-      </div>
-    </Screen>
+      <GradButton onClick={submit} disabled={loading || !dest}>
+        {loading ? t("mint.submitting") : t("mint.submit")}
+      </GradButton>
+    </div>
   );
 }

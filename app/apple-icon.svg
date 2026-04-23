@@ -1,4 +1,15 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="180" height="180" rx="40" fill="#b45309"/>
-  <text x="90" y="125" text-anchor="middle" font-family="system-ui, sans-serif" font-size="110" font-weight="700" fill="white">A</text>
+  <defs>
+    <linearGradient id="arka-grad" x1="0" y1="0" x2="180" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#be6640"/>
+      <stop offset="55%" stop-color="#d08850"/>
+      <stop offset="100%" stop-color="#dca060"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="40" fill="url(#arka-grad)"/>
+  <g transform="translate(40 40) scale(1)">
+    <rect x="15" y="18" width="17" height="64" rx="8.5" fill="#ffffff"/>
+    <rect x="68" y="18" width="17" height="64" rx="8.5" fill="#ffffff"/>
+    <circle cx="50" cy="50" r="9" fill="#ffffff"/>
+  </g>
 </svg>
