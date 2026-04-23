@@ -113,7 +113,7 @@ function MarketCompare({
 }) {
   const t = useT();
   const { currency } = useCurrency();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const freqCfg = FREQ_OPTIONS.find((o) => o.id === freq)!;
   const periodsIn5Years = freqCfg.multiplier * 5;
