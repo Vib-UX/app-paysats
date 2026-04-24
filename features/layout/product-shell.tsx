@@ -39,13 +39,7 @@ function SaveIcon({ active }: { active: boolean }) {
         strokeWidth={active ? 2.2 : 1.8}
         strokeLinejoin="round"
       />
-      <circle
-        cx={15}
-        cy={12.5}
-        r={1}
-        fill="currentColor"
-        stroke="none"
-      />
+      <circle cx={15} cy={12.5} r={1} fill="currentColor" stroke="none" />
       <path
         d="M9 7V5a2 2 0 0 1 2-2h2"
         stroke="currentColor"
@@ -159,8 +153,7 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
           style={{
             background: "var(--arka-surface)",
             borderColor: "var(--arka-border)",
-            paddingBottom:
-              "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)",
+            paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)",
           }}
         >
           <div className="flex items-center justify-around">

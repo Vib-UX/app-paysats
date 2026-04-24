@@ -161,14 +161,13 @@ const id = {
 
   // Activity
   "activity.title": "Aktivitas",
-  "activity.subtitle":
-    "Riwayat deposit & mint IDRX: status pembayaran dan mint dari API mitra. Saldo IDRX/BTC di dompet dibaca on-chain dari Beranda.",
   "activity.reload": "Muat ulang",
   "activity.failedLoad": "Gagal memuat",
 
   // Transaction list
   "tx.empty":
     "Belum ada transaksi mint. Setelah kamu membuat permintaan, statusnya muncul di sini.",
+  "tx.idrxDeposit": "Deposit IDR",
   "tx.amountIdrx": "Jumlah IDRX",
   "tx.payIdr": "Bayar (IDR)",
   "tx.destWallet": "Dompet tujuan",
@@ -704,14 +703,13 @@ const en: Record<keyof typeof id, string> = {
 
   // Activity
   "activity.title": "Activity",
-  "activity.subtitle":
-    "Deposit & mint IDRX history: payment and mint status from the partner API. IDRX/BTC wallet balances are read on-chain from Home.",
   "activity.reload": "Reload",
   "activity.failedLoad": "Failed to load",
 
   // Transaction list
   "tx.empty":
     "No mint transactions yet. After you create a request, the status will appear here.",
+  "tx.idrxDeposit": "IDR Deposit",
   "tx.amountIdrx": "IDRX Amount",
   "tx.payIdr": "Pay (IDR)",
   "tx.destWallet": "Destination wallet",
