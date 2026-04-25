@@ -432,7 +432,7 @@ export function DashboardClient() {
       items.push({
         id: tx.id,
         type: "in",
-        title: "IDRX deposit",
+        title: t("tx.idrxDeposit"),
         subtitle: relativeTime(tx.createdAt),
         primary: `+Rp ${Number(idr).toLocaleString("id-ID")}`,
         secondary: tx.paymentStatus ?? undefined,
@@ -440,7 +440,7 @@ export function DashboardClient() {
       });
     }
     return items;
-  }, [mintTx]);
+  }, [mintTx, t]);
 
   if (!ready || !authenticated) return null;
 
