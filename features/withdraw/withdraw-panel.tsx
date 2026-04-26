@@ -119,10 +119,10 @@ function ExternalWalletForm({ source }: { source: "IDRX" | "USDC" }) {
         });
         setHash(typeof tx === "string" ? tx : null);
       } else {
-        // IDRX external transfer — handled via existing IDRX contract
+        // IDR external transfer — handled via existing IDRX contract
         // (same ERC-20 transfer on Base). Omitted here; TODO plumb IDRX token
         // address once the contract module exposes it.
-        setError("IDRX external transfer coming soon");
+        setError("IDR external transfer coming soon");
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Transfer failed");

@@ -267,7 +267,7 @@ const id = {
   // Withdraw
   "withdraw.title": "Tarik",
   "withdraw.source": "Sumber dana",
-  "withdraw.source.idrx": "IDRX (rupiah)",
+  "withdraw.source.idrx": "IDR (Rupiah)",
   "withdraw.source.usdc": "USDC",
   "withdraw.destination": "Tujuan",
   "withdraw.dest.bank": "Bank / E-wallet",
@@ -809,7 +809,7 @@ const en: Record<keyof typeof id, string> = {
   // Withdraw
   "withdraw.title": "Withdraw",
   "withdraw.source": "Source",
-  "withdraw.source.idrx": "IDRX (rupiah)",
+  "withdraw.source.idrx": "IDR (Rupiah)",
   "withdraw.source.usdc": "USDC",
   "withdraw.destination": "Destination",
   "withdraw.dest.bank": "Bank / E-wallet",
