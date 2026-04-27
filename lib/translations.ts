@@ -421,7 +421,7 @@ const id = {
   // Offramp (USDC → IDR)
   "offramp.sectionTitle": "Cairkan ke Bank / E-wallet",
   "offramp.sectionDesc":
-    "Kirim USDC ke alamat deposit IDRX — IDR dicairkan ke rekening atau e-wallet kamu (maks 24 jam).",
+    "IDR dicairkan ke rekening atau e-wallet kamu (maks 24 jam).",
   "offramp.openBtn": "Cairkan dana",
   "offramp.closeBtn": "Tutup",
   "offramp.noDestinations": "Belum ada tujuan tersimpan.",
@@ -962,7 +962,7 @@ const en: Record<keyof typeof id, string> = {
   // Offramp (USDC → IDR)
   "offramp.sectionTitle": "Cash out to Bank / E-wallet",
   "offramp.sectionDesc":
-    "Send USDC to IDRX's deposit address — IDR lands in your bank or e-wallet within 24h.",
+    "IDR lands in your bank or e-wallet within 24h.",
   "offramp.openBtn": "Cash out",
   "offramp.closeBtn": "Close",
   "offramp.noDestinations": "No saved destinations yet.",
