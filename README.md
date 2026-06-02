@@ -1,6 +1,6 @@
-# Arka — produk web (mobile-first)
+# PaySats — produk web (mobile-first)
 
-Aplikasi produk Arka: autentikasi Privy (Google + dompet embedded), onboarding IDRX (KYC), permintaan mint IDRX, dan riwayat transaksi. Tidak ada landing pemasaran; fokus pada alur produk.
+Aplikasi produk PaySats: autentikasi Privy (Google + dompet embedded), onboarding IDRX (KYC), permintaan mint IDRX, dan riwayat transaksi. Tidak ada landing pemasaran; fokus pada alur produk.
 
 ## Stack
 

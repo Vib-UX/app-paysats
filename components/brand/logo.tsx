@@ -50,11 +50,11 @@ export function LogoTile({
         width: size,
         height: size,
         borderRadius: size * 0.26,
-        background: "var(--arka-gradient)",
+        background: "var(--paysats-gradient)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        boxShadow: shadow ? "var(--arka-shadow-tile)" : "none",
+        boxShadow: shadow ? "var(--paysats-shadow-tile)" : "none",
         flexShrink: 0,
         ...style,
       }}
@@ -99,7 +99,7 @@ export function Lockup({
           letterSpacing: "-0.03em",
         }}
       >
-        arka
+        PaySats
       </span>
     </div>
   );

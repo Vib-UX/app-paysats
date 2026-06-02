@@ -18,9 +18,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Arka — Save in Bitcoin",
+  title: "PaySats — Save in Bitcoin",
   description:
-    "Save in Bitcoin. Preserve wealth. Never sell. Arka x IDRX allows direct IDR deposits and auto DCA into Bitcoin.",
+    "Save in Bitcoin. Preserve wealth. Never sell. PaySats x IDRX allows direct IDR deposits and auto DCA into Bitcoin.",
   icons: {
     icon: "/icon.svg",
     apple: "/apple-icon.svg",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Arka",
+    title: "PaySats",
   },
   other: {
     "mobile-web-app-capable": "yes",
@@ -42,13 +42,13 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="id"
+      lang="en"
       className={`${plusJakarta.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       {/* Extensions (e.g. password managers) inject attributes on <body>; suppress avoids false hydration errors. */}
       <body
-        className="min-h-full flex flex-col bg-arka-bg"
+        className="min-h-full flex flex-col bg-paysats-bg"
         suppressHydrationWarning
       >
         <Providers>{children}</Providers>

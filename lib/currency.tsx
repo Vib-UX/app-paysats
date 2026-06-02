@@ -21,7 +21,7 @@ type CurrencyContextValue = {
   symbol: string;
 };
 
-const STORAGE_KEY = "arka-currency";
+const STORAGE_KEY = "paysats-currency";
 
 const CurrencyContext = createContext<CurrencyContextValue>({
   currency: "IDR",

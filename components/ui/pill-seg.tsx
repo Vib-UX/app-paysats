@@ -20,7 +20,7 @@ export function PillSeg<T extends string>({
 }) {
   return (
     <div
-      className={`flex gap-0 rounded-[var(--radius-control)] bg-arka-surface-muted p-[3px] ${className}`}
+      className={`flex gap-0 rounded-[var(--radius-control)] bg-paysats-surface-muted p-[3px] ${className}`}
     >
       {options.map((opt) => {
         const active = opt.value === value;
@@ -31,8 +31,8 @@ export function PillSeg<T extends string>({
             onClick={() => onChange(opt.value)}
             className={`flex-1 rounded-[10px] px-3 py-2 text-xs font-bold transition ${
               active
-                ? "bg-arka-surface text-arka-text shadow-[0_1px_3px_rgba(22,18,16,0.06)]"
-                : "bg-transparent text-arka-text-muted"
+                ? "bg-paysats-surface text-paysats-text shadow-[0_1px_3px_rgba(22,18,16,0.06)]"
+                : "bg-transparent text-paysats-text-muted"
             }`}
           >
             {opt.label}

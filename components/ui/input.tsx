@@ -10,7 +10,7 @@ export function Input({
 }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className={`min-h-11 w-full rounded-[var(--radius-control)] border border-arka-border bg-arka-surface px-3 text-base text-arka-text outline-none ring-arka-accent/30 placeholder:text-arka-text-muted/70 focus:ring-2 ${className}`}
+      className={`min-h-11 w-full rounded-[var(--radius-control)] border border-paysats-border bg-paysats-surface px-3 text-base text-paysats-text outline-none ring-paysats-accent/30 placeholder:text-paysats-text-muted/70 focus:ring-2 ${className}`}
       {...props}
     />
   );
@@ -22,7 +22,7 @@ export function TextArea({
 }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
-      className={`min-h-24 w-full rounded-[var(--radius-control)] border border-arka-border bg-arka-surface px-3 py-2 text-base text-arka-text outline-none ring-arka-accent/30 placeholder:text-arka-text-muted/70 focus:ring-2 ${className}`}
+      className={`min-h-24 w-full rounded-[var(--radius-control)] border border-paysats-border bg-paysats-surface px-3 py-2 text-base text-paysats-text outline-none ring-paysats-accent/30 placeholder:text-paysats-text-muted/70 focus:ring-2 ${className}`}
       {...props}
     />
   );
@@ -38,7 +38,7 @@ export function Label({
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-1 block text-sm font-medium text-arka-text-muted"
+      className="mb-1 block text-sm font-medium text-paysats-text-muted"
     >
       {children}
     </label>

@@ -22,7 +22,7 @@ export function Splash({
   return (
     <div
       className="absolute inset-0 flex flex-col items-center justify-center"
-      style={{ background: "var(--arka-bg)" }}
+      style={{ background: "var(--paysats-bg)" }}
     >
       <div
         className="relative flex items-center justify-center"
@@ -30,7 +30,7 @@ export function Splash({
           width: 140,
           height: 140,
           borderRadius: 36,
-          background: "var(--arka-gradient)",
+          background: "var(--paysats-gradient)",
           boxShadow: "0 14px 48px rgba(170,80,40,0.28)",
           animation: "tile-in 0.5s cubic-bezier(0.16,1,0.3,1) 0.1s forwards",
           opacity: 0,

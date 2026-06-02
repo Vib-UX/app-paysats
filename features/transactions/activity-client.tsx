@@ -24,16 +24,16 @@ function BackHeader({ title }: { title: string }) {
         data-pressable
         className="flex h-10 w-10 items-center justify-center rounded-[12px]"
         style={{
-          background: "var(--arka-surface)",
-          boxShadow: "var(--arka-shadow-card)",
-          color: "var(--arka-text)",
+          background: "var(--paysats-surface)",
+          boxShadow: "var(--paysats-shadow-card)",
+          color: "var(--paysats-text)",
         }}
       >
         ←
       </Link>
       <div
         className="text-lg font-extrabold"
-        style={{ color: "var(--arka-text)", letterSpacing: -0.4 }}
+        style={{ color: "var(--paysats-text)", letterSpacing: -0.4 }}
       >
         {title}
       </div>
@@ -57,7 +57,7 @@ function Chevron({ open }: { open: boolean }) {
       style={{
         transform: `rotate(${open ? 180 : 0}deg)`,
         transition: "transform 160ms ease",
-        color: "var(--arka-text-faint)",
+        color: "var(--paysats-text-faint)",
       }}
     >
       <path
@@ -84,13 +84,13 @@ function DetailRow({
     <div className="flex items-start justify-between gap-3 py-1">
       <span
         className="text-[11px]"
-        style={{ color: "var(--arka-text-faint)" }}
+        style={{ color: "var(--paysats-text-faint)" }}
       >
         {label}
       </span>
       <span
         className={`max-w-[62%] truncate text-right text-[12px] font-semibold ${mono ? "font-mono" : ""}`}
-        style={{ color: "var(--arka-text)" }}
+        style={{ color: "var(--paysats-text)" }}
       >
         {value}
       </span>
@@ -127,7 +127,7 @@ function TxActivityItem({
       {open ? (
         <div
           className="mb-3 mt-1 rounded-[12px] px-3 py-2"
-          style={{ background: "var(--arka-surface-muted)" }}
+          style={{ background: "var(--paysats-surface-muted)" }}
         >
           <DetailRow
             label={t("tx.destWallet")}
@@ -161,7 +161,7 @@ function TxActivityItem({
                   target="_blank"
                   rel="noreferrer"
                   className="font-mono"
-                  style={{ color: "var(--arka-accent)" }}
+                  style={{ color: "var(--paysats-accent)" }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   {shortenAddr(tx.txHash)} ↗
@@ -257,7 +257,7 @@ export function ActivityClient() {
           role="alert"
           style={{
             background: "rgba(196,48,48,0.08)",
-            color: "var(--arka-danger)",
+            color: "var(--paysats-danger)",
           }}
         >
           {error}
@@ -271,7 +271,7 @@ export function ActivityClient() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-14 animate-pulse rounded-[12px] bg-arka-border/60"
+                  className="h-14 animate-pulse rounded-[12px] bg-paysats-border/60"
                 />
               ))}
             </div>
@@ -280,13 +280,13 @@ export function ActivityClient() {
           <Card>
             <div
               className="py-6 text-center text-[12px]"
-              style={{ color: "var(--arka-text-faint)" }}
+              style={{ color: "var(--paysats-text-faint)" }}
             >
               {t("tx.empty")}
             </div>
           </Card>
         ) : (
-          <Card className="divide-y divide-arka-border/70 py-0">
+          <Card className="divide-y divide-paysats-border/70 py-0">
             {rows.map(({ tx, item }) => (
               <TxActivityItem
                 key={tx.id}
@@ -306,8 +306,8 @@ export function ActivityClient() {
         data-pressable
         className="mt-6 w-full rounded-[14px] px-4 py-3 text-[13px] font-extrabold disabled:opacity-60"
         style={{
-          background: "var(--arka-accent-soft)",
-          color: "var(--arka-accent)",
+          background: "var(--paysats-accent-soft)",
+          color: "var(--paysats-accent)",
         }}
       >
         {reloading ? "…" : t("activity.reload")}

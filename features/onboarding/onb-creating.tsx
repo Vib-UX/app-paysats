@@ -43,7 +43,7 @@ export function OnbCreating({
   return (
     <div
       className="absolute inset-0 flex flex-col items-center justify-center px-7"
-      style={{ background: "var(--arka-bg)" }}
+      style={{ background: "var(--paysats-bg)" }}
     >
       <div
         className="relative flex items-center justify-center"
@@ -51,7 +51,7 @@ export function OnbCreating({
           width: 96,
           height: 96,
           borderRadius: 24,
-          background: "var(--arka-gradient)",
+          background: "var(--paysats-gradient)",
           boxShadow: "0 12px 40px rgba(170,80,40,0.28)",
           marginBottom: 36,
           animation: tileAnim,
@@ -120,7 +120,7 @@ export function OnbCreating({
 
       <div
         className="mb-2.5 text-center text-2xl font-extrabold transition-opacity duration-300"
-        style={{ color: "var(--arka-text)", letterSpacing: -0.6 }}
+        style={{ color: "var(--paysats-text)", letterSpacing: -0.6 }}
       >
         {phase === "loading"
           ? t("onb.creating.title")
@@ -128,7 +128,7 @@ export function OnbCreating({
       </div>
       <div
         className="text-center text-sm transition-opacity duration-300"
-        style={{ color: "var(--arka-text-faint)", minHeight: 22 }}
+        style={{ color: "var(--paysats-text-faint)", minHeight: 22 }}
       >
         {phase === "loading"
           ? t("onb.creating.sub")

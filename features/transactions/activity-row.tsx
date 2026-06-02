@@ -20,18 +20,18 @@ export type ActivityItem = {
 };
 
 const toneBg: Record<NonNullable<ActivityItem["tone"]>, string> = {
-  accent: "var(--arka-accent-soft)",
-  success: "var(--arka-success-soft)",
-  warning: "var(--arka-warning-soft)",
+  accent: "var(--paysats-accent-soft)",
+  success: "var(--paysats-success-soft)",
+  warning: "var(--paysats-warning-soft)",
   danger: "rgba(196,48,48,0.08)",
-  muted: "var(--arka-surface-muted)",
+  muted: "var(--paysats-surface-muted)",
 };
 const toneColor: Record<NonNullable<ActivityItem["tone"]>, string> = {
-  accent: "var(--arka-accent)",
-  success: "var(--arka-success)",
-  warning: "var(--arka-warning)",
-  danger: "var(--arka-danger)",
-  muted: "var(--arka-text-muted)",
+  accent: "var(--paysats-accent)",
+  success: "var(--paysats-success)",
+  warning: "var(--paysats-warning)",
+  danger: "var(--paysats-danger)",
+  muted: "var(--paysats-text-muted)",
 };
 
 function DefaultIcon({ type }: { type: ActivityType }) {
@@ -75,14 +75,14 @@ export function ActivityRow({
       <div className="min-w-0 flex-1">
         <div
           className="text-[13px] font-bold"
-          style={{ color: "var(--arka-text)" }}
+          style={{ color: "var(--paysats-text)" }}
         >
           {item.title}
         </div>
         {item.subtitle ? (
           <div
             className="mt-0.5 text-[11px]"
-            style={{ color: "var(--arka-text-faint)" }}
+            style={{ color: "var(--paysats-text-faint)" }}
           >
             {item.subtitle}
           </div>
@@ -95,8 +95,8 @@ export function ActivityRow({
             style={{
               color:
                 item.type === "in" || item.type === "buy"
-                  ? "var(--arka-text)"
-                  : "var(--arka-text)",
+                  ? "var(--paysats-text)"
+                  : "var(--paysats-text)",
             }}
           >
             {item.primary}
@@ -105,7 +105,7 @@ export function ActivityRow({
         {item.secondary ? (
           <div
             className="text-[11px]"
-            style={{ color: "var(--arka-text-faint)" }}
+            style={{ color: "var(--paysats-text-faint)" }}
           >
             {item.secondary}
           </div>

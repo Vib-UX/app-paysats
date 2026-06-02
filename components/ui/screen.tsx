@@ -13,11 +13,11 @@ export function Screen({
     <div className="px-4 pb-28 pt-4">
       {title ? (
         <header className="mb-6">
-          <h1 className="text-xl font-semibold tracking-tight text-arka-text">
+          <h1 className="text-xl font-semibold tracking-tight text-paysats-text">
             {title}
           </h1>
           {subtitle ? (
-            <p className="mt-1 text-sm leading-relaxed text-arka-text-muted">
+            <p className="mt-1 text-sm leading-relaxed text-paysats-text-muted">
               {subtitle}
             </p>
           ) : null}

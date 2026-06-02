@@ -18,7 +18,7 @@ import {
   collateralValueInLoan,
   USDC_DECIMALS,
 } from "@/lib/contracts/morpho-credit";
-import { IDRX_DECIMALS, INTERVAL_PRESETS } from "@/lib/contracts/arka-dca";
+import { IDRX_DECIMALS, INTERVAL_PRESETS } from "@/lib/contracts/paysats-dca";
 import { usePrivy } from "@privy-io/react-auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -71,8 +71,8 @@ function AvatarTile({ initial }: { initial: string }) {
       className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]"
       data-pressable
       style={{
-        background: "var(--arka-gradient)",
-        boxShadow: "var(--arka-shadow-tile)",
+        background: "var(--paysats-gradient)",
+        boxShadow: "var(--paysats-shadow-tile)",
         color: "#fff",
         fontWeight: 800,
         fontSize: 15,
@@ -98,16 +98,16 @@ function ActionTile({
     <div
       className="flex flex-col items-center gap-1.5 rounded-[16px] px-3 py-3.5"
       style={{
-        background: "var(--arka-surface)",
-        boxShadow: "var(--arka-shadow-card)",
+        background: "var(--paysats-surface)",
+        boxShadow: "var(--paysats-shadow-card)",
       }}
       data-pressable
     >
       <div
         className="flex h-11 w-11 items-center justify-center rounded-[14px]"
         style={{
-          background: "var(--arka-accent-soft)",
-          color: "var(--arka-accent)",
+          background: "var(--paysats-accent-soft)",
+          color: "var(--paysats-accent)",
           fontSize: 18,
           fontWeight: 800,
         }}
@@ -116,7 +116,7 @@ function ActionTile({
       </div>
       <span
         className="text-[11px] font-bold"
-        style={{ color: "var(--arka-text)" }}
+        style={{ color: "var(--paysats-text)" }}
       >
         {label}
       </span>
@@ -154,10 +154,10 @@ function HeroBalance({
     <div
       className="relative overflow-hidden rounded-[22px] px-5 py-6 text-white"
       style={{
-        background: "var(--arka-gradient-hero)",
+        background: "var(--paysats-gradient-hero)",
         backgroundSize: "300% 300%",
         animation: "grad-move 14s ease infinite",
-        boxShadow: "var(--arka-shadow-hero)",
+        boxShadow: "var(--paysats-shadow-hero)",
       }}
     >
       <div
@@ -244,10 +244,10 @@ function AutobuyNudge() {
   if (loading) {
     return (
       <Card className="flex items-center gap-3">
-        <div className="h-10 w-10 animate-pulse rounded-[12px] bg-arka-border/60" />
+        <div className="h-10 w-10 animate-pulse rounded-[12px] bg-paysats-border/60" />
         <div className="flex-1">
-          <div className="h-4 w-32 animate-pulse rounded bg-arka-border/60" />
-          <div className="mt-2 h-3 w-40 animate-pulse rounded bg-arka-border/40" />
+          <div className="h-4 w-32 animate-pulse rounded bg-paysats-border/60" />
+          <div className="mt-2 h-3 w-40 animate-pulse rounded bg-paysats-border/40" />
         </div>
       </Card>
     );
@@ -261,13 +261,13 @@ function AutobuyNudge() {
           <div className="min-w-0 flex-1">
             <div
               className="text-[13px] font-bold"
-              style={{ color: "var(--arka-text)" }}
+              style={{ color: "var(--paysats-text)" }}
             >
               {t("home.autobuy.startTitle")}
             </div>
             <div
               className="mt-0.5 text-[11px]"
-              style={{ color: "var(--arka-text-faint)" }}
+              style={{ color: "var(--paysats-text-faint)" }}
             >
               {t("home.autobuy.startDesc")}
             </div>
@@ -275,8 +275,8 @@ function AutobuyNudge() {
           <span
             className="rounded-[10px] px-3 py-1.5 text-[11px] font-extrabold"
             style={{
-              color: "var(--arka-accent)",
-              background: "var(--arka-accent-soft)",
+              color: "var(--paysats-accent)",
+              background: "var(--paysats-accent-soft)",
             }}
           >
             {t("home.autobuy.startBtn")}
@@ -310,17 +310,17 @@ function AutobuyNudge() {
         <div className="min-w-0 flex-1">
           <div
             className="flex items-center gap-2 text-[13px] font-bold"
-            style={{ color: "var(--arka-text)" }}
+            style={{ color: "var(--paysats-text)" }}
           >
             <span
               className="h-2 w-2 rounded-full"
-              style={{ background: "var(--arka-success)" }}
+              style={{ background: "var(--paysats-success)" }}
             />
             {t("home.autobuy.nextTitle")}
           </div>
           <div
             className="mt-0.5 text-[11px]"
-            style={{ color: "var(--arka-text-faint)" }}
+            style={{ color: "var(--paysats-text-faint)" }}
           >
             Rp {perSwapIdr.toLocaleString("id-ID")} · {freqLabel}
             {nextAt ? ` · ${nextAt.toLocaleDateString()}` : ""}
@@ -329,8 +329,8 @@ function AutobuyNudge() {
         <span
           className="rounded-[10px] px-3 py-1.5 text-[11px] font-extrabold"
           style={{
-            color: "var(--arka-accent)",
-            background: "var(--arka-accent-soft)",
+            color: "var(--paysats-accent)",
+            background: "var(--paysats-accent-soft)",
           }}
         >
           {t("home.autobuy.nextBtn")}
@@ -450,15 +450,15 @@ export function DashboardClient() {
         <div>
           <div
             className="text-[11px] font-bold uppercase tracking-[0.1em]"
-            style={{ color: "var(--arka-text-faint)" }}
+            style={{ color: "var(--paysats-text-faint)" }}
           >
             {t(greetKey())}
           </div>
           <div
             className="mt-1 text-xl font-extrabold"
-            style={{ color: "var(--arka-text)", letterSpacing: -0.5 }}
+            style={{ color: "var(--paysats-text)", letterSpacing: -0.5 }}
           >
-            {firstName || "Arka"}
+            {firstName || "PaySats"}
           </div>
         </div>
         <AvatarTile initial={initial} />
@@ -500,7 +500,7 @@ export function DashboardClient() {
         <div className="mb-2 flex items-center justify-between">
           <div
             className="text-[11px] font-bold uppercase tracking-[0.1em]"
-            style={{ color: "var(--arka-text-faint)" }}
+            style={{ color: "var(--paysats-text-faint)" }}
           >
             {t("home.activity.title")}
           </div>
@@ -508,26 +508,26 @@ export function DashboardClient() {
             type="button"
             onClick={() => router.push("/activity")}
             className="text-[11px] font-bold"
-            style={{ color: "var(--arka-accent)" }}
+            style={{ color: "var(--paysats-accent)" }}
           >
             {t("dashboard.viewAll")}
           </button>
         </div>
 
-        <Card className="divide-y divide-arka-border/70 py-0">
+        <Card className="divide-y divide-paysats-border/70 py-0">
           {mintTx === null ? (
             <div className="space-y-3 py-3">
               {[1, 2].map((i) => (
                 <div
                   key={i}
-                  className="h-14 animate-pulse rounded-[12px] bg-arka-border/60"
+                  className="h-14 animate-pulse rounded-[12px] bg-paysats-border/60"
                 />
               ))}
             </div>
           ) : activityItems.length === 0 ? (
             <div
               className="py-6 text-center text-[12px]"
-              style={{ color: "var(--arka-text-faint)" }}
+              style={{ color: "var(--paysats-text-faint)" }}
             >
               {t("home.activity.empty")}
             </div>

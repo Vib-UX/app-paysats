@@ -21,7 +21,7 @@ type DisplayUnitContextValue = {
   label: string;
 };
 
-const STORAGE_KEY = "arka-display-unit";
+const STORAGE_KEY = "paysats-display-unit";
 
 const DisplayUnitContext = createContext<DisplayUnitContextValue>({
   unit: "SATS",

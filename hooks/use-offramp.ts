@@ -1,6 +1,6 @@
 "use client";
 
-import { erc20Abi } from "@/lib/contracts/arka-dca";
+import { erc20Abi } from "@/lib/contracts/paysats-dca";
 import { USDC_ADDRESS, USDC_DECIMALS } from "@/lib/contracts/morpho-credit";
 import type { OfframpSettlement } from "@/services/idrx/offramp-settlement";
 import type { DestinationKind } from "@/services/idrx/payout-methods";

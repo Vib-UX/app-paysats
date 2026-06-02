@@ -157,10 +157,10 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
   if (idrxGate === "loading" || idrxGate === "linking_idrx") {
     return (
       <Card className="flex min-h-[40vh] flex-col items-center justify-center gap-3">
-        <div className="h-8 w-8 animate-pulse rounded-full bg-arka-border" />
+        <div className="h-8 w-8 animate-pulse rounded-full bg-paysats-border" />
         <p
           className="text-sm"
-          style={{ color: "var(--arka-text-muted)" }}
+          style={{ color: "var(--paysats-text-muted)" }}
         >
           {idrxGate === "linking_idrx"
             ? t("mint.linkingIdrx")
@@ -175,13 +175,13 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
       <Card className="space-y-3">
         <div
           className="text-[13px] font-extrabold"
-          style={{ color: "var(--arka-text)" }}
+          style={{ color: "var(--paysats-text)" }}
         >
           {t("mint.errorTitle")}
         </div>
         <p
           className="text-[12px]"
-          style={{ color: "var(--arka-danger)" }}
+          style={{ color: "var(--paysats-danger)" }}
           role="alert"
         >
           {gateError || t("mint.errorDefault")}
@@ -196,40 +196,40 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
         <Card className="space-y-3">
           <div
             className="text-[13px] font-extrabold"
-            style={{ color: "var(--arka-text)" }}
+            style={{ color: "var(--paysats-text)" }}
           >
             {t("mint.resultTitle")}
           </div>
           <dl className="space-y-2 text-[12px]">
             <div className="flex justify-between gap-2">
-              <dt style={{ color: "var(--arka-text-muted)" }}>
+              <dt style={{ color: "var(--paysats-text-muted)" }}>
                 {t("mint.resultTotalPay")}
               </dt>
               <dd
                 className="font-extrabold tabular-nums"
-                style={{ color: "var(--arka-text)" }}
+                style={{ color: "var(--paysats-text)" }}
               >
                 Rp {result.amount}
               </dd>
             </div>
             <div className="flex justify-between gap-2">
-              <dt style={{ color: "var(--arka-text-muted)" }}>
+              <dt style={{ color: "var(--paysats-text-muted)" }}>
                 {t("mint.resultReference")}
               </dt>
               <dd
                 className="max-w-[55%] truncate font-mono text-[11px]"
-                style={{ color: "var(--arka-text)" }}
+                style={{ color: "var(--paysats-text)" }}
               >
                 {result.reference}
               </dd>
             </div>
             <div className="flex justify-between gap-2">
-              <dt style={{ color: "var(--arka-text-muted)" }}>
+              <dt style={{ color: "var(--paysats-text-muted)" }}>
                 {t("mint.resultOrder")}
               </dt>
               <dd
                 className="font-mono text-[11px]"
-                style={{ color: "var(--arka-text)" }}
+                style={{ color: "var(--paysats-text)" }}
               >
                 {result.merchantOrderId}
               </dd>
@@ -241,8 +241,8 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
             data-pressable
             className="block w-full rounded-[14px] px-4 py-3 text-center text-[13px] font-extrabold text-white"
             style={{
-              background: "var(--arka-gradient)",
-              boxShadow: "var(--arka-shadow-hero)",
+              background: "var(--paysats-gradient)",
+              boxShadow: "var(--paysats-shadow-hero)",
             }}
           >
             {t("mint.resultPayBtn")}
@@ -251,8 +251,8 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
           <div
             className="flex items-start gap-2 rounded-[12px] p-3 text-[11px]"
             style={{
-              background: "var(--arka-warning-soft)",
-              color: "var(--arka-warning)",
+              background: "var(--paysats-warning-soft)",
+              color: "var(--paysats-warning)",
             }}
           >
             <span aria-hidden>⏱</span>
@@ -261,13 +261,13 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
 
           <p
             className="text-[11px]"
-            style={{ color: "var(--arka-text-faint)" }}
+            style={{ color: "var(--paysats-text-faint)" }}
           >
             {t("mint.resultTrackPrefix")}{" "}
             <Link
               href={`/activity?merchantOrderId=${encodeURIComponent(result.merchantOrderId)}`}
               className="font-extrabold underline"
-              style={{ color: "var(--arka-accent)" }}
+              style={{ color: "var(--paysats-accent)" }}
             >
               {t("mint.resultActivityLink")}
             </Link>{" "}
@@ -284,7 +284,7 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
         <div>
           <div
             className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: "var(--arka-text-muted)" }}
+            style={{ color: "var(--paysats-text-muted)" }}
           >
             {t("mint.amountLabel")}
           </div>
@@ -298,10 +298,10 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
                   onClick={() => setAmountIdr(p)}
                   className="rounded-[12px] px-2 py-2 text-[12px] font-extrabold"
                   style={{
-                    color: active ? "#fff" : "var(--arka-text)",
+                    color: active ? "#fff" : "var(--paysats-text)",
                     background: active
-                      ? "var(--arka-accent)"
-                      : "var(--arka-surface-muted)",
+                      ? "var(--paysats-accent)"
+                      : "var(--paysats-surface-muted)",
                   }}
                   data-pressable
                 >
@@ -318,14 +318,14 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
             placeholder={t("mint.amountPlaceholder")}
             className="mt-3 w-full rounded-[12px] border px-3 py-2 text-[14px] font-semibold tabular-nums"
             style={{
-              borderColor: "var(--arka-border)",
-              background: "var(--arka-surface)",
-              color: "var(--arka-text)",
+              borderColor: "var(--paysats-border)",
+              background: "var(--paysats-surface)",
+              color: "var(--paysats-text)",
             }}
           />
           <p
             className="mt-1.5 text-[11px]"
-            style={{ color: "var(--arka-text-faint)" }}
+            style={{ color: "var(--paysats-text-faint)" }}
           >
             {t("mint.amountHint")}
           </p>
@@ -333,17 +333,17 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
 
         <div
           className="rounded-[12px] p-2.5"
-          style={{ background: "var(--arka-surface-muted)" }}
+          style={{ background: "var(--paysats-surface-muted)" }}
         >
           <div
             className="text-[10px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: "var(--arka-text-faint)" }}
+            style={{ color: "var(--paysats-text-faint)" }}
           >
             {t("mint.destLabel")}
           </div>
           <div
             className="mt-1 truncate font-mono text-[11px]"
-            style={{ color: "var(--arka-text)" }}
+            style={{ color: "var(--paysats-text)" }}
           >
             {dest || t("mint.destWaiting")}
           </div>
@@ -353,7 +353,7 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
       {error ? (
         <p
           className="text-[12px]"
-          style={{ color: "var(--arka-danger)" }}
+          style={{ color: "var(--paysats-danger)" }}
           role="alert"
         >
           {error}

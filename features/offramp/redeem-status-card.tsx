@@ -37,7 +37,7 @@ function BasescanLink({
 }) {
   if (!hash) {
     return (
-      <span className="rounded bg-arka-surface-muted px-2 py-1 text-[11px] text-arka-text-muted">
+      <span className="rounded bg-paysats-surface-muted px-2 py-1 text-[11px] text-paysats-text-muted">
         {label}
       </span>
     );
@@ -47,7 +47,7 @@ function BasescanLink({
       href={`https://basescan.org/tx/${hash}`}
       target="_blank"
       rel="noreferrer"
-      className="rounded bg-arka-accent/10 px-2 py-1 text-[11px] font-medium text-arka-accent hover:bg-arka-accent/20"
+      className="rounded bg-paysats-accent/10 px-2 py-1 text-[11px] font-medium text-paysats-accent hover:bg-paysats-accent/20"
     >
       {label} ↗
     </a>
@@ -65,18 +65,18 @@ export function RedeemStatusCard({ record }: { record: RedeemRecord }) {
     <Card className="space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-xs text-arka-text-muted">
+          <p className="text-xs text-paysats-text-muted">
             {record.bankName ?? "IDRX"} •{" "}
             {record.bankAccountNumber ? "••" + record.bankAccountNumber.slice(-4) : "—"}
           </p>
-          <p className="text-base font-semibold text-arka-text">
+          <p className="text-base font-semibold text-paysats-text">
             {record.amountRedeem
               ? formatIdr(record.amountRedeem)
               : record.amountTo
                 ? formatIdr(record.amountTo)
                 : "—"}
           </p>
-          <p className="text-xs text-arka-text-muted">
+          <p className="text-xs text-paysats-text-muted">
             {new Date(record.createdAt).toLocaleString("id-ID")}
           </p>
         </div>
@@ -85,7 +85,7 @@ export function RedeemStatusCard({ record }: { record: RedeemRecord }) {
             stage === "disbursed"
               ? "bg-green-500/10 text-green-600"
               : stage === "failed"
-                ? "bg-red-500/10 text-arka-danger"
+                ? "bg-red-500/10 text-paysats-danger"
                 : "bg-amber-500/10 text-amber-600"
           }`}
         >
@@ -100,15 +100,15 @@ export function RedeemStatusCard({ record }: { record: RedeemRecord }) {
               key={s}
               className={`h-1.5 rounded-full ${
                 i <= activeIdx
-                  ? "bg-arka-accent"
-                  : "bg-arka-surface-muted"
+                  ? "bg-paysats-accent"
+                  : "bg-paysats-surface-muted"
               }`}
             />
           ))}
         </div>
       )}
 
-      <p className="text-xs text-arka-text-muted">
+      <p className="text-xs text-paysats-text-muted">
         {record.settlement.summary}
       </p>
 

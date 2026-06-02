@@ -6,7 +6,7 @@ import { Input, Label } from "@/components/ui/input";
 import { PillSeg } from "@/components/ui/pill-seg";
 import { OfframpClient } from "@/features/offramp/offramp-client";
 import { useT } from "@/lib/i18n";
-import { erc20Abi } from "@/lib/contracts/arka-dca";
+import { erc20Abi } from "@/lib/contracts/paysats-dca";
 import {
   USDC_ADDRESS,
   USDC_DECIMALS,
@@ -135,7 +135,7 @@ function ExternalWalletForm({ source }: { source: "IDRX" | "USDC" }) {
     <div className="space-y-3">
       <p
         className="text-[12px]"
-        style={{ color: "var(--arka-text-muted)" }}
+        style={{ color: "var(--paysats-text-muted)" }}
       >
         {t("withdraw.external.desc")}
       </p>
@@ -161,12 +161,12 @@ function ExternalWalletForm({ source }: { source: "IDRX" | "USDC" }) {
         />
       </div>
       {error ? (
-        <p className="text-xs" style={{ color: "var(--arka-danger)" }}>
+        <p className="text-xs" style={{ color: "var(--paysats-danger)" }}>
           {error}
         </p>
       ) : null}
       {hash ? (
-        <p className="text-xs" style={{ color: "var(--arka-success)" }}>
+        <p className="text-xs" style={{ color: "var(--paysats-success)" }}>
           {t("withdraw.external.sent")} ·{" "}
           <a
             href={`https://basescan.org/tx/${hash}`}

@@ -17,6 +17,6 @@ export type MintTransaction = {
   createdAt: string;
   txHash?: string | null;
   expiryTimestamp?: string | null;
-  /** Dari API Arka setelah cek status IDRX */
+  /** Dari API PaySats setelah cek status IDRX */
   settlement?: MintSettlementInfo;
 };

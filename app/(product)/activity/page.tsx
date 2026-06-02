@@ -6,7 +6,7 @@ export default function ActivityPage() {
     <Suspense
       fallback={
         <div className="flex min-h-[40vh] items-center justify-center px-4">
-          <div className="h-8 w-8 animate-pulse rounded-full bg-arka-border" />
+          <div className="h-8 w-8 animate-pulse rounded-full bg-paysats-border" />
         </div>
       }
     >

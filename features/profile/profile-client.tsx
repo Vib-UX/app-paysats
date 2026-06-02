@@ -35,11 +35,11 @@ function Section({
     <div className="space-y-2">
       <div
         className="px-1 text-[11px] font-bold uppercase tracking-[0.08em]"
-        style={{ color: "var(--arka-text-muted)" }}
+        style={{ color: "var(--paysats-text-muted)" }}
       >
         {title}
       </div>
-      <Card className="divide-y divide-[color:var(--arka-border)]">
+      <Card className="divide-y divide-[color:var(--paysats-border)]">
         {children}
       </Card>
     </div>
@@ -66,7 +66,7 @@ function Row({
   external?: boolean;
 }) {
   const color =
-    tone === "danger" ? "var(--arka-danger)" : "var(--arka-text)";
+    tone === "danger" ? "var(--paysats-danger)" : "var(--paysats-text)";
   const content = (
     <div className="flex items-center justify-between gap-3 py-2.5">
       <span className="flex min-w-0 items-center gap-2.5">
@@ -82,14 +82,14 @@ function Row({
       ) : value !== undefined ? (
         <span
           className="max-w-[55%] truncate text-right text-[12px]"
-          style={{ color: "var(--arka-text-muted)" }}
+          style={{ color: "var(--paysats-text-muted)" }}
         >
           {value}
         </span>
       ) : onClick || href ? (
         <span
           className="text-[14px]"
-          style={{ color: "var(--arka-text-faint)" }}
+          style={{ color: "var(--paysats-text-faint)" }}
         >
           {external ? "↗" : "›"}
         </span>
@@ -151,7 +151,7 @@ function EmailIcon() {
     <span
       aria-hidden
       className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
-      style={{ background: "var(--arka-accent-soft)", color: "var(--arka-accent)" }}
+      style={{ background: "var(--paysats-accent-soft)", color: "var(--paysats-accent)" }}
     >
       <svg
         width="14"
@@ -306,7 +306,7 @@ export function ProfileClient() {
   if (!ready || !authenticated || !me) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <div className="h-8 w-8 animate-pulse rounded-full bg-arka-border" />
+        <div className="h-8 w-8 animate-pulse rounded-full bg-paysats-border" />
       </div>
     );
   }
@@ -324,16 +324,16 @@ export function ProfileClient() {
           data-pressable
           className="flex h-10 w-10 items-center justify-center rounded-[12px]"
           style={{
-            background: "var(--arka-surface)",
-            boxShadow: "var(--arka-shadow-card)",
-            color: "var(--arka-text)",
+            background: "var(--paysats-surface)",
+            boxShadow: "var(--paysats-shadow-card)",
+            color: "var(--paysats-text)",
           }}
         >
           ←
         </a>
         <div
           className="text-lg font-extrabold"
-          style={{ color: "var(--arka-text)", letterSpacing: -0.4 }}
+          style={{ color: "var(--paysats-text)", letterSpacing: -0.4 }}
         >
           {t("settings.title")}
         </div>
@@ -342,7 +342,7 @@ export function ProfileClient() {
       {loadError ? (
         <p
           className="mt-4 text-sm"
-          style={{ color: "var(--arka-danger)" }}
+          style={{ color: "var(--paysats-danger)" }}
           role="alert"
         >
           {loadError}
@@ -359,7 +359,7 @@ export function ProfileClient() {
           <div className="flex items-center justify-between gap-3 py-3">
             <span
               className="text-[13px] font-semibold"
-              style={{ color: "var(--arka-text)" }}
+              style={{ color: "var(--paysats-text)" }}
             >
               {t("settings.currency")}
             </span>
@@ -377,7 +377,7 @@ export function ProfileClient() {
           <div className="flex items-center justify-between gap-3 py-3">
             <span
               className="text-[13px] font-semibold"
-              style={{ color: "var(--arka-text)" }}
+              style={{ color: "var(--paysats-text)" }}
             >
               {t("settings.display")}
             </span>
@@ -395,7 +395,7 @@ export function ProfileClient() {
           <div className="flex items-center justify-between gap-3 py-3">
             <span
               className="text-[13px] font-semibold"
-              style={{ color: "var(--arka-text)" }}
+              style={{ color: "var(--paysats-text)" }}
             >
               {t("settings.language")}
             </span>
@@ -419,7 +419,7 @@ export function ProfileClient() {
               <>
                 <span
                   className="max-w-[45%] truncate text-[12px] tabular-nums"
-                  style={{ color: "var(--arka-text-muted)" }}
+                  style={{ color: "var(--paysats-text-muted)" }}
                 >
                   {short}
                 </span>
@@ -432,11 +432,11 @@ export function ProfileClient() {
                     className="flex h-7 w-7 items-center justify-center rounded-[8px]"
                     style={{
                       background: copied
-                        ? "var(--arka-accent-soft)"
-                        : "var(--arka-surface-muted)",
+                        ? "var(--paysats-accent-soft)"
+                        : "var(--paysats-surface-muted)",
                       color: copied
-                        ? "var(--arka-accent)"
-                        : "var(--arka-text-muted)",
+                        ? "var(--paysats-accent)"
+                        : "var(--paysats-text-muted)",
                     }}
                     title={copied ? t("settings.copied") : t("settings.copyAddress")}
                   >
@@ -486,7 +486,7 @@ export function ProfileClient() {
           />
           <Row
             label={t("settings.contactEmail")}
-            href="mailto:arkasavesbitcoin@gmail.com"
+            href="mailto:support@paysats.exchange"
             leading={<EmailIcon />}
             external
           />

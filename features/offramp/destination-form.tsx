@@ -109,18 +109,18 @@ export function DestinationForm({ onCancel, onAdded }: Props) {
   if (resolved) {
     return (
       <Card className="space-y-3">
-        <p className="text-sm font-semibold text-arka-text">
+        <p className="text-sm font-semibold text-paysats-text">
           {t("offramp.formResolvedTitle")}
         </p>
-        <p className="text-xs text-arka-text-muted">
+        <p className="text-xs text-paysats-text-muted">
           {t("offramp.formResolvedDesc")}
         </p>
-        <div className="rounded-lg bg-arka-surface-muted p-3">
-          <p className="text-xs text-arka-text-muted">{resolved.bankName}</p>
-          <p className="font-mono text-sm text-arka-text">
+        <div className="rounded-lg bg-paysats-surface-muted p-3">
+          <p className="text-xs text-paysats-text-muted">{resolved.bankName}</p>
+          <p className="font-mono text-sm text-paysats-text">
             •••• {resolved.bankAccountNumberLast}
           </p>
-          <p className="mt-1 text-sm font-semibold text-arka-text">
+          <p className="mt-1 text-sm font-semibold text-paysats-text">
             {resolved.bankAccountName}
           </p>
         </div>
@@ -145,13 +145,13 @@ export function DestinationForm({ onCancel, onAdded }: Props) {
   return (
     <Card className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-arka-text">
+        <p className="text-sm font-semibold text-paysats-text">
           {t("offramp.formAddTitle")}
         </p>
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs text-arka-text-muted hover:text-arka-text"
+          className="text-xs text-paysats-text-muted hover:text-paysats-text"
         >
           {t("offramp.closeBtn")}
         </button>
@@ -171,8 +171,8 @@ export function DestinationForm({ onCancel, onAdded }: Props) {
               }}
               className={`rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium transition ${
                 kind === k
-                  ? "bg-arka-accent text-white"
-                  : "bg-arka-surface-muted text-arka-text"
+                  ? "bg-paysats-accent text-white"
+                  : "bg-paysats-surface-muted text-paysats-text"
               }`}
             >
               {k === "bank"
@@ -192,14 +192,14 @@ export function DestinationForm({ onCancel, onAdded }: Props) {
           onChange={(e) => setSearch(e.target.value)}
           autoComplete="off"
         />
-        <div className="mt-2 max-h-48 space-y-1 overflow-y-auto rounded-lg border border-arka-border bg-arka-surface p-1">
+        <div className="mt-2 max-h-48 space-y-1 overflow-y-auto rounded-lg border border-paysats-border bg-paysats-surface p-1">
           {methodsLoading && (
-            <div className="p-2 text-xs text-arka-text-muted">
+            <div className="p-2 text-xs text-paysats-text-muted">
               {t("auth.loading")}
             </div>
           )}
           {!methodsLoading && filteredMethods.length === 0 && (
-            <div className="p-2 text-xs text-arka-text-muted">—</div>
+            <div className="p-2 text-xs text-paysats-text-muted">—</div>
           )}
           {filteredMethods.map((m) => (
             <button
@@ -208,12 +208,12 @@ export function DestinationForm({ onCancel, onAdded }: Props) {
               onClick={() => setBankCode(m.bankCode)}
               className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm transition ${
                 bankCode === m.bankCode
-                  ? "bg-arka-accent/10 text-arka-accent"
-                  : "text-arka-text hover:bg-arka-surface-muted"
+                  ? "bg-paysats-accent/10 text-paysats-accent"
+                  : "text-paysats-text hover:bg-paysats-surface-muted"
               }`}
             >
               <span className="truncate font-medium">{m.bankName}</span>
-              <span className="ml-2 shrink-0 font-mono text-[11px] text-arka-text-muted">
+              <span className="ml-2 shrink-0 font-mono text-[11px] text-paysats-text-muted">
                 {m.bankCode}
               </span>
             </button>
@@ -235,18 +235,18 @@ export function DestinationForm({ onCancel, onAdded }: Props) {
           placeholder={kind === "ewallet" ? "628123456789" : ""}
           autoComplete="off"
         />
-        <p className="mt-1 text-xs text-arka-text-muted">
+        <p className="mt-1 text-xs text-paysats-text-muted">
           {kind === "bank"
             ? t("offramp.formAccountBankHint")
             : t("offramp.formAccountEwalletHint")}
         </p>
         {validationMessage && (
-          <p className="mt-1 text-xs text-arka-danger">{validationMessage}</p>
+          <p className="mt-1 text-xs text-paysats-danger">{validationMessage}</p>
         )}
       </div>
 
       {error && (
-        <p className="text-sm text-arka-danger" role="alert">
+        <p className="text-sm text-paysats-danger" role="alert">
           {error}
         </p>
       )}

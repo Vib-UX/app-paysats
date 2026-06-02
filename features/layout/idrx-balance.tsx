@@ -97,21 +97,21 @@ export function IdrxBalancePill() {
   if (!ready || !authenticated) return null;
 
   return (
-    <div className="inline-flex max-w-full flex-col items-center rounded-full bg-arka-surface-muted px-2.5 py-1 text-center text-xs leading-tight text-arka-text">
-      <span className="text-[10px] font-medium uppercase tracking-wide text-arka-text-muted">
+    <div className="inline-flex max-w-full flex-col items-center rounded-full bg-paysats-surface-muted px-2.5 py-1 text-center text-xs leading-tight text-paysats-text">
+      <span className="text-[10px] font-medium uppercase tracking-wide text-paysats-text-muted">
         IDRX
       </span>
-      <span className="min-h-[1rem] w-full max-w-[11rem] break-words font-semibold tabular-nums text-arka-text sm:max-w-none">
+      <span className="min-h-[1rem] w-full max-w-[11rem] break-words font-semibold tabular-nums text-paysats-text sm:max-w-none">
         {state === "loading" ? (
-          <span className="text-arka-text-muted">Memuat…</span>
+          <span className="text-paysats-text-muted">Memuat…</span>
         ) : state === "ready" ? (
           label
         ) : state === "empty" ? (
-          <span className="text-arka-text-muted" title="Dompet belum terdeteksi">
+          <span className="text-paysats-text-muted" title="Dompet belum terdeteksi">
             —
           </span>
         ) : (
-          <span className="text-arka-text-muted" title="Gagal memuat saldo">
+          <span className="text-paysats-text-muted" title="Gagal memuat saldo">
             —
           </span>
         )}

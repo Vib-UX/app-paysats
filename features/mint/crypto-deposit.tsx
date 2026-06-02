@@ -44,12 +44,12 @@ export function CryptoDeposit({ token }: { token: "USDC" }) {
     <Card className="space-y-3">
       <div
         className="rounded-[16px] p-4"
-        style={{ background: "var(--arka-surface-muted)" }}
+        style={{ background: "var(--paysats-surface-muted)" }}
       >
         <div
           className="mx-auto flex h-44 w-44 items-center justify-center rounded-[14px] bg-white p-2.5"
           style={{
-            boxShadow: "var(--arka-shadow-card)",
+            boxShadow: "var(--paysats-shadow-card)",
           }}
           aria-label={`QR code for ${token} on Base`}
         >
@@ -65,7 +65,7 @@ export function CryptoDeposit({ token }: { token: "USDC" }) {
           ) : (
             <div
               className="text-[11px]"
-              style={{ color: "var(--arka-text-faint)" }}
+              style={{ color: "var(--paysats-text-faint)" }}
             >
               {t("addfunds.waitingAddress")}
             </div>
@@ -73,7 +73,7 @@ export function CryptoDeposit({ token }: { token: "USDC" }) {
         </div>
         <div
           className="mt-3 text-center text-[12px] font-bold"
-          style={{ color: "var(--arka-text)" }}
+          style={{ color: "var(--paysats-text)" }}
         >
           {token} · Base
         </div>
@@ -82,7 +82,7 @@ export function CryptoDeposit({ token }: { token: "USDC" }) {
       <div>
         <div
           className="mb-1 text-[11px] font-bold uppercase tracking-[0.08em]"
-          style={{ color: "var(--arka-text-faint)" }}
+          style={{ color: "var(--paysats-text-faint)" }}
         >
           {t("addfunds.yourAddress")}
         </div>
@@ -92,21 +92,21 @@ export function CryptoDeposit({ token }: { token: "USDC" }) {
           data-pressable
           className="flex w-full items-center justify-between gap-2 rounded-[12px] border px-3 py-2.5 text-left"
           style={{
-            background: "var(--arka-surface)",
-            borderColor: "var(--arka-border)",
+            background: "var(--paysats-surface)",
+            borderColor: "var(--paysats-border)",
           }}
         >
           <span
             className="truncate font-mono text-[12px]"
-            style={{ color: "var(--arka-text)" }}
+            style={{ color: "var(--paysats-text)" }}
           >
             {address || "—"}
           </span>
           <span
             className="shrink-0 rounded-[8px] px-2 py-1 text-[10px] font-extrabold"
             style={{
-              background: "var(--arka-accent-soft)",
-              color: "var(--arka-accent)",
+              background: "var(--paysats-accent-soft)",
+              color: "var(--paysats-accent)",
             }}
           >
             {copied ? t("addfunds.copied") : t("addfunds.copyAddress")}
@@ -117,8 +117,8 @@ export function CryptoDeposit({ token }: { token: "USDC" }) {
       <div
         className="rounded-[12px] p-3 text-[11px]"
         style={{
-          background: "var(--arka-warning-soft)",
-          color: "var(--arka-warning)",
+          background: "var(--paysats-warning-soft)",
+          color: "var(--paysats-warning)",
         }}
       >
         {t("addfunds.warning")}

@@ -102,9 +102,9 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
     return (
       <div
         className="flex min-h-dvh items-center justify-center"
-        style={{ background: "var(--arka-bg)" }}
+        style={{ background: "var(--paysats-bg)" }}
       >
-        <div className="h-8 w-8 animate-pulse rounded-full bg-arka-border" />
+        <div className="h-8 w-8 animate-pulse rounded-full bg-paysats-border" />
       </div>
     );
   }
@@ -138,7 +138,7 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
   const hideNav = CHROMELESS_PREFIXES.some((p) => pathname.startsWith(p));
 
   return (
-    <div className="relative mx-auto flex min-h-dvh max-w-md flex-1 flex-col bg-arka-bg">
+    <div className="relative mx-auto flex min-h-dvh max-w-md flex-1 flex-col bg-paysats-bg">
       <main
         key={pathname}
         className={`relative flex-1 animate-fade-rise ${hideNav ? "" : "pb-24"}`}
@@ -151,8 +151,8 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
         <nav
           className="fixed bottom-0 left-1/2 z-20 w-full max-w-md -translate-x-1/2 border-t px-2 pb-2 pt-1.5"
           style={{
-            background: "var(--arka-surface)",
-            borderColor: "var(--arka-border)",
+            background: "var(--paysats-surface)",
+            borderColor: "var(--paysats-border)",
             paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)",
           }}
         >
@@ -167,11 +167,11 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
                   className="flex flex-1 flex-col items-center gap-0.5 rounded-[14px] px-3 py-1.5 transition-colors"
                   style={{
                     background: active
-                      ? "var(--arka-accent-soft)"
+                      ? "var(--paysats-accent-soft)"
                       : "transparent",
                     color: active
-                      ? "var(--arka-accent)"
-                      : "var(--arka-text-faint)",
+                      ? "var(--paysats-accent)"
+                      : "var(--paysats-text-faint)",
                   }}
                 >
                   <span

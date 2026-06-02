@@ -11,14 +11,14 @@ import { useT } from "@/lib/i18n";
 import {
   CBBTC_DECIMALS,
   IDRX_DECIMALS,
-} from "@/lib/contracts/arka-dca";
+} from "@/lib/contracts/paysats-dca";
 import {
   useCreateDcaOrder,
   useCancelDcaOrder,
   useDcaExecutions,
   useDcaOrder,
 } from "@/hooks/use-dca-contract";
-import type { DcaOrder } from "@/lib/contracts/arka-dca";
+import type { DcaOrder } from "@/lib/contracts/paysats-dca";
 import { useCallback, useMemo, useState } from "react";
 
 const IDR_PRESETS = [50_000, 100_000, 250_000, 500_000];
@@ -41,7 +41,7 @@ const MARKET_ASSETS = [
     id: "btc" as const,
     nameKey: "save.market.btc" as const,
     return5y: 1.311,
-    color: "var(--arka-accent)",
+    color: "var(--paysats-accent)",
   },
   {
     id: "spx" as const,
@@ -163,7 +163,7 @@ function MarketCompare({
       >
         <div
           className="text-[13px] font-extrabold"
-          style={{ color: "var(--arka-text)" }}
+          style={{ color: "var(--paysats-text)" }}
         >
           {t("save.market.title")}
         </div>
@@ -171,7 +171,7 @@ function MarketCompare({
           aria-hidden
           className="text-[14px] transition-transform"
           style={{
-            color: "var(--arka-text-muted)",
+            color: "var(--paysats-text-muted)",
             transform: open ? "rotate(180deg)" : "rotate(0deg)",
           }}
         >
@@ -183,7 +183,7 @@ function MarketCompare({
         <div className="space-y-3 pt-1">
           <div
             className="text-[11px]"
-            style={{ color: "var(--arka-text-faint)" }}
+            style={{ color: "var(--paysats-text-faint)" }}
           >
             {sub}
           </div>
@@ -202,7 +202,7 @@ function MarketCompare({
                     <div className="flex items-baseline gap-1.5 min-w-0">
                       <span
                         className="text-[12px] font-extrabold"
-                        style={{ color: "var(--arka-text)" }}
+                        style={{ color: "var(--paysats-text)" }}
                       >
                         {t(r.nameKey)}
                       </span>
@@ -215,14 +215,14 @@ function MarketCompare({
                     </div>
                     <span
                       className="text-[12px] font-extrabold tabular-nums"
-                      style={{ color: "var(--arka-text)" }}
+                      style={{ color: "var(--paysats-text)" }}
                     >
                       {fiatLabel}
                     </span>
                   </div>
                   <div
                     className="relative h-1.5 overflow-hidden rounded-full"
-                    style={{ background: "var(--arka-surface-muted)" }}
+                    style={{ background: "var(--paysats-surface-muted)" }}
                   >
                     <div
                       className="absolute inset-y-0 left-0 rounded-full"
@@ -241,9 +241,9 @@ function MarketCompare({
           <div
             className="rounded-[12px] border-l-2 px-3 py-2 text-[12px] leading-snug"
             style={{
-              borderColor: "var(--arka-accent)",
-              background: "var(--arka-accent-soft)",
-              color: "var(--arka-text)",
+              borderColor: "var(--paysats-accent)",
+              background: "var(--paysats-accent-soft)",
+              color: "var(--paysats-text)",
             }}
           >
             {callout}
@@ -251,7 +251,7 @@ function MarketCompare({
 
           <div
             className="text-[10px]"
-            style={{ color: "var(--arka-text-faint)" }}
+            style={{ color: "var(--paysats-text-faint)" }}
           >
             {t("save.market.footnote")}
           </div>
@@ -301,10 +301,10 @@ function SaveSetup({ onCreated }: { onCreated: () => void }) {
       <div
         className="relative overflow-hidden rounded-[22px] p-6 text-white"
         style={{
-          background: "var(--arka-gradient-hero)",
+          background: "var(--paysats-gradient-hero)",
           backgroundSize: "300% 300%",
           animation: "grad-move 14s ease infinite",
-          boxShadow: "var(--arka-shadow-hero)",
+          boxShadow: "var(--paysats-shadow-hero)",
         }}
       >
         <LogoMark
@@ -341,7 +341,7 @@ function SaveSetup({ onCreated }: { onCreated: () => void }) {
         <div>
           <div
             className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: "var(--arka-text-muted)" }}
+            style={{ color: "var(--paysats-text-muted)" }}
           >
             {t("save.amountLabel")}
           </div>
@@ -355,10 +355,10 @@ function SaveSetup({ onCreated }: { onCreated: () => void }) {
                   onClick={() => setAmountIdr(p)}
                   className="rounded-[12px] px-2 py-2 text-[12px] font-extrabold"
                   style={{
-                    color: active ? "#fff" : "var(--arka-text)",
+                    color: active ? "#fff" : "var(--paysats-text)",
                     background: active
-                      ? "var(--arka-accent)"
-                      : "var(--arka-surface-muted)",
+                      ? "var(--paysats-accent)"
+                      : "var(--paysats-surface-muted)",
                   }}
                   data-pressable
                 >
@@ -374,9 +374,9 @@ function SaveSetup({ onCreated }: { onCreated: () => void }) {
             onChange={(e) => setAmountIdr(Number(e.target.value) || 0)}
             className="mt-3 w-full rounded-[12px] border px-3 py-2 text-[14px] font-semibold tabular-nums"
             style={{
-              borderColor: "var(--arka-border)",
-              background: "var(--arka-surface)",
-              color: "var(--arka-text)",
+              borderColor: "var(--paysats-border)",
+              background: "var(--paysats-surface)",
+              color: "var(--paysats-text)",
             }}
           />
         </div>
@@ -384,7 +384,7 @@ function SaveSetup({ onCreated }: { onCreated: () => void }) {
         <div>
           <div
             className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: "var(--arka-text-muted)" }}
+            style={{ color: "var(--paysats-text-muted)" }}
           >
             {t("dca.form.frequencyLabel")}
           </div>
@@ -403,7 +403,7 @@ function SaveSetup({ onCreated }: { onCreated: () => void }) {
       <MarketCompare periodIdr={amountIdr} freq={freq} />
 
       {create.error ? (
-        <p className="text-xs" style={{ color: "var(--arka-danger)" }}>
+        <p className="text-xs" style={{ color: "var(--paysats-danger)" }}>
           {create.error}
         </p>
       ) : null}
@@ -485,10 +485,10 @@ function SaveActive({
       <div
         className="relative overflow-hidden rounded-[22px] p-6 text-white"
         style={{
-          background: "var(--arka-gradient-hero)",
+          background: "var(--paysats-gradient-hero)",
           backgroundSize: "300% 300%",
           animation: "grad-move 14s ease infinite",
-          boxShadow: "var(--arka-shadow-hero)",
+          boxShadow: "var(--paysats-shadow-hero)",
         }}
       >
         <LogoMark
@@ -519,7 +519,7 @@ function SaveActive({
         <div className="flex items-center justify-between py-2">
           <span
             className="text-[12px]"
-            style={{ color: "var(--arka-text-muted)" }}
+            style={{ color: "var(--paysats-text-muted)" }}
           >
             {t("dca.perSwap")}
           </span>
@@ -530,7 +530,7 @@ function SaveActive({
         <div className="flex items-center justify-between py-2">
           <span
             className="text-[12px]"
-            style={{ color: "var(--arka-text-muted)" }}
+            style={{ color: "var(--paysats-text-muted)" }}
           >
             {t("dca.frequency")}
           </span>
@@ -541,7 +541,7 @@ function SaveActive({
         <div className="flex items-center justify-between py-2">
           <span
             className="text-[12px]"
-            style={{ color: "var(--arka-text-muted)" }}
+            style={{ color: "var(--paysats-text-muted)" }}
           >
             {t("dca.next")}
           </span>
@@ -552,7 +552,7 @@ function SaveActive({
         <div className="flex items-center justify-between py-2">
           <span
             className="text-[12px]"
-            style={{ color: "var(--arka-text-muted)" }}
+            style={{ color: "var(--paysats-text-muted)" }}
           >
             {t("dca.executions")}
           </span>
@@ -566,11 +566,11 @@ function SaveActive({
 
       <InlinePanel open={confirming}>
         <Card className="space-y-3">
-          <p className="text-[13px]" style={{ color: "var(--arka-text)" }}>
+          <p className="text-[13px]" style={{ color: "var(--paysats-text)" }}>
             {t("dca.cancelConfirm")}
           </p>
           {cancel.error ? (
-            <p className="text-xs" style={{ color: "var(--arka-danger)" }}>
+            <p className="text-xs" style={{ color: "var(--paysats-danger)" }}>
               {cancel.error}
             </p>
           ) : null}
@@ -580,7 +580,7 @@ function SaveActive({
               onClick={doCancel}
               disabled={cancel.busy}
               className="flex-1 rounded-[12px] px-3 py-3 text-[13px] font-extrabold"
-              style={{ background: "var(--arka-danger)", color: "#fff" }}
+              style={{ background: "var(--paysats-danger)", color: "#fff" }}
               data-pressable
             >
               {cancel.busy ? t("dca.cancelling") : t("dca.cancelYes")}
@@ -590,8 +590,8 @@ function SaveActive({
               onClick={() => setConfirming(false)}
               className="flex-1 rounded-[12px] px-3 py-3 text-[13px] font-extrabold"
               style={{
-                background: "var(--arka-surface-muted)",
-                color: "var(--arka-text)",
+                background: "var(--paysats-surface-muted)",
+                color: "var(--paysats-text)",
               }}
               data-pressable
             >
@@ -607,9 +607,9 @@ function SaveActive({
           onClick={() => setConfirming(true)}
           className="w-full rounded-[14px] px-3 py-3 text-[13px] font-extrabold"
           style={{
-            background: "var(--arka-surface)",
-            color: "var(--arka-text)",
-            boxShadow: "var(--arka-shadow-card)",
+            background: "var(--paysats-surface)",
+            color: "var(--paysats-text)",
+            boxShadow: "var(--paysats-shadow-card)",
           }}
           data-pressable
         >
@@ -634,7 +634,7 @@ function RecentBuys() {
     <Card className="space-y-2">
       <div
         className="text-[11px] font-bold uppercase tracking-[0.08em]"
-        style={{ color: "var(--arka-text-muted)" }}
+        style={{ color: "var(--paysats-text-muted)" }}
       >
         {t("save.recentBuys")}
       </div>
@@ -647,7 +647,7 @@ function RecentBuys() {
             <div
               key={e.transactionHash}
               className="flex items-center justify-between rounded-[10px] px-2 py-1.5"
-              style={{ background: "var(--arka-surface-muted)" }}
+              style={{ background: "var(--paysats-surface-muted)" }}
             >
               <div className="min-w-0">
                 <div className="text-[12px] font-semibold tabular-nums">
@@ -656,7 +656,7 @@ function RecentBuys() {
                 {unit === "SATS" ? (
                   <div
                     className="text-[10px]"
-                    style={{ color: "var(--arka-text-muted)" }}
+                    style={{ color: "var(--paysats-text-muted)" }}
                   >
                     {btc.toFixed(8)} BTC
                   </div>
@@ -664,7 +664,7 @@ function RecentBuys() {
               </div>
               <div
                 className="text-[11px] tabular-nums"
-                style={{ color: "var(--arka-text-muted)" }}
+                style={{ color: "var(--paysats-text-muted)" }}
               >
                 Rp {idr.toLocaleString("id-ID")}
               </div>
@@ -687,16 +687,16 @@ function BackHeader({ title }: { title: string }) {
         className="flex h-10 w-10 items-center justify-center rounded-[12px]"
         data-pressable
         style={{
-          background: "var(--arka-surface)",
-          boxShadow: "var(--arka-shadow-card)",
-          color: "var(--arka-text)",
+          background: "var(--paysats-surface)",
+          boxShadow: "var(--paysats-shadow-card)",
+          color: "var(--paysats-text)",
         }}
       >
         ←
       </a>
       <div
         className="text-lg font-extrabold"
-        style={{ color: "var(--arka-text)", letterSpacing: -0.4 }}
+        style={{ color: "var(--paysats-text)", letterSpacing: -0.4 }}
       >
         {title}
       </div>
@@ -714,7 +714,7 @@ export function SaveClient() {
       <div className="mt-5">
         {loading && !order ? (
           <Card>
-            <div className="h-28 animate-pulse rounded bg-arka-border/40" />
+            <div className="h-28 animate-pulse rounded bg-paysats-border/40" />
           </Card>
         ) : order ? (
           <SaveActive order={order} onCancelled={refetch} />

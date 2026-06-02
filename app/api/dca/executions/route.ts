@@ -1,4 +1,4 @@
-import { ARKA_DCA_ADDRESS, arkaDcaAbi } from "@/lib/contracts/arka-dca";
+import { PAYSATS_DCA_ADDRESS, paysatsDcaAbi } from "@/lib/contracts/paysats-dca";
 import { getBasePublicClient } from "@/lib/base-client";
 import { prisma } from "@/lib/prisma";
 import {
@@ -79,8 +79,8 @@ export async function GET(request: NextRequest) {
     const [currentBlock, orderResult, persistedRowsBefore] = await Promise.all([
       pc.getBlockNumber(),
       pc.readContract({
-        address: ARKA_DCA_ADDRESS,
-        abi: arkaDcaAbi,
+        address: PAYSATS_DCA_ADDRESS,
+        abi: paysatsDcaAbi,
         functionName: "orders",
         args: [addr],
       }),
@@ -230,8 +230,8 @@ async function scanNarrow(
     const end = start + NARROW_CHUNK > toBlock ? toBlock : start + NARROW_CHUNK;
     try {
       const logs = await pc.getContractEvents({
-        address: ARKA_DCA_ADDRESS,
-        abi: arkaDcaAbi,
+        address: PAYSATS_DCA_ADDRESS,
+        abi: paysatsDcaAbi,
         eventName: "DCAExecuted",
         args: { user },
         fromBlock: start,
@@ -283,8 +283,8 @@ async function backfillWide(
     const from = to >= WIDE_CHUNK ? to - WIDE_CHUNK : BigInt(0);
     try {
       const logs = await pub.getContractEvents({
-        address: ARKA_DCA_ADDRESS,
-        abi: arkaDcaAbi,
+        address: PAYSATS_DCA_ADDRESS,
+        abi: paysatsDcaAbi,
         eventName: "DCAExecuted",
         args: { user },
         fromBlock: from,

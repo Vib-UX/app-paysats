@@ -3,7 +3,7 @@ const id = {
   "auth.tagline": "Simpan ke dalam",
   "auth.taglineHighlight": "BTC Pockets",
   "auth.subtitle":
-    "Buat tujuan tabungan dan investasi otomatis ke Bitcoin. Arka x IDRX memungkinkan deposit IDR langsung. Mulai dari Rp 25.000.",
+    "Buat tujuan tabungan dan investasi otomatis ke Bitcoin. PaySats x IDRX memungkinkan deposit IDR langsung. Mulai dari Rp 25.000.",
   "auth.pill.savings": "Tabungan",
   "auth.pill.dca": "Auto DCA",
   "auth.pill.directIdr": "Deposit IDR Langsung",
@@ -41,7 +41,7 @@ const id = {
   "dashboard.depositBtn": "Deposit",
   "dashboard.startInvesting": "Mulai Investasi",
   "dashboard.startInvestingDesc":
-    "Deposit IDR ke dompet Arka kamu, lalu atur DCA otomatis ke Bitcoin. Mulai dari nominal kecil.",
+    "Deposit IDR ke dompet PaySats kamu, lalu atur DCA otomatis ke Bitcoin. Mulai dari nominal kecil.",
   "dashboard.loadIdr": "Top-up IDR ke IDRX",
   "dashboard.loadIdrDesc":
     "Tukar rupiah ke IDRX dan mulai berinvestasi.",
@@ -127,7 +127,7 @@ const id = {
   // Deposit IDR (IDRX mint behind the scenes)
   "mint.title": "Deposit IDR",
   "mint.subtitle":
-    "Transfer rupiah dan saldo kamu akan muncul di Arka dalam beberapa menit.",
+    "Transfer rupiah dan saldo kamu akan muncul di PaySats dalam beberapa menit.",
   "mint.checkingIdrx": "Memeriksa status…",
   "mint.linkingIdrx": "Menyiapkan akun deposit…",
   "mint.linkingWait": "Satu saat lagi…",
@@ -135,7 +135,7 @@ const id = {
   "mint.errorTitle": "Tidak bisa menyiapkan deposit. Coba lagi.",
   "mint.errorDefault":
     "Gagal menyiapkan akun. Periksa jaringan lalu muat ulang halaman.",
-  "mint.destLabel": "Disetor ke dompet Arka",
+  "mint.destLabel": "Disetor ke dompet PaySats",
   "mint.destWaiting": "Menunggu dompet…",
   "mint.amountLabel": "Nominal (Rp)",
   "mint.amountPlaceholder": "Min. Rp 20.000",
@@ -190,10 +190,10 @@ const id = {
   // Profile
   "profile.title": "Profil",
   "profile.subtitle":
-    "Akun Arka dan dompet Privy kamu. Informasi sensitif mitra (IDRX) hanya disimpan terenkripsi di server.",
+    "Akun PaySats dan dompet Privy kamu. Informasi sensitif mitra (IDRX) hanya disimpan terenkripsi di server.",
   "profile.name": "Nama",
   "profile.email": "Email",
-  "profile.wallet": "Dompet Arka",
+  "profile.wallet": "Dompet PaySats",
   "profile.onboarding": "Onboarding IDRX",
   "profile.onboardingDone": "Selesai",
   "profile.onboardingPending": "Belum selesai",
@@ -297,7 +297,7 @@ const id = {
   "addfunds.copied": "Tersalin",
   "addfunds.warning":
     "Kirim USDC hanya di jaringan Base. Jaringan lain akan menyebabkan dana hilang.",
-  "addfunds.yourAddress": "Alamat dompet Arka",
+  "addfunds.yourAddress": "Alamat dompet PaySats",
   "addfunds.waitingAddress": "Menyiapkan alamat…",
 
   // Onboarding
@@ -332,7 +332,7 @@ const id = {
   "onb.creating.title": "Menyiapkan akunmu",
   "onb.creating.sub": "Hanya butuh sesaat",
   "onb.creating.doneTitle": "Semuanya siap",
-  "onb.creating.doneSub": "Selamat datang di Arka",
+  "onb.creating.doneSub": "Selamat datang di PaySats",
   "onb.currency.title": "Pilih mata uangmu",
   "onb.currency.sub": "Kamu bisa mengubahnya di Pengaturan.",
   "onb.currency.idr": "Rupiah",
@@ -545,7 +545,7 @@ const en: Record<keyof typeof id, string> = {
   "auth.tagline": "Save into",
   "auth.taglineHighlight": "BTC Pockets",
   "auth.subtitle":
-    "Create savings goals and auto-invest into Bitcoin. Arka x IDRX allows direct IDR deposits. Start with as little as Rp 25,000.",
+    "Create savings goals and auto-invest into Bitcoin. PaySats x IDRX allows direct IDR deposits. Start with as little as Rp 25,000.",
   "auth.pill.savings": "Savings",
   "auth.pill.dca": "Auto DCA",
   "auth.pill.directIdr": "Direct IDR Deposits",
@@ -583,7 +583,7 @@ const en: Record<keyof typeof id, string> = {
   "dashboard.depositBtn": "Deposit",
   "dashboard.startInvesting": "Start Investing",
   "dashboard.startInvestingDesc":
-    "Deposit IDR to your Arka wallet, then set up auto DCA into Bitcoin. Start small.",
+    "Deposit IDR to your PaySats wallet, then set up auto DCA into Bitcoin. Start small.",
   "dashboard.loadIdr": "Top-up IDR to IDRX",
   "dashboard.loadIdrDesc":
     "Convert rupiah to IDRX and start investing.",
@@ -669,7 +669,7 @@ const en: Record<keyof typeof id, string> = {
   // Deposit IDR (IDRX mint behind the scenes)
   "mint.title": "Deposit IDR",
   "mint.subtitle":
-    "Transfer rupiah and your balance appears in Arka in a few minutes.",
+    "Transfer rupiah and your balance appears in PaySats in a few minutes.",
   "mint.checkingIdrx": "Checking status…",
   "mint.linkingIdrx": "Preparing deposit account…",
   "mint.linkingWait": "Just a moment…",
@@ -677,7 +677,7 @@ const en: Record<keyof typeof id, string> = {
   "mint.errorTitle": "Cannot prepare deposit. Try again.",
   "mint.errorDefault":
     "Failed to prepare account. Check your network and reload the page.",
-  "mint.destLabel": "Deposited to your Arka wallet",
+  "mint.destLabel": "Deposited to your PaySats wallet",
   "mint.destWaiting": "Waiting for wallet…",
   "mint.amountLabel": "Amount (Rp)",
   "mint.amountPlaceholder": "Min. Rp 20,000",
@@ -732,10 +732,10 @@ const en: Record<keyof typeof id, string> = {
   // Profile
   "profile.title": "Profile",
   "profile.subtitle":
-    "Your Arka account and Privy wallet. Sensitive partner info (IDRX) is stored encrypted on the server.",
+    "Your PaySats account and Privy wallet. Sensitive partner info (IDRX) is stored encrypted on the server.",
   "profile.name": "Name",
   "profile.email": "Email",
-  "profile.wallet": "Arka Wallet",
+  "profile.wallet": "PaySats Wallet",
   "profile.onboarding": "IDRX Onboarding",
   "profile.onboardingDone": "Completed",
   "profile.onboardingPending": "Not completed",
@@ -839,7 +839,7 @@ const en: Record<keyof typeof id, string> = {
   "addfunds.copied": "Copied",
   "addfunds.warning":
     "Send USDC only on the Base network. Other networks will result in lost funds.",
-  "addfunds.yourAddress": "Your Arka wallet address",
+  "addfunds.yourAddress": "Your PaySats wallet address",
   "addfunds.waitingAddress": "Preparing address…",
 
   // Onboarding
@@ -873,7 +873,7 @@ const en: Record<keyof typeof id, string> = {
   "onb.creating.title": "Setting up your account",
   "onb.creating.sub": "This only takes a moment",
   "onb.creating.doneTitle": "You're all set",
-  "onb.creating.doneSub": "Welcome to Arka",
+  "onb.creating.doneSub": "Welcome to PaySats",
   "onb.currency.title": "Choose your currency",
   "onb.currency.sub": "You can change this later in Settings.",
   "onb.currency.idr": "Indonesian Rupiah",

@@ -30,7 +30,7 @@ export function TimeDrumColumn({
       style={{ height: itemHeight * 3, width }}
     >
       <div
-        className="pointer-events-none absolute left-0 right-0 rounded-[8px] bg-arka-surface-muted"
+        className="pointer-events-none absolute left-0 right-0 rounded-[8px] bg-paysats-surface-muted"
         style={{ top: itemHeight, height: itemHeight, zIndex: 0 }}
       />
       <div
@@ -69,9 +69,9 @@ export function TimeDrumColumn({
                     fontSize: isCenter ? 20 : 14,
                     fontWeight: isCenter ? 800 : 500,
                     color: isCenter
-                      ? "var(--arka-text)"
+                      ? "var(--paysats-text)"
                       : distance === 1
-                        ? "var(--arka-text-faint)"
+                        ? "var(--paysats-text-faint)"
                         : "transparent",
                   }}
                 >
@@ -112,7 +112,7 @@ export function TimeDrum({
       />
       <span
         className="text-[22px] font-extrabold"
-        style={{ color: "var(--arka-text-faint)" }}
+        style={{ color: "var(--paysats-text-faint)" }}
       >
         :
       </span>

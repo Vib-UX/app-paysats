@@ -16,16 +16,16 @@ function BackHeader({ title }: { title: string }) {
         className="flex h-10 w-10 items-center justify-center rounded-[12px]"
         data-pressable
         style={{
-          background: "var(--arka-surface)",
-          boxShadow: "var(--arka-shadow-card)",
-          color: "var(--arka-text)",
+          background: "var(--paysats-surface)",
+          boxShadow: "var(--paysats-shadow-card)",
+          color: "var(--paysats-text)",
         }}
       >
         ←
       </Link>
       <div
         className="text-lg font-extrabold"
-        style={{ color: "var(--arka-text)", letterSpacing: -0.4 }}
+        style={{ color: "var(--paysats-text)", letterSpacing: -0.4 }}
       >
         {title}
       </div>
@@ -52,13 +52,13 @@ export function WithdrawClient() {
           type="button"
           className="w-full rounded-[14px] border px-4 py-3 text-left text-[12px]"
           style={{
-            borderColor: "var(--arka-danger)",
-            color: "var(--arka-danger)",
+            borderColor: "var(--paysats-danger)",
+            color: "var(--paysats-danger)",
             background: "rgba(196,48,48,0.04)",
           }}
           onClick={() =>
             window.open(
-              "mailto:support@arkapay.id?subject=Sell%20Bitcoin",
+              "mailto:support@paysats.exchange?subject=Sell%20Bitcoin",
               "_blank",
             )
           }

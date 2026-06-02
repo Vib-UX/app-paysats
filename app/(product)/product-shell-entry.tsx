@@ -10,7 +10,7 @@ function ShellLoading() {
       suppressHydrationWarning
     >
       <div
-        className="h-8 w-8 animate-pulse rounded-full bg-arka-border"
+        className="h-8 w-8 animate-pulse rounded-full bg-paysats-border"
         suppressHydrationWarning
       />
     </div>

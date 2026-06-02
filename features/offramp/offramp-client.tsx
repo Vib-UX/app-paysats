@@ -110,15 +110,15 @@ export function OfframpClient({ usdcBalance }: Props) {
   // balance hits 0 from a successful cashout.
   const historySection = (
     <section className="space-y-2">
-      <p className="text-sm font-semibold text-arka-text">
+      <p className="text-sm font-semibold text-paysats-text">
         {t("offramp.historyTitle")}
       </p>
       {historyLoading && records.length === 0 && (
-        <p className="text-xs text-arka-text-muted">{t("auth.loading")}</p>
+        <p className="text-xs text-paysats-text-muted">{t("auth.loading")}</p>
       )}
       {!historyLoading && records.length === 0 && (
         <Card>
-          <p className="text-xs text-arka-text-muted">
+          <p className="text-xs text-paysats-text-muted">
             {t("offramp.historyEmpty")}
           </p>
         </Card>
@@ -134,10 +134,10 @@ export function OfframpClient({ usdcBalance }: Props) {
       <div className="space-y-3">
         <Card className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-arka-text">
+            <p className="text-sm font-semibold text-paysats-text">
               {t("offramp.sectionTitle")}
             </p>
-            <p className="mt-0.5 text-xs text-arka-text-muted">
+            <p className="mt-0.5 text-xs text-paysats-text-muted">
               {t("offramp.sectionDesc")}
             </p>
           </div>
@@ -159,17 +159,17 @@ export function OfframpClient({ usdcBalance }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-semibold text-arka-text">
+          <p className="text-sm font-semibold text-paysats-text">
             {t("offramp.sectionTitle")}
           </p>
-          <p className="text-xs text-arka-text-muted">
+          <p className="text-xs text-paysats-text-muted">
             {t("offramp.sectionDesc")}
           </p>
         </div>
         <button
           type="button"
           onClick={() => setExpanded(false)}
-          className="text-xs text-arka-text-muted hover:text-arka-text"
+          className="text-xs text-paysats-text-muted hover:text-paysats-text"
         >
           {t("offramp.closeBtn")}
         </button>
@@ -178,14 +178,14 @@ export function OfframpClient({ usdcBalance }: Props) {
       {/* Destinations list */}
       <Card className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-arka-text">
+          <p className="text-sm font-medium text-paysats-text">
             {t("offramp.destinationsTitle")}
           </p>
           {!showAddForm && (
             <button
               type="button"
               onClick={() => setShowAddForm(true)}
-              className="text-xs font-medium text-arka-accent hover:underline"
+              className="text-xs font-medium text-paysats-accent hover:underline"
             >
               + {t("offramp.addDestination")}
             </button>
@@ -193,11 +193,11 @@ export function OfframpClient({ usdcBalance }: Props) {
         </div>
 
         {destsLoading && destinations.length === 0 && (
-          <p className="text-xs text-arka-text-muted">{t("auth.loading")}</p>
+          <p className="text-xs text-paysats-text-muted">{t("auth.loading")}</p>
         )}
 
         {!destsLoading && destinations.length === 0 && !showAddForm && (
-          <p className="text-xs text-arka-text-muted">
+          <p className="text-xs text-paysats-text-muted">
             {t("offramp.noDestinations")}
           </p>
         )}
@@ -236,22 +236,22 @@ export function OfframpClient({ usdcBalance }: Props) {
       {/* Redeem form */}
       {destinations.length > 0 && selected && (
         <Card className="space-y-3">
-          <p className="text-sm font-semibold text-arka-text">
+          <p className="text-sm font-semibold text-paysats-text">
             {t("offramp.redeemTitle")}
           </p>
 
           <div>
             <Label>{t("offramp.redeemDestLabel")}</Label>
-            <div className="rounded-lg bg-arka-surface-muted p-2.5 text-sm">
-              <p className="font-medium text-arka-text">
+            <div className="rounded-lg bg-paysats-surface-muted p-2.5 text-sm">
+              <p className="font-medium text-paysats-text">
                 {selected.bankName}{" "}
-                <span className="text-arka-text-muted">
+                <span className="text-paysats-text-muted">
                   ({selected.kind === "ewallet"
                     ? t("offramp.kindEwallet")
                     : t("offramp.kindBank")})
                 </span>
               </p>
-              <p className="font-mono text-xs text-arka-text-muted">
+              <p className="font-mono text-xs text-paysats-text-muted">
                 •••• {selected.bankAccountNumberLast} ·{" "}
                 {selected.bankAccountName}
               </p>
@@ -275,11 +275,11 @@ export function OfframpClient({ usdcBalance }: Props) {
                 placeholder="0.00"
                 className="pr-14 font-mono"
               />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-arka-text-muted">
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-paysats-text-muted">
                 USD
               </span>
             </div>
-            <p className="mt-1 flex items-center justify-between text-xs text-arka-text-muted">
+            <p className="mt-1 flex items-center justify-between text-xs text-paysats-text-muted">
               <span>{t("offramp.redeemAmountHint")}</span>
               <button
                 type="button"
@@ -288,7 +288,7 @@ export function OfframpClient({ usdcBalance }: Props) {
                     Math.min(MAX_REDEEM_USD, usdcBalanceNum).toFixed(2),
                   )
                 }
-                className="font-semibold text-arka-accent hover:underline"
+                className="font-semibold text-paysats-accent hover:underline"
               >
                 {formatUsd(usdcBalanceNum)}
               </button>
@@ -296,17 +296,17 @@ export function OfframpClient({ usdcBalance }: Props) {
           </div>
 
           {quote && quote.expectedIdr > 0 && (
-            <div className="rounded-lg bg-arka-surface-muted p-3 text-sm">
+            <div className="rounded-lg bg-paysats-surface-muted p-3 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-arka-text-muted">
+                <span className="text-paysats-text-muted">
                   {t("offramp.redeemQuoteLabel")}
                 </span>
-                <span className="font-mono font-semibold text-arka-text">
+                <span className="font-mono font-semibold text-paysats-text">
                   {quoteLoading ? "…" : formatIdr(quote.expectedIdr)}
                 </span>
               </div>
               {quote.feeIdr > 0 && (
-                <div className="mt-1 flex items-center justify-between text-xs text-arka-text-muted">
+                <div className="mt-1 flex items-center justify-between text-xs text-paysats-text-muted">
                   <span>{t("offramp.redeemQuoteFee")}</span>
                   <span className="font-mono">
                     {formatIdr(quote.feeIdr)}
@@ -314,7 +314,7 @@ export function OfframpClient({ usdcBalance }: Props) {
                 </div>
               )}
               {quote.rate > 0 && (
-                <div className="mt-1 flex items-center justify-between text-xs text-arka-text-muted">
+                <div className="mt-1 flex items-center justify-between text-xs text-paysats-text-muted">
                   <span>{t("offramp.redeemQuoteRate")}</span>
                   <span className="font-mono">
                     1 USD ≈ {formatIdr(quote.rate)}
@@ -322,7 +322,7 @@ export function OfframpClient({ usdcBalance }: Props) {
                 </div>
               )}
               {quote.source === "fallback" && (
-                <p className="mt-1 text-[11px] text-arka-text-muted">
+                <p className="mt-1 text-[11px] text-paysats-text-muted">
                   {t("offramp.redeemQuoteFallback")}
                 </p>
               )}
@@ -330,10 +330,10 @@ export function OfframpClient({ usdcBalance }: Props) {
           )}
 
           {errorMessage && (
-            <p className="text-xs text-arka-danger">{errorMessage}</p>
+            <p className="text-xs text-paysats-danger">{errorMessage}</p>
           )}
           {redeemError && (
-            <p className="text-xs text-arka-danger">{redeemError}</p>
+            <p className="text-xs text-paysats-danger">{redeemError}</p>
           )}
 
           {txHash ? (
@@ -355,7 +355,7 @@ export function OfframpClient({ usdcBalance }: Props) {
             </div>
           ) : confirming ? (
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-arka-text">
+              <p className="text-sm font-semibold text-paysats-text">
                 {t("offramp.redeemConfirmTitle")}
               </p>
               <div className="grid grid-cols-2 gap-2">
@@ -406,8 +406,8 @@ function DestinationRow({
     <div
       className={`flex items-center gap-3 rounded-lg border p-3 transition ${
         selected
-          ? "border-arka-accent bg-arka-accent/5"
-          : "border-arka-border bg-arka-surface"
+          ? "border-paysats-accent bg-paysats-accent/5"
+          : "border-paysats-border bg-paysats-surface"
       }`}
     >
       <button
@@ -427,16 +427,16 @@ function DestinationRow({
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5">
-            <span className="truncate text-sm font-medium text-arka-text">
+            <span className="truncate text-sm font-medium text-paysats-text">
               {destination.bankName}
             </span>
             {destination.isDefault && (
-              <span className="shrink-0 rounded-full bg-arka-accent/10 px-1.5 py-0.5 text-[10px] font-semibold text-arka-accent">
+              <span className="shrink-0 rounded-full bg-paysats-accent/10 px-1.5 py-0.5 text-[10px] font-semibold text-paysats-accent">
                 {t("offramp.default")}
               </span>
             )}
           </span>
-          <span className="block truncate font-mono text-[11px] text-arka-text-muted">
+          <span className="block truncate font-mono text-[11px] text-paysats-text-muted">
             •••• {destination.bankAccountNumberLast} ·{" "}
             {destination.bankAccountName}
           </span>
@@ -447,7 +447,7 @@ function DestinationRow({
           <button
             type="button"
             onClick={onSetDefault}
-            className="text-[11px] text-arka-accent hover:underline"
+            className="text-[11px] text-paysats-accent hover:underline"
           >
             {t("offramp.setDefault")}
           </button>
@@ -455,7 +455,7 @@ function DestinationRow({
         <button
           type="button"
           onClick={onDelete}
-          className="text-[11px] text-arka-text-muted hover:text-arka-danger"
+          className="text-[11px] text-paysats-text-muted hover:text-paysats-danger"
         >
           {t("offramp.delete")}
         </button>

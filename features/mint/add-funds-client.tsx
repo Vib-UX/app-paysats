@@ -24,16 +24,16 @@ function BackHeader({
         className="flex h-10 w-10 items-center justify-center rounded-[12px]"
         data-pressable
         style={{
-          background: "var(--arka-surface)",
-          boxShadow: "var(--arka-shadow-card)",
-          color: "var(--arka-text)",
+          background: "var(--paysats-surface)",
+          boxShadow: "var(--paysats-shadow-card)",
+          color: "var(--paysats-text)",
         }}
       >
         ←
       </button>
       <div
         className="text-lg font-extrabold"
-        style={{ color: "var(--arka-text)", letterSpacing: -0.4 }}
+        style={{ color: "var(--paysats-text)", letterSpacing: -0.4 }}
       >
         {title}
       </div>
@@ -58,16 +58,16 @@ function MenuRow({
       onClick={onClick}
       className="flex w-full items-center gap-3 rounded-[14px] p-3.5 text-left"
       style={{
-        background: "var(--arka-surface)",
-        boxShadow: "var(--arka-shadow-card)",
+        background: "var(--paysats-surface)",
+        boxShadow: "var(--paysats-shadow-card)",
       }}
       data-pressable
     >
       <div
         className="flex h-11 w-11 items-center justify-center rounded-[12px]"
         style={{
-          background: "var(--arka-accent-soft)",
-          color: "var(--arka-accent)",
+          background: "var(--paysats-accent-soft)",
+          color: "var(--paysats-accent)",
           fontWeight: 800,
           fontSize: 16,
         }}
@@ -77,19 +77,19 @@ function MenuRow({
       <div className="min-w-0 flex-1">
         <div
           className="text-[13px] font-extrabold"
-          style={{ color: "var(--arka-text)" }}
+          style={{ color: "var(--paysats-text)" }}
         >
           {label}
         </div>
         <div
           className="mt-0.5 text-[11px]"
-          style={{ color: "var(--arka-text-faint)" }}
+          style={{ color: "var(--paysats-text-faint)" }}
         >
           {sublabel}
         </div>
       </div>
       <span
-        style={{ color: "var(--arka-text-faint)" }}
+        style={{ color: "var(--paysats-text-faint)" }}
         className="text-lg"
         aria-hidden
       >
@@ -137,16 +137,16 @@ export function AddFundsClient() {
           className="flex h-10 w-10 items-center justify-center rounded-[12px]"
           data-pressable
           style={{
-            background: "var(--arka-surface)",
-            boxShadow: "var(--arka-shadow-card)",
-            color: "var(--arka-text)",
+            background: "var(--paysats-surface)",
+            boxShadow: "var(--paysats-shadow-card)",
+            color: "var(--paysats-text)",
           }}
         >
           ←
         </Link>
         <div
           className="text-lg font-extrabold"
-          style={{ color: "var(--arka-text)", letterSpacing: -0.4 }}
+          style={{ color: "var(--paysats-text)", letterSpacing: -0.4 }}
         >
           {t("addfunds.title")}
         </div>

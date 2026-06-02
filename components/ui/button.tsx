@@ -4,10 +4,10 @@ type Variant = "primary" | "secondary" | "ghost";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-arka-accent text-white hover:bg-arka-accent-muted active:scale-[0.99] disabled:opacity-50",
+    "bg-paysats-accent text-white hover:bg-paysats-accent-muted active:scale-[0.99] disabled:opacity-50",
   secondary:
-    "bg-arka-surface border border-arka-border text-arka-text hover:bg-arka-surface-muted",
-  ghost: "text-arka-accent hover:bg-arka-surface-muted",
+    "bg-paysats-surface border border-paysats-border text-paysats-text hover:bg-paysats-surface-muted",
+  ghost: "text-paysats-accent hover:bg-paysats-surface-muted",
 };
 
 export function Button({

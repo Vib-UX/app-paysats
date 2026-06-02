@@ -6,11 +6,11 @@ function OnboardingLoading() {
   return (
     <div
       className="absolute inset-0 flex items-center justify-center"
-      style={{ background: "var(--arka-bg)" }}
+      style={{ background: "var(--paysats-bg)" }}
       suppressHydrationWarning
     >
       <div
-        className="h-8 w-8 animate-pulse rounded-full bg-arka-border"
+        className="h-8 w-8 animate-pulse rounded-full bg-paysats-border"
         suppressHydrationWarning
       />
     </div>

@@ -1,6 +1,6 @@
 import { getAddress, parseAbi } from "viem";
 
-export const ARKA_DCA_ADDRESS = getAddress(
+export const PAYSATS_DCA_ADDRESS = getAddress(
   "0xd89E73e565B3990d4308548e969d76c850874534",
 );
 
@@ -15,7 +15,7 @@ export const erc20Abi = parseAbi([
   "function balanceOf(address account) view returns (uint256)",
 ]);
 
-export const arkaDcaAbi = parseAbi([
+export const paysatsDcaAbi = parseAbi([
   "function createOrder(uint256 amountPerSwap, uint256 interval, uint256 totalSwaps, uint256 minOutputBps)",
   "function cancelOrder()",
   "function orders(address user) view returns (uint256 amountPerSwap, uint256 interval, uint256 totalSwaps, uint256 executedSwaps, uint256 lastExecutedAt, uint256 minOutputBps, bool active)",

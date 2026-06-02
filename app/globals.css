@@ -2,30 +2,30 @@
 
 :root {
   /* Brand palette — warm cream, rich ink, orange gradient accent */
-  --arka-bg: #f7f3ef;
-  --arka-surface: #ffffff;
-  --arka-surface-muted: #f0ebe5;
-  --arka-border: #e8e2dc;
-  --arka-text: #161210;
-  --arka-text-muted: #7a7168;
-  --arka-text-faint: #b8b0a6;
-  --arka-line: #e8e2dc;
-  --arka-accent: #b85c38;
-  --arka-accent-muted: #d08850;
-  --arka-accent-soft: rgba(184, 92, 56, 0.06);
-  --arka-success: #2da84e;
-  --arka-success-soft: rgba(45, 168, 78, 0.07);
-  --arka-warning: #cc9a0a;
-  --arka-warning-soft: rgba(204, 154, 10, 0.08);
-  --arka-danger: #c43030;
+  --paysats-bg: #f7f3ef;
+  --paysats-surface: #ffffff;
+  --paysats-surface-muted: #f0ebe5;
+  --paysats-border: #e8e2dc;
+  --paysats-text: #161210;
+  --paysats-text-muted: #7a7168;
+  --paysats-text-faint: #b8b0a6;
+  --paysats-line: #e8e2dc;
+  --paysats-accent: #b85c38;
+  --paysats-accent-muted: #d08850;
+  --paysats-accent-soft: rgba(184, 92, 56, 0.06);
+  --paysats-success: #2da84e;
+  --paysats-success-soft: rgba(45, 168, 78, 0.07);
+  --paysats-warning: #cc9a0a;
+  --paysats-warning-soft: rgba(204, 154, 10, 0.08);
+  --paysats-danger: #c43030;
 
-  --arka-gradient: linear-gradient(
+  --paysats-gradient: linear-gradient(
     140deg,
     #be6640 0%,
     #d08850 55%,
     #dca060 100%
   );
-  --arka-gradient-hero: linear-gradient(
+  --paysats-gradient-hero: linear-gradient(
     140deg,
     #a84e2e,
     #be6640,
@@ -37,9 +37,9 @@
     #a84e2e
   );
 
-  --arka-shadow-card: 0 1px 3px rgba(22, 18, 16, 0.04);
-  --arka-shadow-hero: 0 10px 40px rgba(170, 80, 40, 0.22);
-  --arka-shadow-tile: 0 6px 20px rgba(170, 80, 40, 0.25);
+  --paysats-shadow-card: 0 1px 3px rgba(22, 18, 16, 0.04);
+  --paysats-shadow-hero: 0 10px 40px rgba(170, 80, 40, 0.22);
+  --paysats-shadow-tile: 0 6px 20px rgba(170, 80, 40, 0.25);
 
   --radius-card: 18px;
   --radius-pill: 14px;
@@ -47,43 +47,43 @@
   --radius-tile: 26%;
 
   /* Bridge for @predator_757/bitflation-idr-dca CSS module */
-  --border: var(--arka-border);
-  --text-primary: var(--arka-text);
-  --text-secondary: var(--arka-text-muted);
-  --text-muted: var(--arka-text-muted);
-  --bg-card: var(--arka-surface);
-  --bg-control: var(--arka-surface-muted);
+  --border: var(--paysats-border);
+  --text-primary: var(--paysats-text);
+  --text-secondary: var(--paysats-text-muted);
+  --text-muted: var(--paysats-text-muted);
+  --bg-card: var(--paysats-surface);
+  --bg-control: var(--paysats-surface-muted);
   --accent-indigo: #6366f1;
-  --accent-green: var(--arka-success);
-  --accent-red: var(--arka-danger);
+  --accent-green: var(--paysats-success);
+  --accent-red: var(--paysats-danger);
   --radius: var(--radius-card);
   --font-mono: ui-monospace, SFMono-Regular, monospace;
 }
 
 @theme inline {
-  --color-arka-bg: var(--arka-bg);
-  --color-arka-surface: var(--arka-surface);
-  --color-arka-surface-muted: var(--arka-surface-muted);
-  --color-arka-border: var(--arka-border);
-  --color-arka-line: var(--arka-line);
-  --color-arka-text: var(--arka-text);
-  --color-arka-text-muted: var(--arka-text-muted);
-  --color-arka-text-faint: var(--arka-text-faint);
-  --color-arka-accent: var(--arka-accent);
-  --color-arka-accent-muted: var(--arka-accent-muted);
-  --color-arka-accent-soft: var(--arka-accent-soft);
-  --color-arka-success: var(--arka-success);
-  --color-arka-success-soft: var(--arka-success-soft);
-  --color-arka-warning: var(--arka-warning);
-  --color-arka-warning-soft: var(--arka-warning-soft);
-  --color-arka-danger: var(--arka-danger);
+  --color-paysats-bg: var(--paysats-bg);
+  --color-paysats-surface: var(--paysats-surface);
+  --color-paysats-surface-muted: var(--paysats-surface-muted);
+  --color-paysats-border: var(--paysats-border);
+  --color-paysats-line: var(--paysats-line);
+  --color-paysats-text: var(--paysats-text);
+  --color-paysats-text-muted: var(--paysats-text-muted);
+  --color-paysats-text-faint: var(--paysats-text-faint);
+  --color-paysats-accent: var(--paysats-accent);
+  --color-paysats-accent-muted: var(--paysats-accent-muted);
+  --color-paysats-accent-soft: var(--paysats-accent-soft);
+  --color-paysats-success: var(--paysats-success);
+  --color-paysats-success-soft: var(--paysats-success-soft);
+  --color-paysats-warning: var(--paysats-warning);
+  --color-paysats-warning-soft: var(--paysats-warning-soft);
+  --color-paysats-danger: var(--paysats-danger);
   --font-sans: var(--font-plus-jakarta-sans), ui-sans-serif, system-ui,
     sans-serif;
 }
 
 body {
-  background: var(--arka-bg);
-  color: var(--arka-text);
+  background: var(--paysats-bg);
+  color: var(--paysats-text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.01em;

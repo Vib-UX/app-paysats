@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Screen } from "@/components/ui/screen";
 import { useLocale, useT } from "@/lib/i18n";
 import { useDcaOrder } from "@/hooks/use-dca-contract";
-import { IDRX_DECIMALS } from "@/lib/contracts/arka-dca";
+import { IDRX_DECIMALS } from "@/lib/contracts/paysats-dca";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
@@ -35,9 +35,9 @@ const DEFAULT_YEARS = 6;
 function CalculatorSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="h-8 w-48 animate-pulse rounded bg-arka-border/60" />
-      <div className="h-4 w-full max-w-md animate-pulse rounded bg-arka-border/40" />
-      <div className="h-64 animate-pulse rounded-[var(--radius-card)] bg-arka-border/40" />
+      <div className="h-8 w-48 animate-pulse rounded bg-paysats-border/60" />
+      <div className="h-4 w-full max-w-md animate-pulse rounded bg-paysats-border/40" />
+      <div className="h-64 animate-pulse rounded-[var(--radius-card)] bg-paysats-border/40" />
     </div>
   );
 }
@@ -146,7 +146,7 @@ function SavingsVisualization({
               dataKey="date"
               tickFormatter={(d: string) => d.slice(0, 7)}
               fontSize={10}
-              stroke="var(--arka-text-muted)"
+              stroke="var(--paysats-text-muted)"
               tickLine={false}
             />
             <YAxis
@@ -158,7 +158,7 @@ function SavingsVisualization({
                     : `${(v / 1e3).toFixed(0)}K`
               }
               fontSize={10}
-              stroke="var(--arka-text-muted)"
+              stroke="var(--paysats-text-muted)"
               tickLine={false}
               width={42}
             />
@@ -166,15 +166,15 @@ function SavingsVisualization({
               formatter={(value) => formatIdr(Number(value ?? 0))}
               labelFormatter={(d) => String(d)}
               contentStyle={{
-                backgroundColor: "var(--arka-surface)",
-                border: "1px solid var(--arka-border)",
+                backgroundColor: "var(--paysats-surface)",
+                border: "1px solid var(--paysats-border)",
                 borderRadius: "8px",
                 fontSize: "12px",
               }}
             />
             <ReferenceLine
               y={results.btc.totalInvested}
-              stroke="var(--arka-text-muted)"
+              stroke="var(--paysats-text-muted)"
               strokeDasharray="4 4"
               strokeWidth={1}
             />
@@ -216,15 +216,15 @@ function SavingsVisualization({
               {t(labelKey)}
             </p>
             <div className="flex justify-between text-[11px]">
-              <span className="text-arka-text-muted">
+              <span className="text-paysats-text-muted">
                 {t("savings.currentValue")}
               </span>
-              <span className="font-semibold tabular-nums text-arka-text">
+              <span className="font-semibold tabular-nums text-paysats-text">
                 {formatIdr(r.currentValue)}
               </span>
             </div>
             <div className="flex justify-between text-[11px]">
-              <span className="text-arka-text-muted">
+              <span className="text-paysats-text-muted">
                 {t("savings.returnLabel")}
               </span>
               <span
@@ -234,7 +234,7 @@ function SavingsVisualization({
                 {r.returnPct.toFixed(1)}%
               </span>
             </div>
-            <p className="text-[10px] text-arka-text-muted">
+            <p className="text-[10px] text-paysats-text-muted">
               {t("savings.invested")}: {formatIdr(r.totalInvested)}
             </p>
           </Card>
@@ -277,14 +277,14 @@ export function SavingsClient() {
       <div className="space-y-5">
         {/* Mode toggle — only when user has active DCA */}
         {hasDca && (
-          <div className="inline-flex rounded-lg bg-arka-surface-muted p-0.5">
+          <div className="inline-flex rounded-lg bg-paysats-surface-muted p-0.5">
             <button
               type="button"
               onClick={() => setModeOverride("dca")}
               className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
                 mode === "dca"
-                  ? "bg-arka-accent text-white shadow-sm"
-                  : "text-arka-text-muted hover:text-arka-text"
+                  ? "bg-paysats-accent text-white shadow-sm"
+                  : "text-paysats-text-muted hover:text-paysats-text"
               }`}
             >
               {t("savings.modeDca")}
@@ -294,8 +294,8 @@ export function SavingsClient() {
               onClick={() => setModeOverride("calculator")}
               className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
                 mode === "calculator"
-                  ? "bg-arka-accent text-white shadow-sm"
-                  : "text-arka-text-muted hover:text-arka-text"
+                  ? "bg-paysats-accent text-white shadow-sm"
+                  : "text-paysats-text-muted hover:text-paysats-text"
               }`}
             >
               {t("savings.modeCalculator")}
@@ -306,13 +306,13 @@ export function SavingsClient() {
         {/* Current DCA header */}
         {mode === "dca" && order && (
           <div>
-            <h2 className="text-base font-semibold text-arka-text">
+            <h2 className="text-base font-semibold text-paysats-text">
               {t("savings.projectedTitle")}
             </h2>
-            <p className="mt-1 text-xs text-arka-text-muted">
+            <p className="mt-1 text-xs text-paysats-text-muted">
               {t("savings.projectedDesc")}
             </p>
-            <p className="mt-1 text-xs font-medium text-arka-accent">
+            <p className="mt-1 text-xs font-medium text-paysats-accent">
               Rp {amountIdr.toLocaleString(localeStr)} {t("savings.perFreq")}{" "}
               {freqLabel}
             </p>
@@ -325,10 +325,10 @@ export function SavingsClient() {
             {/* Amount slider */}
             <div>
               <div className="flex items-baseline gap-1">
-                <span className="text-lg font-bold tabular-nums text-arka-text">
+                <span className="text-lg font-bold tabular-nums text-paysats-text">
                   Rp {calcAmount.toLocaleString(localeStr)}
                 </span>
-                <span className="text-xs text-arka-text-muted">
+                <span className="text-xs text-paysats-text-muted">
                   / {freqLabel}
                 </span>
               </div>
@@ -339,9 +339,9 @@ export function SavingsClient() {
                 step={50_000}
                 value={calcAmount}
                 onChange={(e) => setCalcAmount(Number(e.target.value))}
-                className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-arka-border/40 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-arka-accent [&::-moz-range-thumb]:shadow-md [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-arka-accent [&::-webkit-slider-thumb]:shadow-md"
+                className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-paysats-border/40 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-paysats-accent [&::-moz-range-thumb]:shadow-md [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-paysats-accent [&::-webkit-slider-thumb]:shadow-md"
               />
-              <div className="mt-1 flex justify-between text-[10px] text-arka-text-muted">
+              <div className="mt-1 flex justify-between text-[10px] text-paysats-text-muted">
                 <span>Rp 50K</span>
                 <span>Rp 5M</span>
               </div>
@@ -350,10 +350,10 @@ export function SavingsClient() {
             {/* Year slider */}
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="text-lg font-bold tabular-nums text-arka-text">
+                <span className="text-lg font-bold tabular-nums text-paysats-text">
                   {years}
                 </span>
-                <span className="text-xs text-arka-text-muted">
+                <span className="text-xs text-paysats-text-muted">
                   {t("savings.years")}
                 </span>
               </div>
@@ -363,9 +363,9 @@ export function SavingsClient() {
                 max={10}
                 value={years}
                 onChange={(e) => setYears(Number(e.target.value))}
-                className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-arka-border/40 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-arka-accent [&::-moz-range-thumb]:shadow-md [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-arka-accent [&::-webkit-slider-thumb]:shadow-md"
+                className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-paysats-border/40 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-paysats-accent [&::-moz-range-thumb]:shadow-md [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-paysats-accent [&::-webkit-slider-thumb]:shadow-md"
               />
-              <div className="mt-1 flex justify-between text-[10px] text-arka-text-muted">
+              <div className="mt-1 flex justify-between text-[10px] text-paysats-text-muted">
                 <span>1</span>
                 <span>10</span>
               </div>
@@ -391,7 +391,7 @@ export function SavingsClient() {
         {/* Create DCA nudge for users without active DCA */}
         {!hasDca && !orderLoading && (
           <Card className="space-y-3 border-dashed">
-            <p className="text-sm text-arka-text-muted">{t("savings.noDca")}</p>
+            <p className="text-sm text-paysats-text-muted">{t("savings.noDca")}</p>
             <Link href="/dca">
               <Button variant="primary" className="w-full sm:w-auto">
                 {t("savings.noDcaBtn")}

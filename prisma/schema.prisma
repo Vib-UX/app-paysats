@@ -100,7 +100,7 @@ model RedeemRequest {
   @@index([payoutDestinationId])
 }
 
-/// Durable per-swap history for ArkaDCA (DCAExecuted events).
+/// Durable per-swap history for PaySatsDCA (DCAExecuted events).
 /// Populated opportunistically from on-chain logs on each /api/dca/executions
 /// fetch. Kept in the DB so the UI can surface a user's full swap history
 /// across cancel/re-create cycles — the on-chain `orders(user)` struct resets

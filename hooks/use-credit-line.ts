@@ -18,7 +18,7 @@ import {
   type CreditPosition,
   type MarketState,
 } from "@/lib/contracts/morpho-credit";
-import { erc20Abi } from "@/lib/contracts/arka-dca";
+import { erc20Abi } from "@/lib/contracts/paysats-dca";
 import { getBasePublicClient } from "@/lib/base-client";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";

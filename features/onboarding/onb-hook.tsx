@@ -76,7 +76,7 @@ export function OnbHook({
       <div
         className="absolute inset-0"
         style={{
-          background: "var(--arka-gradient-hero)",
+          background: "var(--paysats-gradient-hero)",
           backgroundSize: "300% 300%",
           animation: "grad-move 12s ease infinite",
         }}

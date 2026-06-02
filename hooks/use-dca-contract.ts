@@ -1,14 +1,14 @@
 "use client";
 
 import {
-  ARKA_DCA_ADDRESS,
+  PAYSATS_DCA_ADDRESS,
   IDRX_DECIMALS,
   IDRX_TOKEN_ADDRESS,
-  arkaDcaAbi,
+  paysatsDcaAbi,
   erc20Abi,
   type DcaExecution,
   type DcaOrder,
-} from "@/lib/contracts/arka-dca";
+} from "@/lib/contracts/paysats-dca";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -68,8 +68,8 @@ export function useDcaOrder() {
     try {
       const pc = getBasePublicClient();
       const result = await pc.readContract({
-        address: ARKA_DCA_ADDRESS,
-        abi: arkaDcaAbi,
+        address: PAYSATS_DCA_ADDRESS,
+        abi: paysatsDcaAbi,
         functionName: "orders",
         args: [address],
       });
@@ -200,11 +200,11 @@ export function useCreateDcaOrder() {
         const approveData = encodeFunctionData({
           abi: erc20Abi,
           functionName: "approve",
-          args: [ARKA_DCA_ADDRESS, approvalAmount],
+          args: [PAYSATS_DCA_ADDRESS, approvalAmount],
         });
 
         const createOrderData = encodeFunctionData({
-          abi: arkaDcaAbi,
+          abi: paysatsDcaAbi,
           functionName: "createOrder",
           args: [
             params.amountPerSwap,
@@ -216,7 +216,7 @@ export function useCreateDcaOrder() {
 
         const hash = await smartWalletSend([
           { to: IDRX_TOKEN_ADDRESS, data: approveData, value: BigInt(0) },
-          { to: ARKA_DCA_ADDRESS, data: createOrderData, value: BigInt(0) },
+          { to: PAYSATS_DCA_ADDRESS, data: createOrderData, value: BigInt(0) },
         ]);
 
         setTxHash(hash);
@@ -250,12 +250,12 @@ export function useCancelDcaOrder() {
     setBusy(true);
     try {
       const cancelData = encodeFunctionData({
-        abi: arkaDcaAbi,
+        abi: paysatsDcaAbi,
         functionName: "cancelOrder",
       });
 
       const hash = await smartWalletSend([
-        { to: ARKA_DCA_ADDRESS, data: cancelData, value: BigInt(0) },
+        { to: PAYSATS_DCA_ADDRESS, data: cancelData, value: BigInt(0) },
       ]);
       return hash;
     } catch (e) {

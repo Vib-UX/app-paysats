@@ -20,16 +20,16 @@ function BackHeader({ title }: { title: string }) {
         className="flex h-10 w-10 items-center justify-center rounded-[12px]"
         data-pressable
         style={{
-          background: "var(--arka-surface)",
-          boxShadow: "var(--arka-shadow-card)",
-          color: "var(--arka-text)",
+          background: "var(--paysats-surface)",
+          boxShadow: "var(--paysats-shadow-card)",
+          color: "var(--paysats-text)",
         }}
       >
         ←
       </Link>
       <div
         className="text-lg font-extrabold"
-        style={{ color: "var(--arka-text)", letterSpacing: -0.4 }}
+        style={{ color: "var(--paysats-text)", letterSpacing: -0.4 }}
       >
         {title}
       </div>
@@ -53,8 +53,8 @@ function BalanceRow({
       <div
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]"
         style={{
-          background: "var(--arka-accent-soft)",
-          color: "var(--arka-accent)",
+          background: "var(--paysats-accent-soft)",
+          color: "var(--paysats-accent)",
           fontWeight: 800,
         }}
       >
@@ -63,14 +63,14 @@ function BalanceRow({
       <div className="min-w-0 flex-1">
         <div
           className="text-[13px] font-bold"
-          style={{ color: "var(--arka-text)" }}
+          style={{ color: "var(--paysats-text)" }}
         >
           {label}
         </div>
         {sublabel ? (
           <div
             className="mt-0.5 text-[11px]"
-            style={{ color: "var(--arka-text-faint)" }}
+            style={{ color: "var(--paysats-text-faint)" }}
           >
             {sublabel}
           </div>
@@ -120,8 +120,8 @@ export function CashClient() {
       : { primaryTotal: idrStr, secondaryTotal: usdStr };
   }, [idrx, usdc, currency]);
 
-  const cashColor = "var(--arka-success, #17a34a)";
-  const creditColor = "var(--arka-accent)";
+  const cashColor = "var(--paysats-success, #17a34a)";
+  const creditColor = "var(--paysats-accent)";
 
   return (
     <div className="px-5 pb-14">
@@ -131,19 +131,19 @@ export function CashClient() {
         <Card>
           <div
             className="text-[11px] font-bold uppercase tracking-[0.1em]"
-            style={{ color: "var(--arka-text-faint)" }}
+            style={{ color: "var(--paysats-text-faint)" }}
           >
             {t("cash.total")}
           </div>
           <div
             className="mt-2 text-[30px] font-extrabold leading-none"
-            style={{ color: "var(--arka-text)", letterSpacing: -0.6 }}
+            style={{ color: "var(--paysats-text)", letterSpacing: -0.6 }}
           >
             {primaryTotal}
           </div>
           <div
             className="mt-1.5 text-[12px]"
-            style={{ color: "var(--arka-text-faint)" }}
+            style={{ color: "var(--paysats-text-faint)" }}
           >
             {secondaryTotal}
           </div>
@@ -169,7 +169,7 @@ export function CashClient() {
             right={
               <div
                 className="text-[14px] font-extrabold"
-                style={{ color: "var(--arka-text)" }}
+                style={{ color: "var(--paysats-text)" }}
               >
                 Rp {idrx.toLocaleString("id-ID", { maximumFractionDigits: 0 })}
               </div>
@@ -191,20 +191,20 @@ export function CashClient() {
             <div className="min-w-0 flex-1">
               <div
                 className="text-[13px] font-bold"
-                style={{ color: "var(--arka-text)" }}
+                style={{ color: "var(--paysats-text)" }}
               >
                 {t("cash.usdc")}
               </div>
               <div
                 className="mt-0.5 text-[11px]"
-                style={{ color: "var(--arka-text-faint)" }}
+                style={{ color: "var(--paysats-text-faint)" }}
               >
                 Base
               </div>
             </div>
             <div
               className="text-[14px] font-extrabold"
-              style={{ color: "var(--arka-text)" }}
+              style={{ color: "var(--paysats-text)" }}
             >
               ${usdc.toLocaleString(undefined, { maximumFractionDigits: 2 })}
             </div>
@@ -212,19 +212,19 @@ export function CashClient() {
 
           <div
             className="mt-3 border-t pt-2"
-            style={{ borderColor: "var(--arka-border)" }}
+            style={{ borderColor: "var(--paysats-border)" }}
           >
             <div className="flex items-center justify-between py-1.5 text-[12px]">
               <span
                 className="flex items-center gap-2"
-                style={{ color: "var(--arka-text-muted)" }}
+                style={{ color: "var(--paysats-text-muted)" }}
               >
                 <Dot color={cashColor} />
                 {t("cash.cashBalance")}
               </span>
               <span
                 className="font-extrabold tabular-nums"
-                style={{ color: "var(--arka-text)" }}
+                style={{ color: "var(--paysats-text)" }}
               >
                 ${cashUsdc.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
@@ -232,14 +232,14 @@ export function CashClient() {
             <div className="flex items-center justify-between py-1.5 text-[12px]">
               <span
                 className="flex items-center gap-2"
-                style={{ color: "var(--arka-text-muted)" }}
+                style={{ color: "var(--paysats-text-muted)" }}
               >
                 <Dot color={creditColor} />
                 {t("cash.creditBalance")}
               </span>
               <span
                 className="font-extrabold tabular-nums"
-                style={{ color: "var(--arka-text)" }}
+                style={{ color: "var(--paysats-text)" }}
               >
                 ${creditUsdc.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>

@@ -22,11 +22,11 @@ export function CreditEducation() {
         className="flex w-full items-center justify-between text-left"
         onClick={() => setExpanded((v) => !v)}
       >
-        <span className="text-sm font-medium text-arka-text">
+        <span className="text-sm font-medium text-paysats-text">
           {t("credit.learnTitle")}
         </span>
         <span
-          className="text-xs text-arka-text-muted transition-transform"
+          className="text-xs text-paysats-text-muted transition-transform"
           style={{ transform: expanded ? "rotate(180deg)" : undefined }}
         >
           ▼
@@ -37,15 +37,15 @@ export function CreditEducation() {
         <div className="mt-4 space-y-3">
           {STEPS.map((step, i) => (
             <div key={i} className="flex items-start gap-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-arka-surface-muted text-base">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-paysats-surface-muted text-base">
                 {step.icon}
               </span>
-              <p className="text-sm text-arka-text">
+              <p className="text-sm text-paysats-text">
                 {t(step.key as Parameters<typeof t>[0])}
               </p>
             </div>
           ))}
-          <p className="rounded-lg bg-amber-50/60 p-3 text-xs leading-relaxed text-arka-text-muted">
+          <p className="rounded-lg bg-amber-50/60 p-3 text-xs leading-relaxed text-paysats-text-muted">
             {t("credit.learnSafetyNote")}
           </p>
         </div>

@@ -24,18 +24,18 @@ export function OnbCurrency({
   return (
     <div
       className="absolute inset-0 flex flex-col px-7"
-      style={{ background: "var(--arka-bg)" }}
+      style={{ background: "var(--paysats-bg)" }}
     >
       <div className="pt-20">
         <div
           className="text-2xl font-extrabold"
-          style={{ color: "var(--arka-text)", letterSpacing: -0.6 }}
+          style={{ color: "var(--paysats-text)", letterSpacing: -0.6 }}
         >
           {t("onb.currency.title")}
         </div>
         <div
           className="mt-1.5 text-[13px]"
-          style={{ color: "var(--arka-text-faint)" }}
+          style={{ color: "var(--paysats-text-faint)" }}
         >
           {t("onb.currency.sub")}
         </div>
@@ -51,24 +51,24 @@ export function OnbCurrency({
               onClick={() => setSel(code)}
               className="flex items-center justify-between rounded-[16px] p-[18px] transition-[outline-color]"
               style={{
-                background: "var(--arka-surface)",
-                boxShadow: "var(--arka-shadow-card)",
+                background: "var(--paysats-surface)",
+                boxShadow: "var(--paysats-shadow-card)",
                 outline: active
-                  ? "2px solid var(--arka-accent)"
+                  ? "2px solid var(--paysats-accent)"
                   : "2px solid transparent",
               }}
             >
               <span
                 className="text-base font-bold"
-                style={{ color: "var(--arka-text)" }}
+                style={{ color: "var(--paysats-text)" }}
               >
                 {label}
               </span>
               <span
                 className="rounded-[8px] px-2.5 py-1 text-[11px] font-bold"
                 style={{
-                  color: "var(--arka-text-faint)",
-                  background: "var(--arka-surface-muted)",
+                  color: "var(--paysats-text-faint)",
+                  background: "var(--paysats-surface-muted)",
                 }}
               >
                 {code}

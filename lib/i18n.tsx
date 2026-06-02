@@ -21,22 +21,22 @@ type I18nContextValue = {
 };
 
 const I18nContext = createContext<I18nContextValue>({
-  locale: "id",
+  locale: "en",
   setLocale: () => {},
   t: (key) => key,
 });
 
-const STORAGE_KEY = "arka-locale";
+const STORAGE_KEY = "paysats-locale";
 
 function getInitialLocale(): Locale {
-  if (typeof window === "undefined") return "id";
+  if (typeof window === "undefined") return "en";
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored === "en" || stored === "id") return stored;
-  return "id";
+  return "en";
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("id");
+  const [locale, setLocaleState] = useState<Locale>("en");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

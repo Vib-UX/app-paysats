@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Arka — BTC Pockets",
-    short_name: "Arka",
+    name: "PaySats — BTC Pockets",
+    short_name: "PaySats",
     description:
       "Save into BTC Pockets. Direct IDR deposits and auto DCA into Bitcoin.",
     start_url: "/",

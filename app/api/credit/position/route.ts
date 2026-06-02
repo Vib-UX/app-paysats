@@ -14,7 +14,7 @@ import {
   morphoBlueAbi,
   morphoOracleAbi,
 } from "@/lib/contracts/morpho-credit";
-import { erc20Abi } from "@/lib/contracts/arka-dca";
+import { erc20Abi } from "@/lib/contracts/paysats-dca";
 import {
   getPreferredEthereumAddress,
   getPrivyUserFromRequest,

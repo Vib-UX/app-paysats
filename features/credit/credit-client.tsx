@@ -41,17 +41,17 @@ const ZONE: Record<
   { color: string; background: string; label: "safe" | "warning" | "danger" }
 > = {
   safe: {
-    color: "var(--arka-success)",
-    background: "var(--arka-success-soft)",
+    color: "var(--paysats-success)",
+    background: "var(--paysats-success-soft)",
     label: "safe",
   },
   warning: {
-    color: "var(--arka-warning)",
-    background: "var(--arka-warning-soft)",
+    color: "var(--paysats-warning)",
+    background: "var(--paysats-warning-soft)",
     label: "warning",
   },
   danger: {
-    color: "var(--arka-danger)",
+    color: "var(--paysats-danger)",
     background: "rgba(196,48,48,0.08)",
     label: "danger",
   },
@@ -70,10 +70,10 @@ function Hero({
     <div
       className="relative overflow-hidden rounded-[22px] p-6 text-white"
       style={{
-        background: "var(--arka-gradient-hero)",
+        background: "var(--paysats-gradient-hero)",
         backgroundSize: "300% 300%",
         animation: "grad-move 14s ease infinite",
-        boxShadow: "var(--arka-shadow-hero)",
+        boxShadow: "var(--paysats-shadow-hero)",
       }}
     >
       <div
@@ -111,19 +111,19 @@ function StatRow({
 }) {
   const color =
     tone === "accent"
-      ? "var(--arka-accent)"
+      ? "var(--paysats-accent)"
       : tone === "success"
-        ? "var(--arka-success)"
+        ? "var(--paysats-success)"
         : tone === "warning"
-          ? "var(--arka-warning)"
+          ? "var(--paysats-warning)"
           : tone === "danger"
-            ? "var(--arka-danger)"
-            : "var(--arka-text)";
+            ? "var(--paysats-danger)"
+            : "var(--paysats-text)";
   return (
     <div className="flex items-center justify-between py-2">
       <span
         className="text-[12px]"
-        style={{ color: "var(--arka-text-muted)" }}
+        style={{ color: "var(--paysats-text-muted)" }}
       >
         {label}
       </span>
@@ -150,7 +150,7 @@ function HealthBar({
   return (
     <div className="pt-1">
       <div className="mb-1 flex items-center justify-between text-[11px]">
-        <span style={{ color: "var(--arka-text-muted)" }}>{label}</span>
+        <span style={{ color: "var(--paysats-text-muted)" }}>{label}</span>
         <span
           className="rounded-[6px] px-1.5 py-0.5 text-[10px] font-extrabold uppercase"
           style={{ color: z.color, background: z.background }}
@@ -160,7 +160,7 @@ function HealthBar({
       </div>
       <div
         className="h-2 w-full overflow-hidden rounded-full"
-        style={{ background: "var(--arka-border)" }}
+        style={{ background: "var(--paysats-border)" }}
       >
         <div
           className="h-full rounded-full transition-all"
@@ -205,7 +205,7 @@ function BorrowSetup() {
   if (!data) {
     return (
       <Card>
-        <div className="h-20 animate-pulse rounded bg-arka-border/40" />
+        <div className="h-20 animate-pulse rounded bg-paysats-border/40" />
       </Card>
     );
   }
@@ -215,7 +215,7 @@ function BorrowSetup() {
       <Card className="text-center">
         <p
           className="text-sm"
-          style={{ color: "var(--arka-text-muted)" }}
+          style={{ color: "var(--paysats-text-muted)" }}
         >
           {t("credit.noBtc")}
         </p>
@@ -224,8 +224,8 @@ function BorrowSetup() {
             href="/save"
             className="inline-block rounded-[10px] px-3 py-2 text-[12px] font-extrabold"
             style={{
-              color: "var(--arka-accent)",
-              background: "var(--arka-accent-soft)",
+              color: "var(--paysats-accent)",
+              background: "var(--paysats-accent-soft)",
             }}
           >
             {t("credit.noBtcBtn")}
@@ -250,7 +250,7 @@ function BorrowSetup() {
           <div className="flex items-center justify-between">
             <span
               className="text-[12px]"
-              style={{ color: "var(--arka-text-muted)" }}
+              style={{ color: "var(--paysats-text-muted)" }}
             >
               {t("credit.lockLabel")}
             </span>
@@ -265,7 +265,7 @@ function BorrowSetup() {
             step={1}
             value={pct}
             onChange={(e) => setPct(Number(e.target.value))}
-            className="w-full accent-[var(--arka-accent)]"
+            className="w-full accent-[var(--paysats-accent)]"
           />
           <StatRow
             label={t("credit.maxBorrow")}
@@ -280,7 +280,7 @@ function BorrowSetup() {
       </Card>
 
       {error ? (
-        <p className="text-xs" style={{ color: "var(--arka-danger)" }}>
+        <p className="text-xs" style={{ color: "var(--paysats-danger)" }}>
           {error}
         </p>
       ) : null}
@@ -378,7 +378,7 @@ function BorrowActive() {
   if (!data) {
     return (
       <Card>
-        <div className="h-28 animate-pulse rounded bg-arka-border/40" />
+        <div className="h-28 animate-pulse rounded bg-paysats-border/40" />
       </Card>
     );
   }
@@ -431,7 +431,7 @@ function BorrowActive() {
         </Card>
 
         {withdrawCollat.error ? (
-          <p className="text-xs" style={{ color: "var(--arka-danger)" }}>
+          <p className="text-xs" style={{ color: "var(--paysats-danger)" }}>
             {withdrawCollat.error}
           </p>
         ) : null}
@@ -490,10 +490,10 @@ function BorrowActive() {
               className="rounded-[14px] px-3 py-3 text-[12px] font-extrabold transition"
               style={{
                 background: active
-                  ? "var(--arka-accent)"
-                  : "var(--arka-surface)",
-                color: active ? "#fff" : "var(--arka-text)",
-                boxShadow: "var(--arka-shadow-card)",
+                  ? "var(--paysats-accent)"
+                  : "var(--paysats-surface)",
+                color: active ? "#fff" : "var(--paysats-text)",
+                boxShadow: "var(--paysats-shadow-card)",
               }}
               data-pressable
             >
@@ -516,8 +516,8 @@ function BorrowActive() {
               }
               className="rounded-[8px] px-2 py-1 text-[11px] font-extrabold"
               style={{
-                color: "var(--arka-accent)",
-                background: "var(--arka-accent-soft)",
+                color: "var(--paysats-accent)",
+                background: "var(--paysats-accent-soft)",
               }}
               data-pressable
               disabled={maxAdditionalBorrow === BigInt(0)}
@@ -534,18 +534,18 @@ function BorrowActive() {
           />
           <div
             className="text-[11px]"
-            style={{ color: "var(--arka-text-muted)" }}
+            style={{ color: "var(--paysats-text-muted)" }}
           >
             {t("credit.maxAvailable")}:{" "}
             <span
               className="font-extrabold tabular-nums"
-              style={{ color: "var(--arka-accent)" }}
+              style={{ color: "var(--paysats-accent)" }}
             >
               {formatUsdc(maxAdditionalBorrow)} USDC
             </span>
           </div>
           {borrowMore.error ? (
-            <p className="text-xs" style={{ color: "var(--arka-danger)" }}>
+            <p className="text-xs" style={{ color: "var(--paysats-danger)" }}>
               {borrowMore.error}
             </p>
           ) : null}
@@ -566,7 +566,7 @@ function BorrowActive() {
             <Label htmlFor="r-amt">{t("credit.repayAmountLabel")}</Label>
             <div
               className="text-[11px]"
-              style={{ color: "var(--arka-text-muted)" }}
+              style={{ color: "var(--paysats-text-muted)" }}
             >
               {t("credit.usdcBalance")}:{" "}
               <span className="font-extrabold tabular-nums">
@@ -582,7 +582,7 @@ function BorrowActive() {
             placeholder="0.00"
           />
           {repay.error ? (
-            <p className="text-xs" style={{ color: "var(--arka-danger)" }}>
+            <p className="text-xs" style={{ color: "var(--paysats-danger)" }}>
               {repay.error}
             </p>
           ) : null}
@@ -596,10 +596,10 @@ function BorrowActive() {
               disabled={repay.busy || !canRepayAll}
               className="rounded-[14px] px-3 py-3 text-[13px] font-extrabold transition disabled:opacity-50"
               style={{
-                background: "var(--arka-surface)",
-                color: "var(--arka-accent)",
-                boxShadow: "var(--arka-shadow-card)",
-                border: "1px solid var(--arka-accent-soft)",
+                background: "var(--paysats-surface)",
+                color: "var(--paysats-accent)",
+                boxShadow: "var(--paysats-shadow-card)",
+                border: "1px solid var(--paysats-accent-soft)",
               }}
               data-pressable
             >
@@ -609,7 +609,7 @@ function BorrowActive() {
           {!canRepayAll && data.borrowedAssets > BigInt(0) ? (
             <p
               className="text-[11px]"
-              style={{ color: "var(--arka-text-muted)" }}
+              style={{ color: "var(--paysats-text-muted)" }}
             >
               {t("credit.repayAllInsufficient")}
             </p>
@@ -621,8 +621,8 @@ function BorrowActive() {
         <div
           className="rounded-[12px] p-3 text-[12px]"
           style={{
-            background: "var(--arka-warning-soft)",
-            color: "var(--arka-warning)",
+            background: "var(--paysats-warning-soft)",
+            color: "var(--paysats-warning)",
           }}
         >
           {t("credit.warningBanner")}
@@ -633,7 +633,7 @@ function BorrowActive() {
           className="rounded-[12px] p-3 text-[12px]"
           style={{
             background: "rgba(196,48,48,0.08)",
-            color: "var(--arka-danger)",
+            color: "var(--paysats-danger)",
           }}
         >
           {t("credit.dangerBanner")}
@@ -656,16 +656,16 @@ function BackHeader({ title }: { title: string }) {
         className="flex h-10 w-10 items-center justify-center rounded-[12px]"
         data-pressable
         style={{
-          background: "var(--arka-surface)",
-          boxShadow: "var(--arka-shadow-card)",
-          color: "var(--arka-text)",
+          background: "var(--paysats-surface)",
+          boxShadow: "var(--paysats-shadow-card)",
+          color: "var(--paysats-text)",
         }}
       >
         ←
       </a>
       <div
         className="text-lg font-extrabold"
-        style={{ color: "var(--arka-text)", letterSpacing: -0.4 }}
+        style={{ color: "var(--paysats-text)", letterSpacing: -0.4 }}
       >
         {title}
       </div>
@@ -691,7 +691,7 @@ export function CreditClient() {
       <div className="mt-5">
         {loading && !data ? (
           <Card>
-            <div className="h-28 animate-pulse rounded bg-arka-border/40" />
+            <div className="h-28 animate-pulse rounded bg-paysats-border/40" />
           </Card>
         ) : hasPosition ? (
           <BorrowActive />

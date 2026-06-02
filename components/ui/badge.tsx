@@ -3,11 +3,11 @@ import type { ReactNode } from "react";
 type Tone = "neutral" | "info" | "success" | "warning" | "danger";
 
 const tones: Record<Tone, string> = {
-  neutral: "bg-arka-surface-muted text-arka-text",
-  info: "bg-amber-50 text-arka-accent",
-  success: "bg-emerald-50 text-arka-success",
-  warning: "bg-yellow-50 text-arka-warning",
-  danger: "bg-red-50 text-arka-danger",
+  neutral: "bg-paysats-surface-muted text-paysats-text",
+  info: "bg-amber-50 text-paysats-accent",
+  success: "bg-emerald-50 text-paysats-success",
+  warning: "bg-yellow-50 text-paysats-warning",
+  danger: "bg-red-50 text-paysats-danger",
 };
 
 export function Badge({
