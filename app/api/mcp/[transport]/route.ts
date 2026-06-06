@@ -1,12 +1,9 @@
 import { CBBTC_DECIMALS } from "@/lib/contracts/paysats-dca";
 import { errorMessage } from "@/services/errors";
 import { getDcaExecutions } from "@/services/dca/executions-service";
-import {
-  getAccountBalances,
-  getDcaOrder,
-} from "@/services/dca/order-service";
+import { getAccountBalances, getDcaOrder } from "@/services/dca/order-service";
 import { cancelDca, setupDca } from "@/services/dca/signing-service";
-import { createIdrMintRequest } from "@/services/idrx/mint-service";
+import { createIdrMintRequest, MINT_MIN_IDR } from "@/services/idrx/mint-service";
 import { getMintStatus } from "@/services/idrx/transactions-service";
 import { getIdrxOnboardingStatus } from "@/services/idrx/onboarding-service";
 import { verifyAccessToken } from "@/services/oauth/store";
@@ -91,7 +88,9 @@ const handler = createMcpHandler(
       async ({ amountIdr }, extra) => {
         try {
           const user = await resolveUser(extra.authInfo);
-          const res = await createIdrMintRequest(user, { toBeMinted: amountIdr });
+          const res = await createIdrMintRequest(user, {
+            toBeMinted: amountIdr,
+          });
           return text(
             JSON.stringify(
               {
@@ -159,7 +158,7 @@ const handler = createMcpHandler(
       {
         title: "Set up recurring DCA",
         description:
-          "Create a recurring DCA order that swaps IDRX into cbBTC on the chosen schedule. Requires the user to have an IDRX balance (deposit first) and to have approved agent access. Signed server-side via the device-authorization grant, no browser needed.",
+          "Create a recurring DCA order that swaps IDRX into cbBTC on the chosen schedule. Signed server-side via the device-authorization grant, no browser needed. If the IDRX balance is too low, this returns needsDeposit=true with a deposit payment link for the shortfall instead of an error — share the link, then poll get_deposit_status and call setup_dca again once the deposit settles.",
         inputSchema: {
           amountIdr: z
             .number()
@@ -185,6 +184,43 @@ const handler = createMcpHandler(
             frequency,
             totalSwaps,
           });
+
+          if (res.status === "needs_deposit") {
+            // Combine the deposit + DCA flows: fund the shortfall now and hand
+            // back a payment link, so the order can be finalized after payment.
+            const depositIdr = Math.max(res.shortfallIdr, MINT_MIN_IDR);
+            const deposit = await createIdrMintRequest(user, {
+              toBeMinted: depositIdr,
+            });
+            return text(
+              JSON.stringify(
+                {
+                  ok: false,
+                  needsDeposit: true,
+                  balanceIdr: res.balanceIdr,
+                  requiredIdr: res.requiredIdr,
+                  shortfallIdr: res.shortfallIdr,
+                  deposit: {
+                    amountIdr: depositIdr,
+                    paymentUrl: deposit.paymentUrl,
+                    reference: deposit.reference,
+                    merchantOrderId: deposit.merchantOrderId,
+                    destinationWalletAddress: deposit.destinationWalletAddress,
+                  },
+                  requestedDca: {
+                    amountIdr,
+                    frequency,
+                    totalSwaps: totalSwaps ?? 0,
+                  },
+                  instructions:
+                    "Share deposit.paymentUrl with the user to pay (bank/QRIS). After they pay, call get_deposit_status with deposit.reference until it settles/mints, then call setup_dca again with the same amountIdr, frequency, and totalSwaps to create the order.",
+                },
+                null,
+                2,
+              ),
+            );
+          }
+
           return text(
             JSON.stringify(
               {
@@ -199,7 +235,7 @@ const handler = createMcpHandler(
             ),
           );
         } catch (e) {
-          return text(errorMessage(e, "Gagal membuat DCA"));
+          return text(errorMessage(e, "Failed to set up DCA"));
         }
       },
     );
@@ -235,7 +271,11 @@ const handler = createMcpHandler(
           const user = await resolveUser(extra.authInfo);
           const res = await cancelDca(user);
           return text(
-            JSON.stringify({ ok: true, transactionId: res.transactionId }, null, 2),
+            JSON.stringify(
+              { ok: true, transactionId: res.transactionId },
+              null,
+              2,
+            ),
           );
         } catch (e) {
           return text(errorMessage(e, "Gagal membatalkan DCA"));
@@ -258,10 +298,13 @@ const handler = createMcpHandler(
           const items = executions.map((e) => ({
             txHash: e.transactionHash,
             idrxSpent: Number(BigInt(e.idrxSpent)) / 100,
-            satsReceived: Number(BigInt(e.cbBTCReceived)) / 10 ** (CBBTC_DECIMALS - 8),
+            satsReceived:
+              Number(BigInt(e.cbBTCReceived)) / 10 ** (CBBTC_DECIMALS - 8),
             timestamp: e.timestamp,
           }));
-          return text(JSON.stringify({ count: items.length, executions: items }, null, 2));
+          return text(
+            JSON.stringify({ count: items.length, executions: items }, null, 2),
+          );
         } catch (e) {
           return text(errorMessage(e, "Gagal memuat riwayat DCA"));
         }

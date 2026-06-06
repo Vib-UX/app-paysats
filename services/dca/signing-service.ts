@@ -7,7 +7,10 @@ import {
   paysatsDcaAbi,
 } from "@/lib/contracts/paysats-dca";
 import { ServiceError } from "@/services/errors";
-import { resolveIntervalSeconds, requireWalletAddress } from "@/services/dca/order-service";
+import {
+  resolveIntervalSeconds,
+  requireWalletAddress,
+} from "@/services/dca/order-service";
 import {
   refreshDeviceContext,
   requireDeviceContext,
@@ -31,6 +34,23 @@ export type SetupDcaParams = {
   totalSwaps?: number;
   minOutputBps?: number;
 };
+
+export type SetupDcaResult =
+  | {
+      status: "created";
+      transactionId: string;
+      amountPerSwapRaw: string;
+      intervalSeconds: number;
+    }
+  | {
+      status: "needs_deposit";
+      /** Whole-IDR shortfall the user must deposit to fund the order. */
+      shortfallIdr: number;
+      requiredIdr: number;
+      balanceIdr: number;
+      amountPerSwapRaw: string;
+      intervalSeconds: number;
+    };
 
 type Call = { to: `0x${string}`; data: `0x${string}`; value: string };
 
@@ -56,14 +76,17 @@ async function sendCallsWithDeviceAuth(
   let ctx = await requireDeviceContext(privyUserId);
 
   const run = (accessToken: string, walletId: string) =>
-    privy.wallets().ethereum().sendCalls(walletId, {
-      caip2: BASE_CAIP2,
-      sponsor: true,
-      params: { calls },
-      authorization_context: {
-        user_jwts: [accessToken],
-      },
-    });
+    privy
+      .wallets()
+      .ethereum()
+      .sendCalls(walletId, {
+        caip2: BASE_CAIP2,
+        sponsor: true,
+        params: { calls },
+        authorization_context: {
+          user_jwts: [accessToken],
+        },
+      });
 
   try {
     const res = await run(ctx.accessToken, ctx.walletId);
@@ -88,17 +111,23 @@ async function sendCallsWithDeviceAuth(
 export async function setupDca(
   privyUser: User,
   params: SetupDcaParams,
-): Promise<{ transactionId: string; amountPerSwapRaw: string; intervalSeconds: number }> {
+): Promise<SetupDcaResult> {
   const smartAddr = requireWalletAddress(privyUser);
 
-  if (!Number.isFinite(params.amountPerSwapIdr) || params.amountPerSwapIdr <= 0) {
-    throw new ServiceError(400, "Nominal per swap tidak valid");
+  if (
+    !Number.isFinite(params.amountPerSwapIdr) ||
+    params.amountPerSwapIdr <= 0
+  ) {
+    throw new ServiceError(400, "Invalid per-swap amount.");
   }
   const amountPerSwap =
-    BigInt(Math.floor(params.amountPerSwapIdr)) * BigInt(10) ** BigInt(IDRX_DECIMALS);
+    BigInt(Math.floor(params.amountPerSwapIdr)) *
+    BigInt(10) ** BigInt(IDRX_DECIMALS);
   const intervalSeconds = resolveIntervalSeconds(params.frequency);
   const totalSwaps = BigInt(Math.max(0, Math.floor(params.totalSwaps ?? 0)));
-  const minOutputBps = BigInt(Math.max(0, Math.floor(params.minOutputBps ?? 0)));
+  const minOutputBps = BigInt(
+    Math.max(0, Math.floor(params.minOutputBps ?? 0)),
+  );
 
   // Funding check against the smart wallet (IDRX is minted there).
   const requiredIdrx =
@@ -111,14 +140,24 @@ export async function setupDca(
     args: [smartAddr],
   });
   if (balance < requiredIdrx) {
-    const needed = Number(requiredIdrx - balance) / 10 ** IDRX_DECIMALS;
-    throw new ServiceError(
-      400,
-      `Saldo IDRX tidak cukup. Butuh ${needed.toLocaleString("id-ID")} IDRX lagi. Deposit IDR dahulu.`,
+    // Not enough IDRX yet — signal the caller to create a deposit for the
+    // shortfall so the agent can hand the user a payment link and finalize the
+    // DCA once funds arrive.
+    const shortfallIdr = Math.ceil(
+      Number(requiredIdrx - balance) / 10 ** IDRX_DECIMALS,
     );
+    return {
+      status: "needs_deposit",
+      shortfallIdr,
+      requiredIdr: Number(requiredIdrx) / 10 ** IDRX_DECIMALS,
+      balanceIdr: Number(balance) / 10 ** IDRX_DECIMALS,
+      amountPerSwapRaw: amountPerSwap.toString(),
+      intervalSeconds,
+    };
   }
 
-  const approvalAmount = totalSwaps > BigInt(0) ? amountPerSwap * totalSwaps : MAX_UINT256;
+  const approvalAmount =
+    totalSwaps > BigInt(0) ? amountPerSwap * totalSwaps : MAX_UINT256;
   const approveData = encodeFunctionData({
     abi: erc20Abi,
     functionName: "approve",
@@ -136,6 +175,7 @@ export async function setupDca(
   ]);
 
   return {
+    status: "created",
     transactionId,
     amountPerSwapRaw: amountPerSwap.toString(),
     intervalSeconds,
