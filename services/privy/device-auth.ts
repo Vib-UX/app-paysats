@@ -96,7 +96,7 @@ function toTokenSet(json: Record<string, unknown>): TokenSet {
 /** Step 3 — poll once for a token using the device code. */
 export async function pollDeviceToken(deviceCode: string): Promise<PollResult> {
   const { status, json } = await postJson("/api/oauth/v2/token", {
-    grant_type: "device_code",
+    grant_type: "urn:ietf:params:oauth:grant-type:device_code",
     device_code: deviceCode,
   });
   if (status === 200 && json.access_token) {
