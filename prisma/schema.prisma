@@ -22,11 +22,76 @@ model User {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  /// Privy session-signer id granted to our backend for agentic (MCP) DCA.
+  agentSignerId         String?
+  /// Privy policy id scoping what the agent signer may do (DCA contract only).
+  agentPolicyId         String?
+  /// Privy wallet id (embedded EOA) the session signer was granted on; needed
+  /// to address the wallet from the server SDK when executing on its behalf.
+  agentWalletId         String?
+  /// When the user granted agent (session-signer) access via the connect flow.
+  agentLinkedAt         DateTime?
+
   mintSnapshots       MintRequestSnapshot[]
   creditLoans         CreditLoan[]
   payoutDestinations  PayoutDestination[]
   redeemRequests      RedeemRequest[]
   dcaExecutions       DcaExecution[]
+}
+
+/// Dynamically-registered MCP/OAuth client (RFC 7591). Claude registers itself
+/// on first connect. Public clients (PKCE) — no client secret stored.
+model OAuthClient {
+  id           String   @id @default(cuid())
+  clientId     String   @unique
+  clientName   String?
+  redirectUris String[]
+  createdAt    DateTime @default(now())
+}
+
+/// Short-lived params carried from /authorize to the browser /connect page and
+/// back to /complete, so the Privy login + session-signer grant can happen in
+/// the browser before we mint an auth code.
+model OAuthPendingAuth {
+  id                  String   @id @default(cuid())
+  handle              String   @unique
+  clientId            String
+  redirectUri         String
+  codeChallenge       String
+  codeChallengeMethod String
+  scope               String?
+  clientState         String?
+  createdAt           DateTime @default(now())
+  expiresAt           DateTime
+}
+
+/// One-time OAuth 2.1 authorization code (PKCE). Bound to a Privy user.
+model OAuthAuthCode {
+  id                  String    @id @default(cuid())
+  code                String    @unique
+  clientId            String
+  redirectUri         String
+  codeChallenge       String
+  codeChallengeMethod String
+  scope               String?
+  privyUserId         String
+  consumedAt          DateTime?
+  expiresAt           DateTime
+  createdAt           DateTime  @default(now())
+}
+
+/// Opaque MCP access token issued by our authorization server. The MCP server
+/// verifies the bearer against this table and resolves the Privy user.
+model OAuthAccessToken {
+  id          String   @id @default(cuid())
+  token       String   @unique
+  clientId    String
+  privyUserId String
+  scope       String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([privyUserId])
 }
 
 model CreditLoan {

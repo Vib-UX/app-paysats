@@ -34,6 +34,27 @@ export function getEmbeddedEthereumAddress(user: User): string | undefined {
   return undefined;
 }
 
+/** Privy server wallet id of the embedded Ethereum wallet. Populated once the
+ *  wallet has been delegated (i.e. a session signer was added). Needed to drive
+ *  the wallet from the server SDK. */
+export function getEmbeddedWalletId(user: User): string | undefined {
+  const fromTop = user.wallet as { walletClientType?: string; chainType?: string; id?: string } | undefined;
+  if (
+    fromTop?.walletClientType === "privy" &&
+    fromTop?.chainType === "ethereum" &&
+    fromTop?.id
+  ) {
+    return fromTop.id;
+  }
+  for (const a of user.linkedAccounts ?? []) {
+    if (a.type === "wallet" && a.walletClientType === "privy" && a.chainType === "ethereum") {
+      const id = (a as { id?: string }).id;
+      if (id) return id;
+    }
+  }
+  return undefined;
+}
+
 /** Smart wallet address from Privy user. */
 export function getSmartWalletAddress(user: User): string | undefined {
   if (user.smartWallet?.address && isAddress(user.smartWallet.address)) {
@@ -66,6 +87,16 @@ export function getPreferredEthereumAddress(user: User): string | undefined {
     }
   }
   return undefined;
+}
+
+/** Load a Privy user by their DID. Used by the MCP server after resolving an
+ *  OAuth access token to a privyUserId. Returns null if not found. */
+export async function getPrivyUserById(privyUserId: string): Promise<User | null> {
+  try {
+    return await getPrivyServerClient().getUser(privyUserId);
+  } catch {
+    return null;
+  }
 }
 
 export async function getPrivyUserFromRequest(request: NextRequest): Promise<User | null> {
