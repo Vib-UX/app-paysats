@@ -6,10 +6,13 @@ import {
   PAYSATS_DCA_ADDRESS,
   paysatsDcaAbi,
 } from "@/lib/contracts/paysats-dca";
-import { prisma } from "@/lib/prisma";
 import { ServiceError } from "@/services/errors";
 import { resolveIntervalSeconds, requireWalletAddress } from "@/services/dca/order-service";
-import { getAgentAuthorizationKey, getPrivyNodeClient } from "@/services/privy/node";
+import {
+  refreshDeviceContext,
+  requireDeviceContext,
+} from "@/services/privy/device-session";
+import { getPrivyNodeClient } from "@/services/privy/node";
 import type { User } from "@privy-io/server-auth";
 import { encodeFunctionData } from "viem";
 
@@ -29,49 +32,63 @@ export type SetupDcaParams = {
   minOutputBps?: number;
 };
 
-type AgentContext = {
-  walletId: string;
-  authorizationKey: string;
-};
+type Call = { to: `0x${string}`; data: `0x${string}`; value: string };
 
 /**
- * Resolve the agent signing context for a user, or throw a clear error telling
- * the caller what is missing (server config vs. user not yet connected).
+ * Send a batched call from the user's wallet, authorized by the user's
+ * device-authorization grant access token (used as a `user_jwt`). The Privy SDK
+ * transparently exchanges the JWT for a short-lived user signing key (HPKE) and
+ * signs the request — so we never handle the static authorization key here.
+ *
+ * If the access token is rejected (e.g. expired between our refresh check and
+ * the call), we refresh once via the stored refresh token and retry.
+ *
+ * NOTE (verify live): `walletId` is the embedded wallet id captured at approval
+ * and IDRX/orders live on the smart wallet returned by getPreferredEthereumAddress.
+ * Confirm during e2e whether device-grant RPC must target the smart wallet id
+ * for sponsored ERC-4337 execution, and adjust the stored walletId if needed.
  */
-async function requireAgentContext(privyUser: User): Promise<AgentContext> {
-  const authorizationKey = getAgentAuthorizationKey();
-  if (!authorizationKey) {
-    throw new ServiceError(
-      503,
-      "Agent signing belum dikonfigurasi di server (PRIVY_AUTHORIZATION_KEY).",
-    );
+async function sendCallsWithDeviceAuth(
+  privyUserId: string,
+  calls: Call[],
+): Promise<string> {
+  const privy = getPrivyNodeClient();
+  let ctx = await requireDeviceContext(privyUserId);
+
+  const run = (accessToken: string, walletId: string) =>
+    privy.wallets().ethereum().sendCalls(walletId, {
+      caip2: BASE_CAIP2,
+      sponsor: true,
+      params: { calls },
+      authorization_context: {
+        user_jwts: [accessToken],
+      },
+    });
+
+  try {
+    const res = await run(ctx.accessToken, ctx.walletId);
+    return res.transaction_id;
+  } catch (e) {
+    // Token may have been rejected — refresh once and retry.
+    try {
+      ctx = await refreshDeviceContext(privyUserId);
+    } catch {
+      throw e instanceof Error ? e : new Error(String(e));
+    }
+    const res = await run(ctx.accessToken, ctx.walletId);
+    return res.transaction_id;
   }
-  const row = await prisma.user.findUnique({
-    where: { privyUserId: privyUser.id },
-  });
-  if (!row?.agentLinkedAt || !row.agentWalletId || !row.agentSignerId) {
-    throw new ServiceError(
-      403,
-      "Hubungkan agent terlebih dahulu (buka tautan connect untuk memberi izin session signer).",
-    );
-  }
-  return { walletId: row.agentWalletId, authorizationKey };
 }
 
 /**
  * Execute approve(IDRX) + createOrder on PaySatsDCA as a single batched call
- * from the user's smart wallet, signed by our session signer. Requires the user
- * to have connected the agent and the server to hold the authorization key.
- *
- * NOTE: relies on Privy smart wallets + session signers being enabled in the
- * Privy Dashboard. The policy attached to the signer must permit exactly these
- * two calls (see services/privy/policy.ts for the policy template).
+ * from the user's wallet, authorized by the user's device-grant access token.
+ * Requires the user to have approved agent access (device authorization grant).
  */
 export async function setupDca(
   privyUser: User,
   params: SetupDcaParams,
 ): Promise<{ transactionId: string; amountPerSwapRaw: string; intervalSeconds: number }> {
-  const { walletId, authorizationKey } = await requireAgentContext(privyUser);
   const smartAddr = requireWalletAddress(privyUser);
 
   if (!Number.isFinite(params.amountPerSwapIdr) || params.amountPerSwapIdr <= 0) {
@@ -113,50 +130,30 @@ export async function setupDca(
     args: [amountPerSwap, BigInt(intervalSeconds), totalSwaps, minOutputBps],
   });
 
-  const privy = getPrivyNodeClient();
-  const res = await privy.wallets().ethereum().sendCalls(walletId, {
-    caip2: BASE_CAIP2,
-    sponsor: true,
-    params: {
-      calls: [
-        { to: IDRX_TOKEN_ADDRESS, data: approveData, value: "0x0" },
-        { to: PAYSATS_DCA_ADDRESS, data: createOrderData, value: "0x0" },
-      ],
-    },
-    authorization_context: {
-      authorization_private_keys: [authorizationKey],
-    },
-  });
+  const transactionId = await sendCallsWithDeviceAuth(privyUser.id, [
+    { to: IDRX_TOKEN_ADDRESS, data: approveData, value: "0x0" },
+    { to: PAYSATS_DCA_ADDRESS, data: createOrderData, value: "0x0" },
+  ]);
 
   return {
-    transactionId: res.transaction_id,
+    transactionId,
     amountPerSwapRaw: amountPerSwap.toString(),
     intervalSeconds,
   };
 }
 
-/** Cancel the user's active DCA order, signed by the session signer. */
+/** Cancel the user's active DCA order, authorized by the device-grant token. */
 export async function cancelDca(
   privyUser: User,
 ): Promise<{ transactionId: string }> {
-  const { walletId, authorizationKey } = await requireAgentContext(privyUser);
-
   const cancelData = encodeFunctionData({
     abi: paysatsDcaAbi,
     functionName: "cancelOrder",
   });
 
-  const privy = getPrivyNodeClient();
-  const res = await privy.wallets().ethereum().sendCalls(walletId, {
-    caip2: BASE_CAIP2,
-    sponsor: true,
-    params: {
-      calls: [{ to: PAYSATS_DCA_ADDRESS, data: cancelData, value: "0x0" }],
-    },
-    authorization_context: {
-      authorization_private_keys: [authorizationKey],
-    },
-  });
+  const transactionId = await sendCallsWithDeviceAuth(privyUser.id, [
+    { to: PAYSATS_DCA_ADDRESS, data: cancelData, value: "0x0" },
+  ]);
 
-  return { transactionId: res.transaction_id };
+  return { transactionId };
 }

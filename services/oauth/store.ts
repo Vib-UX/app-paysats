@@ -45,6 +45,9 @@ export type PendingAuthInput = {
   codeChallengeMethod: string;
   scope?: string;
   clientState?: string;
+  /** Privy device-authorization grant codes bound to this pending auth. */
+  deviceCode?: string;
+  userCode?: string;
 };
 
 export async function createPendingAuth(input: PendingAuthInput) {
@@ -58,6 +61,8 @@ export async function createPendingAuth(input: PendingAuthInput) {
       codeChallengeMethod: input.codeChallengeMethod,
       scope: input.scope ?? null,
       clientState: input.clientState ?? null,
+      deviceCode: input.deviceCode ?? null,
+      userCode: input.userCode ?? null,
       expiresAt: new Date(Date.now() + PENDING_TTL_MS),
     },
   });

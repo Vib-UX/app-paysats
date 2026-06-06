@@ -22,15 +22,24 @@ model User {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  /// Privy session-signer id granted to our backend for agentic (MCP) DCA.
+  /// Deprecated (session-signer model). Kept for backwards compatibility.
   agentSignerId         String?
-  /// Privy policy id scoping what the agent signer may do (DCA contract only).
+  /// Deprecated (policy-scoped model). Full access is now granted via the
+  /// device authorization grant, so no policy is attached.
   agentPolicyId         String?
-  /// Privy wallet id (embedded EOA) the session signer was granted on; needed
-  /// to address the wallet from the server SDK when executing on its behalf.
+  /// Privy wallet id the device-grant access token can act on; needed to
+  /// address the wallet from the server SDK when executing on its behalf.
   agentWalletId         String?
-  /// When the user granted agent (session-signer) access via the connect flow.
+  /// When the user approved agent access via the device-authorization flow.
   agentLinkedAt         DateTime?
+
+  /// Device-authorization grant: per-user Privy access token (encrypted,
+  /// aes-256-gcm via lib/crypto.ts). Used as a user_jwt to sign wallet RPC.
+  privyDeviceAccessTokenEnc  String?
+  /// When the device access token expires (refresh before/at this time).
+  privyDeviceAccessTokenExp  DateTime?
+  /// Device-authorization grant: refresh token (encrypted), rotated on use.
+  privyDeviceRefreshTokenEnc String?
 
   mintSnapshots       MintRequestSnapshot[]
   creditLoans         CreditLoan[]
@@ -49,9 +58,9 @@ model OAuthClient {
   createdAt    DateTime @default(now())
 }
 
-/// Short-lived params carried from /authorize to the browser /connect page and
-/// back to /complete, so the Privy login + session-signer grant can happen in
-/// the browser before we mint an auth code.
+/// Short-lived params carried from /authorize to the hosted /verification page
+/// and back to /api/oauth/device-complete. Holds the Privy device/user codes so
+/// the bridge can poll for tokens after the user approves in the browser.
 model OAuthPendingAuth {
   id                  String   @id @default(cuid())
   handle              String   @unique
@@ -61,6 +70,10 @@ model OAuthPendingAuth {
   codeChallengeMethod String
   scope               String?
   clientState         String?
+  /// Privy device-authorization grant device_code (polled after approval).
+  deviceCode          String?
+  /// Privy device-authorization grant user_code (shown/used on verification).
+  userCode            String?
   createdAt           DateTime @default(now())
   expiresAt           DateTime
 }

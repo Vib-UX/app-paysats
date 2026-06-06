@@ -41,7 +41,7 @@ const handler = createMcpHandler(
       {
         title: "Get account",
         description:
-          "Get the user's wallet address, IDRX and cbBTC balances, IDRX onboarding status, active DCA order, and whether the agent (session signer) is connected.",
+          "Get the user's wallet address, IDRX and cbBTC balances, IDRX onboarding status, and active DCA order.",
         inputSchema: {},
       },
       async (_args, extra) => {
@@ -159,7 +159,7 @@ const handler = createMcpHandler(
       {
         title: "Set up recurring DCA",
         description:
-          "Create a recurring DCA order that swaps IDRX into cbBTC on the chosen schedule. Requires the user to have an IDRX balance (deposit first) and to have connected the agent. Signed by the session signer, no browser needed.",
+          "Create a recurring DCA order that swaps IDRX into cbBTC on the chosen schedule. Requires the user to have an IDRX balance (deposit first) and to have approved agent access. Signed server-side via the device-authorization grant, no browser needed.",
         inputSchema: {
           amountIdr: z
             .number()
