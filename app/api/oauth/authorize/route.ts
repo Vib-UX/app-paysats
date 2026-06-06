@@ -1,5 +1,6 @@
 import { createPendingAuth, getClient } from "@/services/oauth/store";
 import { requestDeviceCode } from "@/services/privy/device-auth";
+import { getPublicOrigin } from "mcp-handler";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -12,7 +13,11 @@ import type { NextRequest } from "next/server";
  * access. After approval the page returns to /api/oauth/device-complete.
  */
 export async function GET(req: NextRequest) {
-  const { searchParams, origin } = new URL(req.url);
+  const { searchParams } = new URL(req.url);
+  // Behind nginx, req.url reflects the internal address — derive the public
+  // origin (https://privymcp.paysats.exchange) from forwarded headers so the
+  // verification page returns to a publicly reachable callback.
+  const origin = getPublicOrigin(req);
 
   const responseType = searchParams.get("response_type");
   const clientId = searchParams.get("client_id");
