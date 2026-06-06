@@ -37,7 +37,7 @@ export function VerificationClient({
     if (!ready) return;
     if (!valid) {
       setPhase("error");
-      setMessage("Tautan tidak valid atau kedaluwarsa. Mulai ulang dari Claude.");
+      setMessage("This link is invalid or has expired. Please start again from Claude.");
       return;
     }
     setPhase(authenticated ? "ready" : "login");
@@ -50,7 +50,7 @@ export function VerificationClient({
       await initOAuth({ provider: "google" });
     } catch {
       setPhase("error");
-      setMessage("Login gagal. Coba lagi.");
+      setMessage("Sign-in failed. Please try again.");
     }
   }, [initOAuth]);
 
@@ -69,7 +69,7 @@ export function VerificationClient({
       });
       if (!res.ok) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(j.error || "Verifikasi gagal");
+        throw new Error(j.error || "Verification failed");
       }
     },
     [appId, getAccessToken, userCode],
@@ -88,24 +88,24 @@ export function VerificationClient({
   const onApprove = useCallback(async () => {
     if (!valid) return;
     setPhase("working");
-    setMessage("Menyiapkan dompet…");
+    setMessage("Preparing your wallet…");
     try {
       // Ensure embedded wallet + IDRX onboarding exist before approval.
       await sync().catch(() => undefined);
-      setMessage("Memberi izin agent…");
+      setMessage("Granting agent access…");
       await deviceVerify("approve");
       setPhase("done");
       returnToMcp(false);
     } catch (e) {
       setPhase("error");
-      setMessage(e instanceof Error ? e.message : "Terjadi kesalahan.");
+      setMessage(e instanceof Error ? e.message : "Something went wrong.");
     }
   }, [valid, sync, deviceVerify, returnToMcp]);
 
   const onDeny = useCallback(async () => {
     if (!valid) return;
     setPhase("working");
-    setMessage("Membatalkan…");
+    setMessage("Cancelling…");
     try {
       await deviceVerify("deny").catch(() => undefined);
     } finally {
@@ -136,13 +136,26 @@ export function VerificationClient({
         }}
       >
         <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>
-          Verifikasi akses agent
+          Verify agent access
         </h1>
-        <p style={{ fontSize: 14, lineHeight: 1.5, color: "#6b5c4d", marginBottom: 16 }}>
-          Masuk dengan Google dan setujui akses agent untuk mengelola deposit IDR
-          dan DCA atas nama Anda. Cukup sekali — setelah itu Claude bisa langsung
-          membantu tanpa membuka browser lagi.
+        <p style={{ fontSize: 14, lineHeight: 1.5, color: "#6b5c4d", marginBottom: 12 }}>
+          Sign in with Google and approve agent access so Claude can act on your
+          behalf. It&apos;s a one-time approval — after this Claude can help you
+          directly without opening the browser again.
         </p>
+        <ul
+          style={{
+            fontSize: 13,
+            lineHeight: 1.6,
+            color: "#6b5c4d",
+            margin: "0 0 16px",
+            paddingLeft: 18,
+          }}
+        >
+          <li>Deposit IDR and mint IDRX to your wallet</li>
+          <li>Set up and manage recurring DCA into Bitcoin (cbBTC)</li>
+          <li>Borrow IDRX by collateralizing your BTC</li>
+        </ul>
 
         {userCode ? (
           <div
@@ -155,34 +168,34 @@ export function VerificationClient({
               borderRadius: 8,
             }}
           >
-            Kode perangkat: <strong style={{ letterSpacing: 2 }}>{userCode}</strong>
+            Device code: <strong style={{ letterSpacing: 2 }}>{userCode}</strong>
           </div>
         ) : null}
 
-        {phase === "init" ? <p>Memuat…</p> : null}
+        {phase === "init" ? <p>Loading…</p> : null}
 
         {phase === "login" ? (
           <button onClick={onLogin} style={primaryBtn}>
-            Masuk dengan Google
+            Sign in with Google
           </button>
         ) : null}
 
         {phase === "ready" ? (
           <div style={{ display: "grid", gap: 10 }}>
             <button onClick={onApprove} style={primaryBtn}>
-              Setujui akses agent
+              Approve agent access
             </button>
             <button onClick={onDeny} style={secondaryBtn}>
-              Tolak
+              Deny
             </button>
           </div>
         ) : null}
 
-        {phase === "working" ? <p>{message || "Memproses…"}</p> : null}
+        {phase === "working" ? <p>{message || "Processing…"}</p> : null}
 
-        {phase === "done" ? <p>Berhasil! Mengarahkan kembali ke Claude…</p> : null}
+        {phase === "done" ? <p>Success! Redirecting you back to Claude…</p> : null}
 
-        {phase === "denied" ? <p>Akses ditolak. Mengarahkan kembali…</p> : null}
+        {phase === "denied" ? <p>Access denied. Redirecting…</p> : null}
 
         {phase === "error" ? <p style={{ color: "#b3261e" }}>{message}</p> : null}
       </div>

@@ -2,7 +2,7 @@ import { VerificationClient } from "@/features/verification/verification-client"
 import { Suspense } from "react";
 
 export const metadata = {
-  title: "Verifikasi Akses Agent — PaySats",
+  title: "Verify Agent Access — PaySats",
 };
 
 export default async function VerificationPage({
