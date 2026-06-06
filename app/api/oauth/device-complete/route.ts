@@ -38,6 +38,7 @@ export async function GET(req: NextRequest) {
   // Poll Privy for the token now that the user has approved in the browser.
   const result = await awaitDeviceToken(pending.deviceCode, { intervalSec: 2, timeoutMs: 30_000 });
   if (result.status !== "ok") {
+    console.error("[device-complete] token poll not ok:", result.status, "error" in result ? result.error : "");
     const error =
       result.status === "denied"
         ? "access_denied"
@@ -47,13 +48,17 @@ export async function GET(req: NextRequest) {
     return clientRedirect(pending.redirectUri, pending.clientState, { error });
   }
 
-  // The access token is a Privy user access token — resolve the user from it.
+  // Resolve the user behind the device-grant access token. It may be a standard
+  // Privy auth JWT (verifiable) or an OAuth access token — fall back to reading
+  // the `sub` claim, since we obtained the token directly from Privy.
   const privy = getPrivyServerClient();
   let privyUser;
   try {
-    const claims = await privy.verifyAuthToken(result.tokens.accessToken);
-    privyUser = await privy.getUser(claims.userId);
-  } catch {
+    const userId = await resolvePrivyUserId(result.tokens.accessToken);
+    if (!userId) throw new Error("no_user_id_in_token");
+    privyUser = await privy.getUser(userId);
+  } catch (e) {
+    console.error("[device-complete] user resolution failed:", e);
     return clientRedirect(pending.redirectUri, pending.clientState, {
       error: "server_error",
     });
@@ -73,16 +78,20 @@ export async function GET(req: NextRequest) {
       update: {},
     });
 
-    // IDRX onboarding (auto placeholder, no KYC) so deposits work right away.
-    await ensureIdrxOnboarding(privyUser).catch(() => undefined);
-
     await saveDeviceSession({
       privyUserId: privyUser.id,
       tokens: result.tokens,
       walletId,
       walletAddress,
     });
-  } catch {
+
+    // IDRX onboarding (auto placeholder, no KYC) so deposits work right away.
+    // Best-effort: never block the connection on onboarding.
+    await ensureIdrxOnboarding(privyUser).catch((e) =>
+      console.error("[device-complete] idrx onboarding (non-fatal):", e),
+    );
+  } catch (e) {
+    console.error("[device-complete] persist failed:", e);
     return clientRedirect(pending.redirectUri, pending.clientState, {
       error: "server_error",
     });
@@ -98,6 +107,41 @@ export async function GET(req: NextRequest) {
   });
 
   return clientRedirect(pending.redirectUri, pending.clientState, { code });
+}
+
+/**
+ * Resolve the Privy user DID from a device-grant access token. Tries strict
+ * verification first; if that fails (the device-grant token is an OAuth access
+ * token, not the identity JWT verifyAuthToken expects), decode the `sub` claim.
+ * Safe because we obtained the token directly from Privy's token endpoint.
+ */
+async function resolvePrivyUserId(accessToken: string): Promise<string | null> {
+  try {
+    const claims = await getPrivyServerClient().verifyAuthToken(accessToken);
+    if (claims?.userId) return claims.userId;
+  } catch {
+    // fall through to decoding
+  }
+  const sub = decodeJwtClaim(accessToken, "sub");
+  if (sub) {
+    console.error("[device-complete] resolved user via decoded sub:", sub);
+    return sub.startsWith("did:privy:") ? sub : `did:privy:${sub}`;
+  }
+  return null;
+}
+
+function decodeJwtClaim(token: string, claim: string): string | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+    const payload = JSON.parse(
+      Buffer.from(parts[1], "base64url").toString("utf8"),
+    ) as Record<string, unknown>;
+    const v = payload[claim];
+    return typeof v === "string" ? v : null;
+  } catch {
+    return null;
+  }
 }
 
 function clientRedirect(
