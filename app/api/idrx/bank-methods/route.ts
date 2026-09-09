@@ -37,14 +37,14 @@ export async function GET(request: NextRequest) {
   } catch (e) {
     console.error(e);
     return NextResponse.json(
-      { error: "Gagal mengambil daftar metode IDRX" },
+      { error: "Failed to fetch IDRX bank methods", errorKey: "error.bankMethodsFailed" },
       { status: 502 },
     );
   }
 
   if (raw.statusCode !== 200 || !raw.data) {
     return NextResponse.json(
-      { error: raw.message || "Gagal mengambil daftar metode IDRX" },
+      { error: raw.message || "Failed to fetch IDRX bank methods", errorKey: "error.bankMethodsFailed" },
       { status: 502 },
     );
   }

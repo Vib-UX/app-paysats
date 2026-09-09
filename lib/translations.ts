@@ -278,6 +278,19 @@ const id = {
   "tx.stacksFailed": "Gagal",
   "home.activity.title": "Aktivitas",
   "home.activity.empty": "Belum ada aktivitas.",
+  "home.stat.autobuy": "Auto-buy",
+  "home.stat.autobuyEmpty": "Belum aktif",
+  "home.stat.autobuyStart": "Mulai",
+  "home.stat.autobuyRemaining": "{n} sisa",
+  "home.stat.credit": "Pinjaman",
+  "home.stat.creditEmpty": "Belum ada",
+  "home.stat.creditBorrow": "Pinjam",
+  "home.stat.creditLtv": "LTV {pct}%",
+  "home.stat.cash": "Uang tunai",
+  "home.stat.stacks": "Stacks",
+  "home.stat.stacksConnect": "Hubungkan",
+  "home.stat.stacksFund": "Isi dana",
+  "home.stat.stacksReady": "Siap",
 
   // Cash
   "cash.title": "Uang Tunai",
@@ -314,6 +327,8 @@ const id = {
   "addfunds.bankDesc": "Transfer rupiah, saldo masuk otomatis",
   "addfunds.usdc": "USDC",
   "addfunds.usdcDesc": "Setor USDC di jaringan Base",
+  "addfunds.stacks": "Native BTC rail (Aset Stacks)",
+  "addfunds.stacksDesc": "STX untuk gas + USDCx di mainnet",
   "addfunds.usdt": "USDT",
   "addfunds.usdtDesc": "Setor dari crypto wallet lain",
   "addfunds.chain": "Jaringan",
@@ -323,6 +338,23 @@ const id = {
     "Kirim USDC hanya di jaringan Base. Jaringan lain akan menyebabkan dana hilang.",
   "addfunds.yourAddress": "Alamat dompet PaySats",
   "addfunds.waitingAddress": "Menyiapkan alamat…",
+
+  "stacks.fund.title": "Isi aset Stacks (mainnet)",
+  "stacks.fund.step1Title": "Hubungkan dompet",
+  "stacks.fund.step1Desc": "Gunakan Leather atau Xverse (alamat SP…).",
+  "stacks.fund.step1Cta": "Hubungkan",
+  "stacks.fund.step2Title": "Beli / kirim STX untuk gas",
+  "stacks.fund.step2Desc":
+    "Beli STX di Kraken atau langsung di Leather, lalu kirim sedikit ke alamat Stacks-mu (biaya jaringan).",
+  "stacks.fund.step3Title": "Beli / kirim USDCx",
+  "stacks.fund.step3Desc":
+    "Beli USDCx di Kraken atau langsung di Leather, kirim ke alamat yang sama, lalu tukar ke sBTC dan pinjam di Zest di dalam app.",
+  "stacks.fund.copy": "Salin alamat",
+  "stacks.fund.copied": "Tersalin",
+  "stacks.fund.buyKraken": "Beli di Kraken",
+  "stacks.fund.openStacks": "Buka Stacks",
+  "stacks.fund.connected": "Terhubung",
+  "stacks.fund.needConnect": "Hubungkan dompet dulu untuk menyalin alamat.",
 
   // Onboarding
   "onboarding.title": "IDRX",
@@ -357,11 +389,21 @@ const id = {
   "onb.creating.sub": "Hanya butuh sesaat",
   "onb.creating.doneTitle": "Semuanya siap",
   "onb.creating.doneSub": "Selamat datang di PaySats",
+  "onb.language.title": "Pilih bahasamu",
+  "onb.language.sub": "Kamu bisa mengubahnya di Pengaturan.",
+  "onb.language.en": "English",
+  "onb.language.id": "Bahasa Indonesia",
+  "onb.language.continue": "Lanjutkan",
   "onb.currency.title": "Pilih mata uangmu",
   "onb.currency.sub": "Kamu bisa mengubahnya di Pengaturan.",
   "onb.currency.idr": "Rupiah",
   "onb.currency.usd": "US Dollar",
   "onb.currency.continue": "Lanjutkan",
+  "onb.stacksFund.title": "Siapkan aset Stacks",
+  "onb.stacksFund.sub":
+    "Pilot sBTC berjalan di Stacks mainnet. Beli STX dan USDCx di Kraken atau langsung di Leather, lalu kirim ke dompetmu.",
+  "onb.stacksFund.continue": "Lihat panduan",
+  "onb.stacksFund.skip": "Lewati dulu",
 
   // Expiry presets
   "expiry.1h": "1 jam",
@@ -569,6 +611,62 @@ const id = {
 
   // General
   "general.failedLoad": "Gagal memuat",
+  "general.loading": "Memuat…",
+
+  // Localized errors (product UI)
+  "error.generic": "Terjadi kesalahan. Coba lagi.",
+  "error.smartWalletMissing": "Smart wallet belum tersedia",
+  "error.dcaReadFailed": "Gagal membaca order DCA",
+  "error.dcaCreateFailed": "Gagal membuat order DCA",
+  "error.dcaCancelFailed": "Gagal membatalkan order DCA",
+  "error.dcaHistoryFailed": "Gagal memuat riwayat swap",
+  "error.dcaInsufficientIdrx":
+    "Saldo IDRX di smart wallet tidak cukup. Butuh {amount} IDRX lagi. Mint lebih banyak IDRX terlebih dahulu.",
+  "error.creditReadFailed": "Gagal membaca posisi kredit",
+  "error.creditOpenFailed": "Gagal membuka kredit",
+  "error.creditBorrowFailed": "Gagal menarik USDC",
+  "error.creditRepayFailed": "Gagal membayar pinjaman",
+  "error.creditWithdrawFailed": "Gagal menarik jaminan",
+  "error.creditInsufficientCbbtc":
+    "Saldo cbBTC tidak cukup. Butuh {amount} cbBTC lagi.",
+  "error.insufficientBalance": "Saldo tidak cukup untuk transaksi ini.",
+  "error.transferReverted": "Transfer token gagal — coba lagi nanti.",
+  "error.userOpReverted": "Transaksi gagal saat simulasi — coba lagi nanti.",
+  "error.txCancelled": "Transaksi dibatalkan.",
+  "error.offrampDestLoadFailed": "Gagal memuat tujuan payout",
+  "error.offrampDestAddFailed": "Gagal menambah tujuan",
+  "error.offrampDestDeleteFailed": "Gagal menghapus",
+  "error.offrampDestDefaultFailed": "Gagal mengubah default",
+  "error.offrampBanksFailed": "Gagal memuat daftar bank",
+  "error.offrampInsufficientUsdc": "Saldo USDC tidak cukup.",
+  "error.offrampSendFailed": "Gagal mengirim USDC",
+  "error.offrampHistoryFailed": "Gagal memuat riwayat redeem",
+  "error.offrampInvalidDeposit": "Alamat deposit IDRX tidak valid",
+  "error.offrampAmountRange":
+    "Nominal harus antara ${min} dan ${max}",
+  "error.mintFailed": "Gagal membuat permintaan mint",
+  "error.mintInvalidBody": "Body tidak valid",
+  "error.balanceIdrxFailed": "Gagal membaca saldo on-chain",
+  "error.balanceBtcFailed": "Gagal membaca saldo BTC on-chain",
+  "error.creditPositionFailed": "Gagal membaca posisi kredit on-chain",
+  "error.txHistoryFailed": "Gagal memuat riwayat",
+  "error.bankMethodsFailed": "Gagal mengambil daftar metode IDRX",
+  "error.destinationsFailed": "Gagal mengambil tujuan payout",
+  "error.destinationsDeleteFailed": "Gagal menghapus di IDRX",
+  "error.destinationsValidateFailed": "Gagal memvalidasi kode bank/e-wallet",
+  "error.destinationsRegisterFailed": "Gagal mendaftarkan tujuan payout di IDRX",
+  "error.redeemsFailed": "Gagal mengambil riwayat redeem",
+  "error.walletNotDetected": "Dompet belum terdeteksi",
+  "error.balanceLoadFailed": "Gagal memuat saldo",
+  "error.mintStatusFailed": "Gagal mint",
+  "error.zestPositionFailed": "Gagal memuat posisi Zest",
+  "error.zestPreviewFailed": "Gagal mempratinjau pinjaman Zest",
+  "error.pythKeyMissing":
+    "Kunci API Pyth belum disetel. Hubungi dukungan untuk mengaktifkan pinjaman.",
+  "error.pythNotEntitled":
+    "Oracle harga belum tersedia untuk kunci API ini. Coba lagi nanti atau hubungi dukungan.",
+  "error.pythPriceUnavailable":
+    "Tidak bisa memuat harga BTC/USDC saat ini. Coba lagi sebentar.",
 } as const;
 
 const en: Record<keyof typeof id, string> = {
@@ -851,6 +949,19 @@ const en: Record<keyof typeof id, string> = {
   "tx.stacksFailed": "Failed",
   "home.activity.title": "Activity",
   "home.activity.empty": "No activity yet.",
+  "home.stat.autobuy": "Auto-buy",
+  "home.stat.autobuyEmpty": "Not active",
+  "home.stat.autobuyStart": "Start",
+  "home.stat.autobuyRemaining": "{n} left",
+  "home.stat.credit": "Credit",
+  "home.stat.creditEmpty": "None yet",
+  "home.stat.creditBorrow": "Borrow",
+  "home.stat.creditLtv": "LTV {pct}%",
+  "home.stat.cash": "Cash",
+  "home.stat.stacks": "Stacks",
+  "home.stat.stacksConnect": "Connect",
+  "home.stat.stacksFund": "Fund",
+  "home.stat.stacksReady": "Ready",
 
   // Cash
   "cash.title": "Cash",
@@ -887,6 +998,8 @@ const en: Record<keyof typeof id, string> = {
   "addfunds.bankDesc": "Transfer rupiah, balance lands automatically",
   "addfunds.usdc": "USDC",
   "addfunds.usdcDesc": "Deposit USDC on the Base network",
+  "addfunds.stacks": "Native BTC rail (Stacks Assets)",
+  "addfunds.stacksDesc": "STX for gas + USDCx on mainnet",
   "addfunds.usdt": "USDT",
   "addfunds.usdtDesc": "Deposit from another crypto wallet",
   "addfunds.chain": "Network",
@@ -896,6 +1009,23 @@ const en: Record<keyof typeof id, string> = {
     "Send USDC only on the Base network. Other networks will result in lost funds.",
   "addfunds.yourAddress": "Your PaySats wallet address",
   "addfunds.waitingAddress": "Preparing address…",
+
+  "stacks.fund.title": "Get Stacks assets (mainnet)",
+  "stacks.fund.step1Title": "Connect a wallet",
+  "stacks.fund.step1Desc": "Use Leather or Xverse (SP… address).",
+  "stacks.fund.step1Cta": "Connect",
+  "stacks.fund.step2Title": "Buy / send STX for gas",
+  "stacks.fund.step2Desc":
+    "Buy STX on Kraken or directly in Leather, then send a small amount to your Stacks address for network fees.",
+  "stacks.fund.step3Title": "Buy / send USDCx",
+  "stacks.fund.step3Desc":
+    "Buy USDCx on Kraken or directly in Leather, send it to the same address, then swap to sBTC and borrow on Zest in the app.",
+  "stacks.fund.copy": "Copy address",
+  "stacks.fund.copied": "Copied",
+  "stacks.fund.buyKraken": "Buy on Kraken",
+  "stacks.fund.openStacks": "Open Stacks",
+  "stacks.fund.connected": "Connected",
+  "stacks.fund.needConnect": "Connect a wallet first to copy your address.",
 
   // Onboarding
   "onboarding.title": "IDRX",
@@ -929,11 +1059,21 @@ const en: Record<keyof typeof id, string> = {
   "onb.creating.sub": "This only takes a moment",
   "onb.creating.doneTitle": "You're all set",
   "onb.creating.doneSub": "Welcome to PaySats",
+  "onb.language.title": "Choose your language",
+  "onb.language.sub": "You can change this later in Settings.",
+  "onb.language.en": "English",
+  "onb.language.id": "Bahasa Indonesia",
+  "onb.language.continue": "Continue",
   "onb.currency.title": "Choose your currency",
   "onb.currency.sub": "You can change this later in Settings.",
   "onb.currency.idr": "Indonesian Rupiah",
   "onb.currency.usd": "US Dollar",
   "onb.currency.continue": "Continue",
+  "onb.stacksFund.title": "Get Stacks assets",
+  "onb.stacksFund.sub":
+    "The sBTC pilot runs on Stacks mainnet. Buy STX and USDCx on Kraken or directly in Leather, then send them to your wallet.",
+  "onb.stacksFund.continue": "Show guide",
+  "onb.stacksFund.skip": "Skip for now",
 
   // Expiry presets
   "expiry.1h": "1 hour",
@@ -1141,6 +1281,62 @@ const en: Record<keyof typeof id, string> = {
 
   // General
   "general.failedLoad": "Failed to load",
+  "general.loading": "Loading…",
+
+  // Localized errors (product UI)
+  "error.generic": "Something went wrong. Try again.",
+  "error.smartWalletMissing": "Smart wallet is not available yet",
+  "error.dcaReadFailed": "Failed to read DCA order",
+  "error.dcaCreateFailed": "Failed to create DCA order",
+  "error.dcaCancelFailed": "Failed to cancel DCA order",
+  "error.dcaHistoryFailed": "Failed to load swap history",
+  "error.dcaInsufficientIdrx":
+    "Not enough IDRX in your smart wallet. You need {amount} more IDRX. Mint more IDRX first.",
+  "error.creditReadFailed": "Failed to read credit position",
+  "error.creditOpenFailed": "Failed to open credit",
+  "error.creditBorrowFailed": "Failed to borrow USDC",
+  "error.creditRepayFailed": "Failed to repay loan",
+  "error.creditWithdrawFailed": "Failed to withdraw collateral",
+  "error.creditInsufficientCbbtc":
+    "Not enough cbBTC. You need {amount} more cbBTC.",
+  "error.insufficientBalance": "Insufficient balance for this transaction.",
+  "error.transferReverted": "Token transfer failed — try again later.",
+  "error.userOpReverted": "Transaction failed during simulation — try again later.",
+  "error.txCancelled": "Transaction cancelled.",
+  "error.offrampDestLoadFailed": "Failed to load payout destinations",
+  "error.offrampDestAddFailed": "Failed to add destination",
+  "error.offrampDestDeleteFailed": "Failed to delete",
+  "error.offrampDestDefaultFailed": "Failed to update default",
+  "error.offrampBanksFailed": "Failed to load bank list",
+  "error.offrampInsufficientUsdc": "Insufficient USDC balance.",
+  "error.offrampSendFailed": "Failed to send USDC",
+  "error.offrampHistoryFailed": "Failed to load redeem history",
+  "error.offrampInvalidDeposit": "Invalid IDRX deposit address",
+  "error.offrampAmountRange":
+    "Amount must be between ${min} and ${max}",
+  "error.mintFailed": "Failed to create mint request",
+  "error.mintInvalidBody": "Invalid request body",
+  "error.balanceIdrxFailed": "Failed to read on-chain balance",
+  "error.balanceBtcFailed": "Failed to read on-chain BTC balance",
+  "error.creditPositionFailed": "Failed to read on-chain credit position",
+  "error.txHistoryFailed": "Failed to load history",
+  "error.bankMethodsFailed": "Failed to fetch IDRX bank methods",
+  "error.destinationsFailed": "Failed to fetch payout destinations",
+  "error.destinationsDeleteFailed": "Failed to delete on IDRX",
+  "error.destinationsValidateFailed": "Failed to validate bank/e-wallet code",
+  "error.destinationsRegisterFailed": "Failed to register payout destination on IDRX",
+  "error.redeemsFailed": "Failed to fetch redeem history",
+  "error.walletNotDetected": "Wallet not detected",
+  "error.balanceLoadFailed": "Failed to load balance",
+  "error.mintStatusFailed": "Mint failed",
+  "error.zestPositionFailed": "Failed to load Zest position",
+  "error.zestPreviewFailed": "Failed to preview Zest borrow",
+  "error.pythKeyMissing":
+    "Pyth API key is not configured. Contact support to enable borrowing.",
+  "error.pythNotEntitled":
+    "Price oracle is unavailable for this API key. Try again later or contact support.",
+  "error.pythPriceUnavailable":
+    "Could not load BTC/USDC prices right now. Try again in a moment.",
 };
 
 export type TranslationKey = keyof typeof id;

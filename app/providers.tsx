@@ -1,5 +1,6 @@
 "use client";
 
+import { PreferenceHydrator } from "@/features/layout/preference-hydrator";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { SmartWalletsProvider } from "@privy-io/react-auth/smart-wallets";
 import { I18nProvider } from "@/lib/i18n";
@@ -24,25 +25,28 @@ export function Providers({ children }: { children: ReactNode }) {
     <I18nProvider>
       <CurrencyProvider>
         <DisplayUnitProvider>
-        <PrivyProvider
-          appId={appId}
-          config={{
-            loginMethods: ["google", "email"],
-            appearance: {
-              theme: "light",
-              accentColor: "#b85c38",
-            },
-            defaultChain: base,
-            supportedChains: [base],
-            embeddedWallets: {
-              ethereum: {
-                createOnLogin: "all-users",
+          <PrivyProvider
+            appId={appId}
+            config={{
+              loginMethods: ["google", "email"],
+              appearance: {
+                theme: "light",
+                accentColor: "#b85c38",
               },
-            },
-          }}
-        >
-          <SmartWalletsProvider>{children}</SmartWalletsProvider>
-        </PrivyProvider>
+              defaultChain: base,
+              supportedChains: [base],
+              embeddedWallets: {
+                ethereum: {
+                  createOnLogin: "all-users",
+                },
+              },
+            }}
+          >
+            <SmartWalletsProvider>
+              <PreferenceHydrator />
+              {children}
+            </SmartWalletsProvider>
+          </PrivyProvider>
         </DisplayUnitProvider>
       </CurrencyProvider>
     </I18nProvider>

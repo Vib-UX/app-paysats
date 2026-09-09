@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 function ShellLoading() {
   return (
@@ -26,5 +26,9 @@ const ProductShellLazy = dynamic(
 );
 
 export function ProductShellEntry({ children }: { children: ReactNode }) {
-  return <ProductShellLazy>{children}</ProductShellLazy>;
+  return (
+    <Suspense fallback={<ShellLoading />}>
+      <ProductShellLazy>{children}</ProductShellLazy>
+    </Suspense>
+  );
 }

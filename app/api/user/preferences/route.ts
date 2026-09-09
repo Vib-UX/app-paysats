@@ -5,6 +5,7 @@ import type { NextRequest } from "next/server";
 
 type PreferencesBody = {
   currencyPreference?: "IDR" | "USD";
+  localePreference?: "en" | "id";
   displayUnit?: "SATS" | "BTC";
   completeOnboarding?: boolean;
 };
@@ -24,6 +25,7 @@ export async function PATCH(request: NextRequest) {
 
   const data: {
     currencyPreference?: "IDR" | "USD";
+    localePreference?: "en" | "id";
     displayUnit?: "SATS" | "BTC";
     onboardingCompletedAt?: Date;
   } = {};
@@ -33,6 +35,10 @@ export async function PATCH(request: NextRequest) {
     body.currencyPreference === "USD"
   ) {
     data.currencyPreference = body.currencyPreference;
+  }
+
+  if (body.localePreference === "en" || body.localePreference === "id") {
+    data.localePreference = body.localePreference;
   }
 
   if (body.displayUnit === "SATS" || body.displayUnit === "BTC") {
@@ -62,6 +68,7 @@ export async function PATCH(request: NextRequest) {
   return NextResponse.json({
     ok: true,
     currencyPreference: updated.currencyPreference ?? null,
+    localePreference: updated.localePreference ?? null,
     displayUnit: updated.displayUnit ?? null,
     onboardingCompleted: Boolean(updated.onboardingCompletedAt),
   });

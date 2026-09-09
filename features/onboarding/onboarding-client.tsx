@@ -2,7 +2,7 @@
 
 import { fetchWithPrivy } from "@/lib/api";
 import { useCurrency, type CurrencyCode } from "@/lib/currency";
-import { useT } from "@/lib/i18n";
+import { isLocale, useLocale, useT, type Locale } from "@/lib/i18n";
 import { usePostLoginSync } from "@/hooks/use-post-login-sync";
 import { useLogin, useLoginWithOAuth, usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
@@ -16,16 +16,22 @@ import {
 import { OnbCreating } from "./onb-creating";
 import { OnbCurrency } from "./onb-currency";
 import { OnbHook } from "./onb-hook";
+import { OnbLanguage } from "./onb-language";
+import { OnbStacksFund } from "./onb-stacks-fund";
 import { Splash } from "./splash";
 
-type Step = "splash" | "hook" | "creating" | "currency";
+type Step =
+  | "splash"
+  | "hook"
+  | "creating"
+  | "language"
+  | "currency"
+  | "stacksFund";
 
 /**
  * Full onboarding flow:
- *   splash → hook (google or email) → creating (post-login sync) → currency → /home
- *
- * Handles users landing here both before and after Privy auth. If a returning
- * user has already completed onboarding we immediately bounce them to /home.
+ *   splash → hook → creating → language → currency → stacksFund → /home
+ *   (stacksFund can skip straight to /home; "Show guide" → /mint?stacks=1)
  */
 export function OnboardingClient() {
   const router = useRouter();
@@ -34,13 +40,15 @@ export function OnboardingClient() {
   const { initOAuth, state } = useLoginWithOAuth();
   const sync = usePostLoginSync();
   const { setCurrency } = useCurrency();
+  const { setLocale } = useLocale();
 
   const [step, setStep] = useState<Step>("splash");
   const [fade, setFade] = useState(true);
   const [syncDone, setSyncDone] = useState(false);
-  const [needsCurrency, setNeedsCurrency] = useState(true);
+  const [needsOnboardingPrefs, setNeedsOnboardingPrefs] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingLocale, setPendingLocale] = useState<Locale>("en");
 
   const tokenRef = useRef(getAccessToken);
   const syncRef = useRef(sync);
@@ -71,28 +79,25 @@ export function OnboardingClient() {
     },
   });
 
-  // Step 0 → decide where to go once Privy is ready
   useEffect(() => {
     if (step !== "splash") return;
     if (!ready) return;
-    const t = window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
       if (authenticated) {
         go("creating");
       } else {
         go("hook");
       }
     }, 1800);
-    return () => window.clearTimeout(t);
+    return () => window.clearTimeout(timer);
   }, [ready, authenticated, step, go]);
 
-  // Email (or any) login that authenticates while still on the hook screen.
   useEffect(() => {
     if (step === "hook" && authenticated) {
       go("creating");
     }
   }, [step, authenticated, go]);
 
-  // Once authenticated, run post-login sync + check user/me for currency state
   useEffect(() => {
     if (!authenticated) return;
     let cancelled = false;
@@ -105,10 +110,14 @@ export function OnboardingClient() {
         );
         const j = (await res.json().catch(() => ({}))) as {
           currencyPreference?: string | null;
+          localePreference?: string | null;
           onboardingCompleted?: boolean;
         };
         if (cancelled) return;
-        setNeedsCurrency(
+        if (isLocale(j.localePreference)) {
+          setLocale(j.localePreference);
+        }
+        setNeedsOnboardingPrefs(
           !j.currencyPreference || !j.onboardingCompleted,
         );
         setSyncDone(true);
@@ -121,9 +130,8 @@ export function OnboardingClient() {
     return () => {
       cancelled = true;
     };
-  }, [authenticated]);
+  }, [authenticated, setLocale]);
 
-  // Translate Privy OAuth status into UI
   const oauthLoading = state.status === "loading";
   const oauthError =
     state.status === "error" ? t("auth.loginFailed") : null;
@@ -145,12 +153,21 @@ export function OnboardingClient() {
   }, [login]);
 
   const onCreatingDone = useCallback(() => {
-    if (needsCurrency) {
-      go("currency");
+    if (needsOnboardingPrefs) {
+      go("language");
     } else {
       router.replace("/home");
     }
-  }, [needsCurrency, go, router]);
+  }, [needsOnboardingPrefs, go, router]);
+
+  const onLanguageContinue = useCallback(
+    (l: Locale) => {
+      setLocale(l);
+      setPendingLocale(l);
+      go("currency");
+    },
+    [setLocale, go],
+  );
 
   const onCurrencyContinue = useCallback(
     async (c: CurrencyCode) => {
@@ -162,16 +179,26 @@ export function OnboardingClient() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             currencyPreference: c,
+            localePreference: pendingLocale,
             completeOnboarding: true,
           }),
         });
       } catch (e) {
-        console.error("Failed to persist currency preference:", e);
+        console.error("Failed to persist preferences:", e);
       }
-      router.replace("/home");
+      setBusy(false);
+      go("stacksFund");
     },
-    [setCurrency, router],
+    [setCurrency, pendingLocale, go],
   );
+
+  const finishHome = useCallback(() => {
+    router.replace("/home");
+  }, [router]);
+
+  const finishStacksGuide = useCallback(() => {
+    router.replace("/mint?stacks=1");
+  }, [router]);
 
   return (
     <div
@@ -190,8 +217,18 @@ export function OnboardingClient() {
       {step === "creating" ? (
         <OnbCreating ready={syncDone} onDone={onCreatingDone} />
       ) : null}
+      {step === "language" ? (
+        <OnbLanguage onContinue={onLanguageContinue} busy={busy} />
+      ) : null}
       {step === "currency" ? (
         <OnbCurrency onContinue={onCurrencyContinue} busy={busy} />
+      ) : null}
+      {step === "stacksFund" ? (
+        <OnbStacksFund
+          onContinue={finishStacksGuide}
+          onSkip={finishHome}
+          busy={busy}
+        />
       ) : null}
     </div>
   );

@@ -1,5 +1,5 @@
 import { zestEnabled, stacksNetworkId } from "@/lib/stacks/config";
-import { errorMessage, ServiceError } from "@/services/errors";
+import { errorKeyOf, errorMessage, ServiceError } from "@/services/errors";
 import { getPrivyUserFromRequest } from "@/services/privy/server";
 import {
   getZestPosition,
@@ -40,7 +40,10 @@ export async function GET(request: NextRequest) {
   } catch (e) {
     const status = e instanceof ServiceError ? e.status : 502;
     return NextResponse.json(
-      { error: errorMessage(e, "Failed to load Zest position") },
+      {
+        error: errorMessage(e, "Failed to load Zest position"),
+        errorKey: errorKeyOf(e) ?? "error.zestPositionFailed",
+      },
       { status },
     );
   }

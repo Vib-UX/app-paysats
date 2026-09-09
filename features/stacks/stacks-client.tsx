@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { GradButton } from "@/components/ui/grad-button";
 import { InlinePanel } from "@/components/ui/inline-panel";
 import { PillSeg } from "@/components/ui/pill-seg";
+import { StacksFundGuide } from "@/features/stacks/stacks-fund-guide";
 import { ZestBorrowCard } from "@/features/stacks/zest-borrow-card";
 import { useStacksBalances } from "@/hooks/use-stacks-balances";
 import {
@@ -28,9 +29,11 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
+import { useSearchParams } from "next/navigation";
 
 const USDCX_PRESETS = [5, 10, 25, 50];
 const SLIPPAGE_OPTIONS = [
@@ -1406,13 +1409,19 @@ function PilotTradeCard({
   usdcxBalance,
   sbtcSats,
   onChanged,
+  initialMode = "dca",
 }: {
   address: string;
   usdcxBalance: number | null;
   sbtcSats: number | null;
   onChanged: () => void;
+  initialMode?: "swap" | "dca" | "borrow";
 }) {
-  const [mode, setMode] = useState<"swap" | "dca" | "borrow">("dca");
+  const [mode, setMode] = useState<"swap" | "dca" | "borrow">(initialMode);
+
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
 
   return (
     <Card className="space-y-4">
@@ -1454,7 +1463,19 @@ function PilotTradeCard({
 
 // ---------- Root ----------
 
+function stacksTabFromSearch(
+  raw: string | null,
+): "swap" | "dca" | "borrow" {
+  if (raw === "swap" || raw === "borrow" || raw === "dca") return raw;
+  return "dca";
+}
+
 export function StacksClient() {
+  const searchParams = useSearchParams();
+  const initialMode = useMemo(
+    () => stacksTabFromSearch(searchParams.get("tab")),
+    [searchParams],
+  );
   const wallet = useStacksWallet();
   const { balances, loading, error, reload } = useStacksBalances(
     wallet.address,
@@ -1476,6 +1497,11 @@ export function StacksClient() {
 
         {wallet.connected ? (
           <>
+            {balances != null &&
+            (balances.stx <= 0 || balances.usdcx <= 0) ? (
+              <StacksFundGuide compact />
+            ) : null}
+
             <BalancesCard
               balances={balances}
               loading={loading}
@@ -1489,6 +1515,7 @@ export function StacksClient() {
                 usdcxBalance={balances?.usdcx ?? null}
                 sbtcSats={balances?.sbtcSats ?? null}
                 onChanged={onSwapSettled}
+                initialMode={initialMode}
               />
             ) : (
               <Card className="space-y-2">

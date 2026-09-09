@@ -103,7 +103,8 @@ export async function GET(request: NextRequest) {
     console.error(e);
     return NextResponse.json(
       {
-        error: "Gagal membaca saldo on-chain",
+        error: "Failed to read on-chain balance",
+        errorKey: "error.balanceIdrxFailed",
         networkChainId,
         walletAddress: wallet,
         rpcUrl,

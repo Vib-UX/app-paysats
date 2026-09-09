@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
     onboardingCompleted: Boolean(row?.onboardingCompletedAt),
     onboardingCompletedAt: row?.onboardingCompletedAt?.toISOString() ?? null,
     currencyPreference: row?.currencyPreference ?? null,
+    localePreference: row?.localePreference ?? null,
     displayUnit: row?.displayUnit ?? null,
     idrxUserId: row?.idrxUserId ?? null,
   });

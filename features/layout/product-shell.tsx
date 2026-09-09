@@ -4,7 +4,7 @@ import { usePostLoginSync } from "@/hooks/use-post-login-sync";
 import { useT } from "@/lib/i18n";
 import { usePrivy } from "@privy-io/react-auth";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
 
 /** Routes that render chromeless (no bottom tab bar). */
@@ -80,9 +80,11 @@ function BorrowIcon({ active }: { active: boolean }) {
 export function ProductShell({ children }: { children: React.ReactNode }) {
   const { ready, authenticated } = usePrivy();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const sync = usePostLoginSync();
   const t = useT();
+  const stacksTab = searchParams.get("tab");
 
   const syncRef = useRef(sync);
   useLayoutEffect(() => {
@@ -109,6 +111,7 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
     );
   }
 
+  const onStacks = pathname.startsWith("/stacks");
   const nav: {
     href: string;
     label: string;
@@ -122,16 +125,22 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
       match: (p) => p === "/home" || p === "/",
     },
     {
-      href: "/save",
+      href: "/stacks?tab=dca",
       label: t("nav.save"),
       Icon: SaveIcon,
-      match: (p) => p.startsWith("/save") || p.startsWith("/dca"),
+      match: (p) =>
+        p.startsWith("/save") ||
+        p.startsWith("/dca") ||
+        (onStacks && stacksTab !== "borrow" && stacksTab !== "swap"),
     },
     {
-      href: "/credit",
+      href: "/stacks?tab=borrow",
       label: t("nav.borrow"),
       Icon: BorrowIcon,
-      match: (p) => p.startsWith("/credit") || p.startsWith("/borrow"),
+      match: (p) =>
+        p.startsWith("/credit") ||
+        p.startsWith("/borrow") ||
+        (onStacks && stacksTab === "borrow"),
     },
   ];
 

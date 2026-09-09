@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   } catch (e) {
     const status = e instanceof ServiceError ? e.status : 502;
     return NextResponse.json(
-      { error: errorMessage(e, "Gagal memuat riwayat swap") },
+      { error: errorMessage(e, "Failed to load swap history"), errorKey: "error.dcaHistoryFailed" },
       { status },
     );
   }

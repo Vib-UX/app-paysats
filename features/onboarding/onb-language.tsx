@@ -1,26 +1,23 @@
 "use client";
 
 import { GradButton } from "@/components/ui/grad-button";
-import { useCurrency, type CurrencyCode } from "@/lib/currency";
-import { useT } from "@/lib/i18n";
+import { useLocale, useT, type Locale } from "@/lib/i18n";
 import { useState } from "react";
 
-export function OnbCurrency({
+export function OnbLanguage({
   onContinue,
   busy,
 }: {
-  onContinue: (c: CurrencyCode) => void;
+  onContinue: (l: Locale) => void;
   busy?: boolean;
 }) {
   const t = useT();
-  const { currency } = useCurrency();
-  const [sel, setSel] = useState<CurrencyCode>(
-    currency === "IDR" ? "IDR" : "USD",
-  );
+  const { locale } = useLocale();
+  const [sel, setSel] = useState<Locale>(locale === "id" ? "id" : "en");
 
-  const options: { code: CurrencyCode; label: string }[] = [
-    { code: "USD", label: t("onb.currency.usd") },
-    { code: "IDR", label: t("onb.currency.idr") },
+  const options: { code: Locale; label: string }[] = [
+    { code: "en", label: t("onb.language.en") },
+    { code: "id", label: t("onb.language.id") },
   ];
 
   return (
@@ -33,13 +30,13 @@ export function OnbCurrency({
           className="text-2xl font-extrabold"
           style={{ color: "var(--paysats-text)", letterSpacing: -0.6 }}
         >
-          {t("onb.currency.title")}
+          {t("onb.language.title")}
         </div>
         <div
           className="mt-1.5 text-[13px]"
           style={{ color: "var(--paysats-text-faint)" }}
         >
-          {t("onb.currency.sub")}
+          {t("onb.language.sub")}
         </div>
       </div>
 
@@ -67,7 +64,7 @@ export function OnbCurrency({
                 {label}
               </span>
               <span
-                className="rounded-[8px] px-2.5 py-1 text-[11px] font-bold"
+                className="rounded-[8px] px-2.5 py-1 text-[11px] font-bold uppercase"
                 style={{
                   color: "var(--paysats-text-faint)",
                   background: "var(--paysats-surface-muted)",
@@ -81,11 +78,8 @@ export function OnbCurrency({
       </div>
 
       <div className="mt-auto pb-10">
-        <GradButton
-          onClick={() => onContinue(sel)}
-          disabled={busy}
-        >
-          {t("onb.currency.continue")}
+        <GradButton onClick={() => onContinue(sel)} disabled={busy}>
+          {t("onb.language.continue")}
         </GradButton>
       </div>
     </div>

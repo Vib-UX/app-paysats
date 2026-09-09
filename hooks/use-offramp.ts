@@ -8,6 +8,9 @@ import type {
   IdrxBankMethod,
   IdrxDepositRedeemRecord,
 } from "@/services/idrx/types";
+import { useT } from "@/lib/i18n";
+import { resolveApiError } from "@/lib/resolve-api-error";
+import type { TranslationKey } from "@/lib/translations";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -123,7 +126,7 @@ function useSmartWalletSendCalls() {
         });
       }
 
-      throw new Error("Smart wallet client tidak tersedia");
+      throw new Error("Smart wallet client unavailable");
     },
     [smartClient, getClientForChain],
   );
@@ -134,6 +137,7 @@ function useSmartWalletSendCalls() {
 // ---------------------------------------------------------------------------
 
 export function usePayoutDestinations() {
+  const t = useT();
   const authFetch = useAuthFetch();
   const [destinations, setDestinations] = useState<PayoutDestinationView[]>([]);
   const [loading, setLoading] = useState(false);
@@ -149,7 +153,7 @@ export function usePayoutDestinations() {
         error?: string;
       };
       if (!res.ok) {
-        setError(json.error ?? "Gagal memuat tujuan payout");
+        setError(resolveApiError(json, t, "error.offrampDestLoadFailed"));
         return;
       }
       setDestinations(json.destinations ?? []);
@@ -178,7 +182,7 @@ export function usePayoutDestinations() {
         error?: string;
       };
       if (!res.ok || !json.destination) {
-        return { ok: false, error: json.error ?? "Gagal menambah tujuan" };
+        return { ok: false, error: resolveApiError(json, t, "error.offrampDestAddFailed") };
       }
       await refetch();
       return { ok: true, destination: json.destination };
@@ -196,7 +200,7 @@ export function usePayoutDestinations() {
         error?: string;
       };
       if (!res.ok) {
-        return { ok: false, error: json.error ?? "Gagal menghapus" };
+        return { ok: false, error: resolveApiError(json, t, "error.offrampDestDeleteFailed") };
       }
       await refetch();
       return { ok: true };
@@ -218,7 +222,7 @@ export function usePayoutDestinations() {
         error?: string;
       };
       if (!res.ok) {
-        return { ok: false, error: json.error ?? "Gagal mengubah default" };
+        return { ok: false, error: resolveApiError(json, t, "error.offrampDestDefaultFailed") };
       }
       await refetch();
       return { ok: true };
@@ -234,6 +238,7 @@ export function usePayoutDestinations() {
 // ---------------------------------------------------------------------------
 
 export function useBankMethods(kind: DestinationKind | "all" = "all") {
+  const t = useT();
   const authFetch = useAuthFetch();
   const [methods, setMethods] = useState<ClassifiedMethod[]>([]);
   const [loading, setLoading] = useState(false);
@@ -254,7 +259,7 @@ export function useBankMethods(kind: DestinationKind | "all" = "all") {
         };
         if (cancelled) return;
         if (!res.ok) {
-          setError(json.error ?? "Gagal memuat daftar bank");
+          setError(resolveApiError(json, t, "error.offrampBanksFailed"));
           return;
         }
         setMethods(json.methods ?? []);
@@ -275,6 +280,7 @@ export function useBankMethods(kind: DestinationKind | "all" = "all") {
 // ---------------------------------------------------------------------------
 
 export function useRedeemRate(usdAmount: number) {
+  const t = useT();
   const authFetch = useAuthFetch();
   const [quote, setQuote] = useState<RedeemRateQuote | null>(null);
   const [loading, setLoading] = useState(false);
@@ -319,20 +325,25 @@ export function useRedeemRate(usdAmount: number) {
 // Redeem: USDC transfer from smart wallet to deposit address + local snapshot
 // ---------------------------------------------------------------------------
 
-function humaniseError(e: unknown, fallback: string): string {
+function humaniseError(
+  e: unknown,
+  fallback: string,
+  t: (key: TranslationKey, vars?: Record<string, string | number>) => string,
+): string {
   if (!(e instanceof Error)) return fallback;
   const msg = e.message;
   if (msg.includes("insufficient") && msg.toLowerCase().includes("balance")) {
-    return "Saldo USDC tidak cukup.";
+    return t("error.offrampInsufficientUsdc");
   }
   if (msg.includes("User rejected") || msg.includes("denied")) {
-    return "Transaksi dibatalkan.";
+    return t("error.txCancelled");
   }
   if (msg.length > 140) return `${fallback} (${msg.slice(0, 100)}…)`;
   return msg;
 }
 
 export function useRedeemUsdc() {
+  const t = useT();
   const authFetch = useAuthFetch();
   const send = useSmartWalletSendCalls();
   const smartAddr = useSmartWalletAddress();
@@ -350,11 +361,11 @@ export function useRedeemUsdc() {
       setTxHash(null);
 
       if (!smartAddr) {
-        setError("Smart wallet belum tersedia");
+        setError(t("error.smartWalletMissing"));
         return null;
       }
       if (!isAddress(params.destination.depositWalletAddress)) {
-        setError("Alamat deposit IDRX tidak valid");
+        setError(t("error.offrampInvalidDeposit"));
         return null;
       }
       if (
@@ -362,7 +373,10 @@ export function useRedeemUsdc() {
         params.usdAmount > MAX_REDEEM_USD
       ) {
         setError(
-          `Nominal harus antara $${MIN_REDEEM_USD} dan $${MAX_REDEEM_USD}`,
+          t("error.offrampAmountRange", {
+            min: MIN_REDEEM_USD,
+            max: MAX_REDEEM_USD,
+          }),
         );
         return null;
       }
@@ -403,7 +417,7 @@ export function useRedeemUsdc() {
 
         return hash;
       } catch (e) {
-        setError(humaniseError(e, "Gagal mengirim USDC"));
+        setError(humaniseError(e, t("error.offrampSendFailed"), t));
         return null;
       } finally {
         setBusy(false);
@@ -420,6 +434,7 @@ export function useRedeemUsdc() {
 // ---------------------------------------------------------------------------
 
 export function useRedeemHistory(opts?: { pollMs?: number }) {
+  const t = useT();
   const authFetch = useAuthFetch();
   const [records, setRecords] = useState<RedeemRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -434,16 +449,17 @@ export function useRedeemHistory(opts?: { pollMs?: number }) {
       const json = (await res.json().catch(() => ({}))) as {
         records?: RedeemRecord[];
         error?: string;
+        errorKey?: string;
       };
       if (!res.ok) {
-        setError(json.error ?? "Gagal memuat riwayat redeem");
+        setError(resolveApiError(json, t, "error.offrampHistoryFailed"));
         return;
       }
       setRecords(json.records ?? []);
     } finally {
       setLoading(false);
     }
-  }, [authFetch]);
+  }, [authFetch, t]);
 
   useEffect(() => {
     void refetch();

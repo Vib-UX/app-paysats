@@ -22,7 +22,10 @@ export async function POST(request: NextRequest) {
   try {
     body = (await request.json()) as Body;
   } catch {
-    return NextResponse.json({ error: "Body tidak valid" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body", errorKey: "error.mintInvalidBody" },
+      { status: 400 },
+    );
   }
 
   try {
@@ -44,7 +47,10 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     const status = e instanceof ServiceError ? e.status : 500;
     return NextResponse.json(
-      { error: errorMessage(e, "Gagal membuat permintaan mint") },
+      {
+        error: errorMessage(e, "Failed to create mint request"),
+        errorKey: "error.mintFailed",
+      },
       { status },
     );
   }

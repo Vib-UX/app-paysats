@@ -24,22 +24,22 @@ type CurrencyContextValue = {
 const STORAGE_KEY = "paysats-currency";
 
 const CurrencyContext = createContext<CurrencyContextValue>({
-  currency: "IDR",
+  currency: "USD",
   setCurrency: () => {},
   hydrated: false,
   format: (a: number) => String(a),
-  symbol: "Rp",
+  symbol: "$",
 });
 
 function readInitial(): CurrencyCode {
-  if (typeof window === "undefined") return "IDR";
+  if (typeof window === "undefined") return "USD";
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored === "IDR" || stored === "USD") return stored;
-  return "IDR";
+  return "USD";
 }
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const [currency, setCurrencyState] = useState<CurrencyCode>("IDR");
+  const [currency, setCurrencyState] = useState<CurrencyCode>("USD");
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {

@@ -1,6 +1,8 @@
 "use client";
 
 import { fetchWithPrivy } from "@/lib/api";
+import { useT } from "@/lib/i18n";
+import { resolveApiError } from "@/lib/resolve-api-error";
 import { stacksNetworkId, zestEnabled } from "@/lib/stacks/config";
 import {
   buildZestBorrowTx,
@@ -89,6 +91,7 @@ function txIdFromResult(result: { txid?: string; txId?: string } | null): string
 export function useStacksZest(address: string | null) {
   const network = stacksNetworkId();
   const enabled = zestEnabled(network);
+  const t = useT();
   const { getAccessToken, ready, authenticated } = usePrivy();
 
   const [position, setPosition] = useState<ZestSerializedPosition | null>(null);
@@ -130,12 +133,16 @@ export function useStacksZest(address: string | null) {
       );
       const json = (await res.json().catch(() => ({}))) as
         | ZestSerializedPosition
-        | { error?: string };
+        | { error?: string; errorKey?: string };
       if (g !== gen.current) return;
-      if (!res.ok || "error" in json) {
+      if (!res.ok || ("error" in json && json.error)) {
         setPosition(null);
         setError(
-          ("error" in json && json.error) || "Failed to load Zest position",
+          resolveApiError(
+            json as { error?: string; errorKey?: string },
+            t,
+            "error.zestPositionFailed",
+          ),
         );
       } else {
         setPosition(json as ZestSerializedPosition);
@@ -143,12 +150,12 @@ export function useStacksZest(address: string | null) {
     } catch {
       if (g === gen.current) {
         setPosition(null);
-        setError("Failed to load Zest position");
+        setError(t("error.zestPositionFailed"));
       }
     } finally {
       if (g === gen.current) setLoading(false);
     }
-  }, [address, enabled]);
+  }, [address, enabled, t]);
 
   useEffect(() => {
     if (!ready || !authenticated) return;
@@ -172,15 +179,19 @@ export function useStacksZest(address: string | null) {
       );
       const json = (await res.json().catch(() => ({}))) as
         | ZestSerializedPreview
-        | { error?: string };
-      if (!res.ok || "error" in json) {
+        | { error?: string; errorKey?: string };
+      if (!res.ok || ("error" in json && json.error)) {
         throw new Error(
-          ("error" in json && json.error) || "Failed to preview borrow",
+          resolveApiError(
+            json as { error?: string; errorKey?: string },
+            t,
+            "error.zestPreviewFailed",
+          ),
         );
       }
       return json as ZestSerializedPreview;
     },
-    [address],
+    [address, t],
   );
 
   const fetchPriceFeeds = useCallback(async (): Promise<string[]> => {
@@ -190,14 +201,18 @@ export function useStacksZest(address: string | null) {
     );
     const json = (await res.json().catch(() => ({}))) as
       | { hexes?: string[] }
-      | { error?: string };
+      | { error?: string; errorKey?: string };
     if (!res.ok || !("hexes" in json) || !json.hexes?.length) {
       throw new Error(
-        ("error" in json && json.error) || "Failed to fetch Pyth price feeds",
+        resolveApiError(
+          json as { error?: string; errorKey?: string },
+          t,
+          "error.pythPriceUnavailable",
+        ),
       );
     }
     return json.hexes;
-  }, []);
+  }, [t]);
 
   const recordTx = useCallback(
     async (opts: {

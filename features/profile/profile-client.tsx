@@ -270,6 +270,22 @@ export function ProfileClient() {
     [getAccessToken, setCurrency],
   );
 
+  const updateLocale = useCallback(
+    async (l: Locale) => {
+      setLocale(l);
+      try {
+        await fetchWithPrivy(getAccessToken, "/api/user/preferences", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ localePreference: l }),
+        });
+      } catch {
+        /* non-blocking */
+      }
+    },
+    [getAccessToken, setLocale],
+  );
+
   const updateDisplayUnit = useCallback(
     async (u: DisplayUnit) => {
       setDisplayUnit(u);
@@ -368,8 +384,8 @@ export function ProfileClient() {
                 value={currency}
                 onChange={updateCurrency}
                 options={[
-                  { value: "IDR", label: "IDR" },
                   { value: "USD", label: "USD" },
+                  { value: "IDR", label: "IDR" },
                 ]}
               />
             </div>
@@ -402,10 +418,10 @@ export function ProfileClient() {
             <div className="w-[120px] shrink-0">
               <PillSeg<Locale>
                 value={locale}
-                onChange={setLocale}
+                onChange={updateLocale}
                 options={[
-                  { value: "id", label: "ID" },
                   { value: "en", label: "EN" },
+                  { value: "id", label: "ID" },
                 ]}
               />
             </div>

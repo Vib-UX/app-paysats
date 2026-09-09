@@ -14,7 +14,8 @@ model User {
   displayName           String?
   walletAddress         String?
   onboardingCompletedAt DateTime?
-  currencyPreference    String?   @default("IDR")
+  currencyPreference    String?   @default("USD")
+  localePreference      String?   @default("en")
   displayUnit           String?   @default("SATS")
   idrxUserId            Int?
   idrxApiKeyEnc         String?

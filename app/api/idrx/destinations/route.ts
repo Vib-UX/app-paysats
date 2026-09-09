@@ -55,14 +55,14 @@ export async function GET(request: NextRequest) {
   } catch (e) {
     console.error(e);
     return NextResponse.json(
-      { error: "Gagal mengambil tujuan payout dari IDRX" },
+      { error: "Failed to fetch payout destinations", errorKey: "error.destinationsFailed" },
       { status: 502 },
     );
   }
 
   if (idrxRes.statusCode !== 200) {
     return NextResponse.json(
-      { error: idrxRes.message || "Gagal mengambil tujuan payout" },
+      { error: idrxRes.message || "Failed to fetch payout destinations", errorKey: "error.destinationsFailed" },
       { status: 502 },
     );
   }
@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     console.error(e);
     return NextResponse.json(
-      { error: "Gagal memvalidasi kode bank/e-wallet" },
+      { error: "Failed to validate bank/e-wallet code", errorKey: "error.destinationsValidateFailed" },
       { status: 502 },
     );
   }
@@ -220,7 +220,7 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     console.error(e);
     return NextResponse.json(
-      { error: "Gagal mendaftarkan tujuan payout di IDRX" },
+      { error: "Failed to register payout destination on IDRX", errorKey: "error.destinationsRegisterFailed" },
       { status: 502 },
     );
   }

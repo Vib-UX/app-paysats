@@ -1,5 +1,5 @@
 import { zestEnabled, stacksNetworkId } from "@/lib/stacks/config";
-import { errorMessage, ServiceError } from "@/services/errors";
+import { errorKeyOf, errorMessage, ServiceError } from "@/services/errors";
 import { getPrivyUserFromRequest } from "@/services/privy/server";
 import { fetchPythPriceFeedHexes } from "@/services/stacks/pyth";
 import { NextResponse } from "next/server";
@@ -29,7 +29,10 @@ export async function GET(request: NextRequest) {
   } catch (e) {
     const status = e instanceof ServiceError ? e.status : 502;
     return NextResponse.json(
-      { error: errorMessage(e, "Failed to fetch Pyth price feeds") },
+      {
+        error: errorMessage(e, "Failed to fetch Pyth price feeds"),
+        errorKey: errorKeyOf(e) ?? "error.pythPriceUnavailable",
+      },
       { status },
     );
   }

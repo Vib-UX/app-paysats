@@ -286,7 +286,7 @@ function HeroBalance({
               </div>
             </Link>
             <Link
-              href="/credit"
+              href="/stacks?tab=borrow"
               data-pressable
               className="rounded-[14px] px-3.5 py-3"
               style={{ background: "rgba(255,255,255,0.12)" }}
@@ -374,7 +374,7 @@ function AutobuyNudge() {
 
   if (!order) {
     return (
-      <Link href="/save" data-pressable className="block">
+      <Link href="/stacks?tab=dca" data-pressable className="block">
         <Card className="flex items-center gap-3">
           <LogoTile size={40} />
           <div className="min-w-0 flex-1">
@@ -423,7 +423,7 @@ function AutobuyNudge() {
       : null;
 
   return (
-    <Link href="/save" data-pressable className="block">
+    <Link href="/stacks?tab=dca" data-pressable className="block">
       <Card className="flex items-center gap-3">
         <LogoTile size={40} />
         <div className="min-w-0 flex-1">
@@ -698,17 +698,17 @@ export function DashboardClient() {
       <div className="mt-5 flex items-stretch gap-2.5">
         <ActionTile
           label={t("home.action.deposit")}
-          href="/mint"
+          href="/mint?stacks=1"
           icon="↓"
         />
         <ActionTile
           label={t("home.action.credit")}
-          href="/credit"
+          href="/stacks?tab=borrow"
           icon="$"
         />
         <ActionTile
           label={t("home.action.withdraw")}
-          href="/withdraw"
+          href="/stacks"
           icon="↑"
         />
       </div>

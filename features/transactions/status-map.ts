@@ -21,10 +21,11 @@ export function summarizePayment(
     if (s.includes("FAIL")) return t("tx.status.failed");
     if (s.includes("PAID") || s.includes("SUCCESS")) return t("tx.status.paid");
   } else {
-    if (s.includes("WAITING_FOR_PAYMENT")) return "Menunggu pembayaran";
-    if (s.includes("EXPIRED")) return "Kedaluwarsa";
-    if (s.includes("FAIL")) return "Gagal";
-    if (s.includes("PAID") || s.includes("SUCCESS")) return "Dibayar";
+    // English fallback when t is omitted (never prefer Indonesian).
+    if (s.includes("WAITING_FOR_PAYMENT")) return "Waiting for payment";
+    if (s.includes("EXPIRED")) return "Expired";
+    if (s.includes("FAIL")) return "Failed";
+    if (s.includes("PAID") || s.includes("SUCCESS")) return "Paid";
   }
   return status.replaceAll("_", " ").toLowerCase();
 }
@@ -42,11 +43,11 @@ export function summarizeMint(
     if (a.includes("FAIL")) return t("tx.status.mintFailed");
     if (user.toUpperCase().includes("NOT_AVAILABLE")) return t("tx.status.waiting");
   } else {
-    if (a.includes("MINTED") || a.includes("COMPLETED")) return "Sudah di-mint";
-    if (a.includes("REQUESTED")) return "Diproses";
-    if (a.includes("APPROVED")) return "Disetujui";
-    if (a.includes("FAIL")) return "Gagal mint";
-    if (user.toUpperCase().includes("NOT_AVAILABLE")) return "Menunggu";
+    if (a.includes("MINTED") || a.includes("COMPLETED")) return "Minted";
+    if (a.includes("REQUESTED")) return "Processing";
+    if (a.includes("APPROVED")) return "Approved";
+    if (a.includes("FAIL")) return "Mint failed";
+    if (user.toUpperCase().includes("NOT_AVAILABLE")) return "Waiting";
   }
   return admin.replaceAll("_", " ").toLowerCase();
 }

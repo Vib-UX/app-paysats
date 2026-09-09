@@ -46,7 +46,7 @@ export async function DELETE(request: NextRequest, ctx: Params) {
   } catch (e) {
     console.error(e);
     return NextResponse.json(
-      { error: "Gagal menghapus di IDRX" },
+      { error: "Failed to delete on IDRX", errorKey: "error.destinationsDeleteFailed" },
       { status: 502 },
     );
   }

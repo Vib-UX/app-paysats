@@ -1,12 +1,15 @@
 "use client";
 
-import { useT } from "@/lib/i18n";
+import { StacksFundGuide } from "@/features/stacks/stacks-fund-guide";
+import { useCurrency } from "@/lib/currency";
+import { useLocale, useT } from "@/lib/i18n";
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { CryptoDeposit } from "./crypto-deposit";
 import { MintForm } from "./mint-form";
 
-type Mode = "menu" | "bank" | "usdc";
+type Mode = "menu" | "bank" | "usdc" | "stacks";
 
 function BackHeader({
   title,
@@ -101,7 +104,19 @@ function MenuRow({
 
 export function AddFundsClient() {
   const t = useT();
+  const { locale } = useLocale();
+  const { currency } = useCurrency();
+  const searchParams = useSearchParams();
   const [mode, setMode] = useState<Mode>("menu");
+
+  useEffect(() => {
+    if (searchParams.get("stacks") === "1") {
+      setMode("stacks");
+    }
+  }, [searchParams]);
+
+  // EN/USD: Stacks first. ID/IDR: keep Deposit IDR first.
+  const stacksFirst = locale === "en" || currency === "USD";
 
   if (mode === "bank") {
     return (
@@ -128,6 +143,52 @@ export function AddFundsClient() {
     );
   }
 
+  if (mode === "stacks") {
+    return (
+      <div className="px-5 pb-14">
+        <BackHeader
+          title={t("addfunds.stacks")}
+          onBack={() => setMode("menu")}
+        />
+        <div className="mt-4">
+          <StacksFundGuide showOpenStacks />
+        </div>
+      </div>
+    );
+  }
+
+  const stacksRow = (
+    <MenuRow
+      key="stacks"
+      icon="₿"
+      label={t("addfunds.stacks")}
+      sublabel={t("addfunds.stacksDesc")}
+      onClick={() => setMode("stacks")}
+    />
+  );
+  const bankRow = (
+    <MenuRow
+      key="bank"
+      icon="Rp"
+      label={t("addfunds.bank")}
+      sublabel={t("addfunds.bankDesc")}
+      onClick={() => setMode("bank")}
+    />
+  );
+  const usdcRow = (
+    <MenuRow
+      key="usdc"
+      icon="$"
+      label={t("addfunds.usdc")}
+      sublabel={t("addfunds.usdcDesc")}
+      onClick={() => setMode("usdc")}
+    />
+  );
+
+  const rows = stacksFirst
+    ? [stacksRow, usdcRow, bankRow]
+    : [bankRow, stacksRow, usdcRow];
+
   return (
     <div className="px-5 pb-14">
       <div className="flex items-center gap-3 pt-12">
@@ -152,20 +213,7 @@ export function AddFundsClient() {
         </div>
       </div>
 
-      <div className="mt-5 space-y-2.5">
-        <MenuRow
-          icon="Rp"
-          label={t("addfunds.bank")}
-          sublabel={t("addfunds.bankDesc")}
-          onClick={() => setMode("bank")}
-        />
-        <MenuRow
-          icon="$"
-          label={t("addfunds.usdc")}
-          sublabel={t("addfunds.usdcDesc")}
-          onClick={() => setMode("usdc")}
-        />
-      </div>
+      <div className="mt-5 space-y-2.5">{rows}</div>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { defaultChainId } from "@/lib/chains";
 import { fetchWithPrivy } from "@/lib/api";
+import { useT } from "@/lib/i18n";
 import { resolveWalletDisplayAddress } from "@/lib/privy-destination-wallet";
 import {
   useActiveWallet,
@@ -14,6 +15,7 @@ type LoadState = "idle" | "loading" | "ready" | "empty" | "error";
 
 /** Saldo IDRX on-chain: kirim `walletAddress` ke API (resolve dari Privy + /api/user/me). */
 export function IdrxBalancePill() {
+  const t = useT();
   const { getAccessToken, ready, authenticated, user } = usePrivy();
   const { wallets } = useWallets();
   const { wallet: activeWallet } = useActiveWallet();
@@ -103,15 +105,15 @@ export function IdrxBalancePill() {
       </span>
       <span className="min-h-[1rem] w-full max-w-[11rem] break-words font-semibold tabular-nums text-paysats-text sm:max-w-none">
         {state === "loading" ? (
-          <span className="text-paysats-text-muted">Memuat…</span>
+          <span className="text-paysats-text-muted">{t("general.loading")}</span>
         ) : state === "ready" ? (
           label
         ) : state === "empty" ? (
-          <span className="text-paysats-text-muted" title="Dompet belum terdeteksi">
+          <span className="text-paysats-text-muted" title={t("error.walletNotDetected")}>
             —
           </span>
         ) : (
-          <span className="text-paysats-text-muted" title="Gagal memuat saldo">
+          <span className="text-paysats-text-muted" title={t("error.balanceLoadFailed")}>
             —
           </span>
         )}

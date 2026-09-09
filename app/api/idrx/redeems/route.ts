@@ -52,14 +52,14 @@ export async function GET(request: NextRequest) {
   } catch (e) {
     console.error(e);
     return NextResponse.json(
-      { error: "Gagal mengambil riwayat redeem" },
+      { error: "Failed to fetch redeem history", errorKey: "error.redeemsFailed" },
       { status: 502 },
     );
   }
 
   if (idrxRes.statusCode !== 200) {
     return NextResponse.json(
-      { error: idrxRes.message || "Gagal mengambil riwayat redeem" },
+      { error: idrxRes.message || "Failed to fetch redeem history", errorKey: "error.redeemsFailed" },
       { status: 502 },
     );
   }

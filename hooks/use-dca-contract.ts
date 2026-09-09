@@ -19,6 +19,8 @@ import {
   type Address,
 } from "viem";
 import { getBasePublicClient } from "@/lib/base-client";
+import { useT } from "@/lib/i18n";
+import { resolveApiError } from "@/lib/resolve-api-error";
 
 /** Smart wallet address (ERC-4337 contract) — primary on-chain identity. */
 function useSmartWalletAddress(): Address | undefined {
@@ -51,6 +53,7 @@ function useSmartWalletAddress(): Address | undefined {
 // ---------------------------------------------------------------------------
 
 export function useDcaOrder() {
+  const t = useT();
   const address = useSmartWalletAddress();
   const [order, setOrder] = useState<DcaOrder | null>(null);
   const [loading, setLoading] = useState(false);
@@ -95,12 +98,12 @@ export function useDcaOrder() {
       setOrder(o.active ? o : null);
     } catch (e) {
       if (g !== gen.current) return;
-      setError(e instanceof Error ? e.message : "Gagal membaca order DCA");
+      setError(e instanceof Error ? e.message : t("error.dcaReadFailed"));
       setOrder(null);
     } finally {
       if (gen.current === g) setLoading(false);
     }
-  }, [address]);
+  }, [address, t]);
 
   useEffect(() => {
     void refetch();
@@ -117,6 +120,7 @@ type TxCall = { to: `0x${string}`; data: `0x${string}`; value: bigint };
 
 function useSmartWalletSendCalls() {
   const { client: smartClient, getClientForChain } = useSmartWallets();
+  const t = useT();
 
   return useCallback(
     async (calls: TxCall[]): Promise<string> => {
@@ -133,9 +137,9 @@ function useSmartWalletSendCalls() {
         });
       }
 
-      throw new Error("Smart wallet client tidak tersedia");
+      throw new Error(t("error.smartWalletMissing"));
     },
-    [smartClient, getClientForChain],
+    [smartClient, getClientForChain, t],
   );
 }
 
@@ -154,6 +158,7 @@ export type CreateDcaParams = {
 };
 
 export function useCreateDcaOrder() {
+  const t = useT();
   const smartWalletSend = useSmartWalletSendCalls();
   const smartAddr = useSmartWalletAddress();
   const [busy, setBusy] = useState(false);
@@ -167,7 +172,7 @@ export function useCreateDcaOrder() {
       setBusy(true);
 
       try {
-        if (!smartAddr) throw new Error("Smart wallet belum tersedia");
+        if (!smartAddr) throw new Error(t("error.smartWalletMissing"));
 
         // For fixed swaps, require the full amount; for unlimited, just one swap
         const requiredIdrx =
@@ -186,7 +191,9 @@ export function useCreateDcaOrder() {
         if (smartBalance < requiredIdrx) {
           const needed = Number(requiredIdrx - smartBalance) / 10 ** IDRX_DECIMALS;
           throw new Error(
-            `Saldo IDRX di smart wallet tidak cukup. Butuh ${needed.toLocaleString("id-ID")} IDRX lagi. Mint lebih banyak IDRX terlebih dahulu.`,
+            t("error.dcaInsufficientIdrx", {
+              amount: needed.toLocaleString("en-US", { maximumFractionDigits: 2 }),
+            }),
           );
         }
 
@@ -223,14 +230,14 @@ export function useCreateDcaOrder() {
         return hash;
       } catch (e) {
         const msg =
-          e instanceof Error ? e.message : "Gagal membuat order DCA";
+          e instanceof Error ? e.message : t("error.dcaCreateFailed");
         setError(msg);
         return null;
       } finally {
         setBusy(false);
       }
     },
-    [smartWalletSend, smartAddr],
+    [smartWalletSend, smartAddr, t],
   );
 
   return { create, busy, error, txHash };
@@ -241,6 +248,7 @@ export function useCreateDcaOrder() {
 // ---------------------------------------------------------------------------
 
 export function useCancelDcaOrder() {
+  const t = useT();
   const smartWalletSend = useSmartWalletSendCalls();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -260,13 +268,13 @@ export function useCancelDcaOrder() {
       return hash;
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : "Gagal membatalkan order DCA",
+        e instanceof Error ? e.message : t("error.dcaCancelFailed"),
       );
       return null;
     } finally {
       setBusy(false);
     }
-  }, [smartWalletSend]);
+  }, [smartWalletSend, t]);
 
   return { cancel, busy, error };
 }
@@ -284,6 +292,7 @@ type ApiExecution = {
 };
 
 export function useDcaExecutions() {
+  const t = useT();
   const { getAccessToken, authenticated } = usePrivy();
   const [executions, setExecutions] = useState<DcaExecution[]>([]);
   const [loading, setLoading] = useState(false);
@@ -309,12 +318,13 @@ export function useDcaExecutions() {
       const json = (await res.json()) as {
         executions?: ApiExecution[];
         error?: string;
+        errorKey?: string;
       };
 
       if (g !== gen.current) return;
 
       if (!res.ok || json.error) {
-        setError(json.error ?? "Gagal memuat riwayat swap");
+        setError(resolveApiError(json, t, "error.dcaHistoryFailed"));
         setExecutions([]);
         return;
       }
@@ -329,12 +339,12 @@ export function useDcaExecutions() {
       setExecutions(items);
     } catch (e) {
       if (g !== gen.current) return;
-      setError(e instanceof Error ? e.message : "Gagal memuat riwayat swap");
+      setError(e instanceof Error ? e.message : t("error.dcaHistoryFailed"));
       setExecutions([]);
     } finally {
       if (gen.current === g) setLoading(false);
     }
-  }, [authenticated]);
+  }, [authenticated, t]);
 
   useEffect(() => {
     void refetch();

@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
   } catch (e) {
     console.error("Credit position read error:", e);
     return NextResponse.json(
-      { error: "Gagal membaca posisi kredit on-chain" },
+      { error: "Failed to read on-chain credit position", errorKey: "error.creditPositionFailed" },
       { status: 502 },
     );
   }

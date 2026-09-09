@@ -143,7 +143,11 @@ export function MintForm({ walletAddress }: { walletAddress: string | null }) {
     setLoading(false);
     const j = await res.json().catch(() => ({}));
     if (!res.ok) {
-      setError(j.error || t("mint.errorGeneric"));
+      setError(
+        typeof j.errorKey === "string" && j.errorKey.startsWith("error.")
+          ? t(j.errorKey as Parameters<typeof t>[0])
+          : j.error || t("mint.errorGeneric"),
+      );
       return;
     }
     setResult({

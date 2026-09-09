@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   } catch (e) {
     const status = e instanceof ServiceError ? e.status : 500;
     return NextResponse.json(
-      { error: errorMessage(e, "Gagal memuat riwayat"), transactions: [] },
+      { error: errorMessage(e, "Failed to load history"), errorKey: "error.txHistoryFailed", transactions: [] },
       { status },
     );
   }

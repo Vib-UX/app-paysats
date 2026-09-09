@@ -20,6 +20,8 @@ import {
 } from "@/lib/contracts/morpho-credit";
 import { erc20Abi } from "@/lib/contracts/paysats-dca";
 import { getBasePublicClient } from "@/lib/base-client";
+import { useT } from "@/lib/i18n";
+import type { TranslationKey } from "@/lib/translations";
 import { usePrivy } from "@privy-io/react-auth";
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -91,7 +93,7 @@ function useSmartWalletSendCalls() {
         });
       }
 
-      throw new Error("Smart wallet client tidak tersedia");
+      throw new Error("Smart wallet client unavailable");
     },
     [smartClient, getClientForChain],
   );
@@ -114,6 +116,7 @@ export type CreditPositionData = {
 };
 
 export function useCreditPosition() {
+  const t = useT();
   const address = useSmartWalletAddress();
   const [data, setData] = useState<CreditPositionData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -252,7 +255,7 @@ export function useCreditPosition() {
     } catch (e) {
       if (g !== gen.current) return;
       setError(
-        e instanceof Error ? e.message : "Gagal membaca posisi kredit",
+        e instanceof Error ? e.message : t("error.creditReadFailed"),
       );
       setData(null);
     } finally {
@@ -280,22 +283,27 @@ const MAX_UINT256 = BigInt(
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
 );
 
-function humaniseError(e: unknown, fallback: string): string {
+function humaniseError(
+  e: unknown,
+  fallback: string,
+  t: (key: TranslationKey, vars?: Record<string, string | number>) => string,
+): string {
   if (!(e instanceof Error)) return fallback;
   const msg = e.message;
   if (msg.includes("insufficient") && msg.toLowerCase().includes("balance"))
-    return "Saldo tidak cukup untuk transaksi ini.";
+    return t("error.insufficientBalance");
   if (msg.includes("transfer reverted"))
-    return "Transfer token gagal — coba lagi nanti.";
+    return t("error.transferReverted");
   if (msg.includes("UserOperation reverted"))
-    return "Transaksi gagal saat simulasi — coba lagi nanti.";
+    return t("error.userOpReverted");
   if (msg.includes("User rejected") || msg.includes("denied"))
-    return "Transaksi dibatalkan.";
+    return t("error.txCancelled");
   if (msg.length > 120) return `${fallback} (${msg.slice(0, 80)}…)`;
   return msg;
 }
 
 export function useOpenCreditLine() {
+  const t = useT();
   const smartWalletSend = useSmartWalletSendCalls();
   const smartAddr = useSmartWalletAddress();
   const [busy, setBusy] = useState(false);
@@ -311,7 +319,7 @@ export function useOpenCreditLine() {
       setBusy(true);
 
       try {
-        if (!smartAddr) throw new Error("Smart wallet belum tersedia");
+        if (!smartAddr) throw new Error(t("error.smartWalletMissing"));
 
         const pc = getBasePublicClient();
         const [balance, currentAllowance] = await Promise.all([
@@ -333,7 +341,7 @@ export function useOpenCreditLine() {
           const needed =
             Number(params.collateralAmount - balance) / 1e8;
           throw new Error(
-            `Saldo cbBTC tidak cukup. Butuh ${needed.toFixed(8)} cbBTC lagi.`,
+            t("error.creditInsufficientCbbtc", { amount: needed.toFixed(8) }),
           );
         }
 
@@ -401,7 +409,7 @@ export function useOpenCreditLine() {
 
         return { lockTxHash: lockHash, borrowTxHash: borrowHash };
       } catch (e) {
-        setError(humaniseError(e, "Gagal membuka kredit"));
+        setError(humaniseError(e, t("error.creditOpenFailed"), t));
         return null;
       } finally {
         setBusy(false);
@@ -420,6 +428,7 @@ export function useOpenCreditLine() {
 // ---------------------------------------------------------------------------
 
 export function useBorrowAgainstCollateral() {
+  const t = useT();
   const smartWalletSend = useSmartWalletSendCalls();
   const smartAddr = useSmartWalletAddress();
   const [busy, setBusy] = useState(false);
@@ -433,7 +442,7 @@ export function useBorrowAgainstCollateral() {
       setBusy(true);
 
       try {
-        if (!smartAddr) throw new Error("Smart wallet belum tersedia");
+        if (!smartAddr) throw new Error(t("error.smartWalletMissing"));
         if (borrowAmount <= BigInt(0))
           throw new Error("Nominal pinjaman tidak valid.");
 
@@ -456,7 +465,7 @@ export function useBorrowAgainstCollateral() {
         setTxHash(hash);
         return hash;
       } catch (e) {
-        setError(humaniseError(e, "Gagal menarik USDC"));
+        setError(humaniseError(e, t("error.creditBorrowFailed"), t));
         return null;
       } finally {
         setBusy(false);
@@ -473,6 +482,7 @@ export function useBorrowAgainstCollateral() {
 // ---------------------------------------------------------------------------
 
 export function useRepayCreditLine() {
+  const t = useT();
   const smartWalletSend = useSmartWalletSendCalls();
   const smartAddr = useSmartWalletAddress();
   const [busy, setBusy] = useState(false);
@@ -489,7 +499,7 @@ export function useRepayCreditLine() {
       setBusy(true);
 
       try {
-        if (!smartAddr) throw new Error("Smart wallet belum tersedia");
+        if (!smartAddr) throw new Error(t("error.smartWalletMissing"));
 
         const pc = getBasePublicClient();
         const [currentAllowance, usdcBal] = await Promise.all([
@@ -510,7 +520,7 @@ export function useRepayCreditLine() {
         const isFullRepay = opts?.fullRepayShares != null;
 
         if (!isFullRepay && usdcBal < repayAmount) {
-          throw new Error("Saldo USDC tidak cukup.");
+          throw new Error(t("error.offrampInsufficientUsdc"));
         }
 
         if (currentAllowance < (isFullRepay ? MAX_UINT256 : repayAmount)) {
@@ -545,7 +555,7 @@ export function useRepayCreditLine() {
         setTxHash(hash);
         return hash;
       } catch (e) {
-        setError(humaniseError(e, "Gagal membayar pinjaman"));
+        setError(humaniseError(e, t("error.creditRepayFailed"), t));
         return null;
       } finally {
         setBusy(false);
@@ -562,6 +572,7 @@ export function useRepayCreditLine() {
 // ---------------------------------------------------------------------------
 
 export function useWithdrawCollateral() {
+  const t = useT();
   const smartWalletSend = useSmartWalletSendCalls();
   const smartAddr = useSmartWalletAddress();
   const [busy, setBusy] = useState(false);
@@ -575,7 +586,7 @@ export function useWithdrawCollateral() {
       setBusy(true);
 
       try {
-        if (!smartAddr) throw new Error("Smart wallet belum tersedia");
+        if (!smartAddr) throw new Error(t("error.smartWalletMissing"));
 
         const withdrawData = encodeFunctionData({
           abi: morphoBlueAbi,
@@ -590,7 +601,7 @@ export function useWithdrawCollateral() {
         setTxHash(hash);
         return hash;
       } catch (e) {
-        setError(humaniseError(e, "Gagal menarik jaminan"));
+        setError(humaniseError(e, t("error.creditWithdrawFailed"), t));
         return null;
       } finally {
         setBusy(false);
